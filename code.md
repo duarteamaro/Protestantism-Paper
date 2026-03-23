@@ -1,7 +1,7 @@
 Protestantism Code
 ================
 Duarte Amaro
-2026-03-21
+2026-03-23
 
 # Cleaning the hand-transcribed data
 
@@ -1139,8 +1139,26 @@ results <- d_FN_controls |>
   }) |>
   ungroup() |>
   mutate(
-    group = "1"
+    group = "1",
+    controls = "With Educ"
   ) |>
+  bind_rows(d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- lm(
+      pvoixRN ~ share_protestant + dep + revmoy + pop + 
+        pconjsign1816 + pserment1791,
+      data = .x
+    )
+    
+    tidy(model, conf.int = TRUE) |>
+      filter(term == "share_protestant")
+  }) |>
+  ungroup() |>
+  mutate(
+    group = "1",
+    controls = "No Educ"
+  )) |>
   bind_rows(
     d_FN_controls_2 |>
       group_by(Year) |>
@@ -1156,7 +1174,27 @@ results <- d_FN_controls |>
       }) |>
       ungroup() |>
       mutate(
-        group = "2"
+        group = "2",
+        controls = "With Educ"
+      )
+  ) |>
+  bind_rows(
+    d_FN_controls_2 |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm(
+          pvoixRN ~ share_protestant + dep + revmoy + pop + 
+            pconjsign1816 + pserment1791,
+          data = .x
+        )
+        
+        tidy(model, conf.int = TRUE) |>
+          filter(term == "share_protestant")
+      }) |>
+      ungroup() |>
+      mutate(
+        group = "2",
+        controls = "No Educ"
       )
   ) |>
   bind_rows(
@@ -1174,28 +1212,52 @@ results <- d_FN_controls |>
       }) |>
       ungroup() |>
       mutate(
-        group = "3"
+        group = "3",
+        controls = "With Educ"
+      )
+  ) |>
+  bind_rows(
+    d_FN_controls_3 |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm(
+          pvoixRN ~ share_protestant + dep + revmoy + pop + 
+            pconjsign1816 + pserment1791,
+          data = .x
+        )
+        
+        tidy(model, conf.int = TRUE) |>
+          filter(term == "share_protestant")
+      }) |>
+      ungroup() |>
+      mutate(
+        group = "3",
+        controls = "No Educ"
       )
   )
 
-ggplot(results, aes(x = as.numeric(Year), y = estimate, colour = group)) +
+ggplot(results, aes(x = as.numeric(Year), y = estimate, colour = group, shape = controls)) +
   geom_point(position = position_dodge(2)) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), 
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high), 
                 width = 0.2,
                 position = position_dodge(2)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   scale_colour_manual(values = c("1" = "blue", "2" = "orange", "3" = "green4"),
                       labels = c("1" = "Only Communes Explicitly Mentioned",
-                                 "2" = "All Departments Mentioned (Zeros Inputted)",
-                                 "3" = "All Departments up to Hérault (Zeros Inputted)"),
+                                 "2" = "All Departments Mentioned",
+                                 "3" = "All Departments up to Hérault"),
                       name = "") +
+  scale_shape_manual(values = c("With Educ" = 16, "No Educ" = 17),
+                     labels = c("With Educ" = "With Education Controls",
+                                "No Educ" = "Without Education Controls"),
+                     name = "") +
   labs(
     x = "Year",
     y = "Coefficient of Share of Protestants",
-    title = "Coefficient of Share of Protestants by Year",
-    subtitle = "Controlling for Department FEs, Average Income, Population, Share of Bac, Share of Higher Education,\nLiteracy in 1816, and Share of Constitutional Priests in 1791"
+    title = "Coefficient of Share of Protestants (Separate Regressions per Year)",
+    subtitle = "Controlling for Department FEs, Average Income, Population, Literacy in 1816, Share of Constitutional Priests in 1791, \nand  Share of Bac and of Higher Education (when included)"
   ) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", legend.box = "vertical")
 ```
 
 ![](code_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
@@ -3386,3 +3448,395 @@ modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
 </tr>
 </tfoot>
 &#10;</table>
+
+# Replicating Siegfried (1949):
+
+``` r
+temp <- unzip("limites-des-dioceses-de-france-apres-1317.zip")
+
+dioceses <- read_sf("./limites-des-dioceses-de-france-apres-1317.shp") |>
+  filter(diocese %in% c("Diocèse de Valence", "Diocèse de Dié")) |>
+  rename(diocese_map = geometry)
+
+polygon1 <- d_map_1 |> 
+  filter(INSEE_DEP == "07") |> 
+  # mutate(share_protestant = case_when(
+  #            is.na(share_protestant) ~ 0,
+  #            TRUE ~ share_protestant)) |>
+  st_as_sf()
+
+polygon2 <- st_transform(dioceses, st_crs(polygon1))
+
+poly2_clip <- st_intersection(polygon2, polygon1)
+
+poly2_clip_dissolved <- st_union(poly2_clip)
+
+poly2_clip_dissolved <- st_sf(geometry = st_sfc(poly2_clip_dissolved, crs = st_crs(polygon1)))
+
+ggplot() +
+    geom_sf(data = polygon1, aes(fill = share_protestant), colour = NA) +
+    geom_sf(data = poly2_clip_dissolved, colour = "black", fill = NA) +
+  scale_fill_gradient(
+    low = "gold",
+    high = "green4",
+    na.value = "lightgrey"
+  ) +
+  labs(
+    title = "Share of Protestants in 1839 in Ardèche",
+    subtitle = "Overlaid with Historical Borders of the Dioceses of \nValence and Die",
+    fill = "Share of Protestants"
+  ) +
+  theme(legend.position = "bottom") 
+```
+
+![](code_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+
+Compare to Siegfried’s map:
+
+<figure>
+<img src="siegfried%20p.%2049.jpg"
+alt="Siegfried’s (1949) Map of the Protestant Population in Ardèche" />
+<figcaption aria-hidden="true">Siegfried’s (1949) Map of the Protestant
+Population in Ardèche</figcaption>
+</figure>
+
+Siegfried argued that the strong results for the Left (or, to put it
+another way, the weak results for the Right), in some areas of the
+department, were due to the high share of Protestants. Following his
+argument, I assume all communes not explicitly mentioned have no
+Protestants at all and regress FN vote share now on the share of
+Protestants in 1839:
+
+``` r
+d_FN_ardeche <- bind_rows(
+  d2022 |> 
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN) |>
+    mutate(year = 2022),
+  d2017 |> 
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    mutate(year = 2017),
+  d2012 |> 
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    mutate(year = 2012),
+  d2007 |> 
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    mutate(year = 2007),
+  d2002 |> 
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    mutate(year = 2002),
+  d1997 |> 
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    mutate(year = 1997),
+  d1993 |> 
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    mutate(year = 1993)
+) |>
+  mutate(pvoixRN = case_when(
+    year == 2022 ~ 100*pvoixRN,
+    .default = 100*pvoixFN
+  )) |>
+  mutate(code_insee = as.numeric(codecommune)) |>
+  right_join(d_map_1 |> 
+  filter(INSEE_DEP == "07") |> 
+  mutate(share_protestant = case_when(
+             is.na(share_protestant) ~ 0,
+             TRUE ~ share_protestant)),
+  ) |>
+  mutate(Year = as.character(year)) |>
+  left_join(d_controls, by = c("dep", "nomdep", "codecommune", 
+                                                "nomcommune", "Year"))
+```
+
+``` r
+m1 <- lm(data = d_FN_ardeche,
+         pvoixRN ~ log(share_protestant + 1) + year)
+
+m3 <- lm(data = d_FN_ardeche,
+         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop)
+
+m4 <- lm(data = d_FN_ardeche,
+         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup)
+
+m5 <- lm(data = d_FN_ardeche,
+         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup + pbac)
+
+m6 <- lm(data = d_FN_ardeche,
+         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup + pbac + pconjsign1816)
+
+# m7 <- lm(data = d_FN_controls |> 
+#            filter(nomdep == "ARDECHE") |>
+#            mutate(year = as.character(year)),
+#          pvoixRN ~ share_protestant + year + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+
+m7 <- lm(data = d_FN_ardeche,
+         psup ~ log(share_protestant + 1) + year + revmoy + pop)
+
+m8 <- lm(data = d_FN_ardeche,
+         psup ~ log(share_protestant + 1) + year + revmoy + pop + pconjsign1816)
+
+
+modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
+                  )), 
+             vcov = "robust", 
+             stars = TRUE,
+             
+             coef_omit = "year",
+             coef_map = c(
+               "(Intercept)" = "Constant",
+               "log(share_protestant + 1)" = "Log Share of Protestants in 1839",
+               "revmoy" = "Average income",
+               "pop" = "Population",
+               "psup" = "Percentage of people with higher education",
+               "pbac" = "Percentage of people with the bac",
+               "pconjsign1816" = "Literacy in 1816"#,
+               #"pserment1791" = "Share of constitutional priests in 1791"
+               ),
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2),
+             add_rows = tibble::tribble(
+               ~term, ~m1, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8,
+               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
+             ),
+             #output = "table1.tex",
+             #output = "text"
+             )
+```
+
+<table style="width:96%;">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>psup</th>
+<th>psup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Constant</td>
+<td>-463.581***</td>
+<td>-461.137***</td>
+<td>-553.766***</td>
+<td>-579.034***</td>
+<td>-574.094***</td>
+<td>-10.806***</td>
+<td>-10.638***</td>
+</tr>
+<tr>
+<td></td>
+<td>(26.753)</td>
+<td>(43.509)</td>
+<td>(46.693)</td>
+<td>(47.228)</td>
+<td>(47.791)</td>
+<td>(0.729)</td>
+<td>(0.744)</td>
+</tr>
+<tr>
+<td>Log Share of Protestants in 1839</td>
+<td>-0.453***</td>
+<td>-0.485***</td>
+<td>-0.462***</td>
+<td>-0.465***</td>
+<td>-0.457***</td>
+<td>0.003+</td>
+<td>0.003*</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.077)</td>
+<td>(0.096)</td>
+<td>(0.095)</td>
+<td>(0.096)</td>
+<td>(0.097)</td>
+<td>(0.001)</td>
+<td>(0.002)</td>
+</tr>
+<tr>
+<td>Average income</td>
+<td></td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>Population</td>
+<td></td>
+<td>0.000+</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000+</td>
+<td>0.000**</td>
+<td>0.000</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>Percentage of people with higher education</td>
+<td></td>
+<td></td>
+<td>-8.572***</td>
+<td>-4.104</td>
+<td>-4.202</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(1.915)</td>
+<td>(3.344)</td>
+<td>(3.354)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Percentage of people with the bac</td>
+<td></td>
+<td></td>
+<td></td>
+<td>-4.552+</td>
+<td>-4.534+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(2.704)</td>
+<td>(2.710)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Literacy in 1816</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-1.213</td>
+<td></td>
+<td>-0.036*</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(1.194)</td>
+<td></td>
+<td>(0.017)</td>
+</tr>
+<tr>
+<td>N</td>
+<td>2345</td>
+<td>1608</td>
+<td>1608</td>
+<td>1608</td>
+<td>1608</td>
+<td>1608</td>
+<td>1608</td>
+</tr>
+<tr>
+<td>R^2</td>
+<td>0.13</td>
+<td>0.12</td>
+<td>0.14</td>
+<td>0.14</td>
+<td>0.14</td>
+<td>0.38</td>
+<td>0.38</td>
+</tr>
+<tr>
+<td>Adj. R^2</td>
+<td>0.13</td>
+<td>0.12</td>
+<td>0.13</td>
+<td>0.14</td>
+<td>0.14</td>
+<td>0.38</td>
+<td>0.38</td>
+</tr>
+<tr>
+<td>Year FE</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody><tfoot>
+<tr>
+<td colspan="8"><ul>
+<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
+</ul></td>
+</tr>
+</tfoot>
+&#10;</table>
+
+``` r
+polygon3 <- d_FN_ardeche |>
+  st_as_sf()
+  
+
+ggplot() +
+    geom_sf(data = polygon3, aes(fill = pvoixRN), colour = NA) +
+    geom_sf(data = poly2_clip_dissolved, colour = "black", fill = NA) +
+  scale_fill_gradient(
+    low = "skyblue1",
+    high = "tan4",
+    na.value = "lightgrey"
+  ) +
+  facet_wrap(~Year) +
+  labs(
+    title = "FN/RN Vote Share in Ardeche",
+    subtitle = "Overlaid with Historical Borders of the Dioceses of \nValence and Die",
+    fill = "FN/RN Vote Share"
+  ) +
+  theme(legend.position = "bottom")
+```
+
+![](code_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
