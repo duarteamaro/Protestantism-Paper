@@ -1,7 +1,7 @@
 Protestantism Code
 ================
 Duarte Amaro
-2026-03-23
+2026-03-25
 
 # Cleaning the hand-transcribed data
 
@@ -3451,6 +3451,34 @@ modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
 
 # Replicating Siegfried (1949):
 
+Siegfried (1949) argued that the strong results for the Left (or, to put
+it another way, the weak results for the Right), in some areas of the
+department, were due to the high share of Protestants.
+
+Before we can assume that all communes not explicitly mentioned have no
+Protestants at all, we have to address the only vague entry, which
+relates to Tournon-sur-Rhône and the surrounding communes. The
+immediately surrounding communes (in Ardèche) are Mauves,
+Saint-Jean-de-Muzols, Saint-Barthélemy-le-Plain, and Plats. None of
+these are listed elsewhere. The current unité urbaine of
+Tournon-sur-Rhône includes Mauves and Saint-Jean-de-Muzols, so it seems
+fair to assume that these are the closest (economically and socially) to
+it.
+
+There were 130 Protestants overall in 1839. The 1836 population census
+for Tournon-sur-Rhône was 4 174; that for Mauves was 976; and that for
+Saint-Jean-de-Muzols was 801, so 5951 in total. This means the aggregate
+share of Protestants was 2.18% for the three. If we include
+Saint-Barthélemy-le-Plain (population of 900 in 1836) and Plats (704),
+we get a share of 1.72%. If the population was only concentrated in
+Tournon-sur-Rhône, that would be 3.11% in that commune alone. I will
+assume that the share of Protestants was 0 for Saint-Barthélemy-le-Plan
+and Plats and 2.18% for Tournon-sur-Rhône, Mauves, and
+Saint-Jean-de-Muzols - but this is flagged here for further analysis.
+
+I assume all other communes not explicitly mentioned have no Protestants
+at all.
+
 ``` r
 temp <- unzip("limites-des-dioceses-de-france-apres-1317.zip")
 
@@ -3460,9 +3488,10 @@ dioceses <- read_sf("./limites-des-dioceses-de-france-apres-1317.shp") |>
 
 polygon1 <- d_map_1 |> 
   filter(INSEE_DEP == "07") |> 
-  # mutate(share_protestant = case_when(
-  #            is.na(share_protestant) ~ 0,
-  #            TRUE ~ share_protestant)) |>
+  mutate(share_protestant = case_when(
+             is.na(share_protestant) ~ 0,
+             NOM %in% c("Tournon-sur-Rhône", "Saint-Jean-de-Muzols", "Mauves") ~ 2.18,
+             TRUE ~ share_protestant)) |>
   st_as_sf()
 
 polygon2 <- st_transform(dioceses, st_crs(polygon1))
@@ -3474,12 +3503,12 @@ poly2_clip_dissolved <- st_union(poly2_clip)
 poly2_clip_dissolved <- st_sf(geometry = st_sfc(poly2_clip_dissolved, crs = st_crs(polygon1)))
 
 ggplot() +
-    geom_sf(data = polygon1, aes(fill = share_protestant), colour = NA) +
+    geom_sf(data = polygon1, aes(fill = share_protestant), colour = "grey") +
     geom_sf(data = poly2_clip_dissolved, colour = "black", fill = NA) +
   scale_fill_gradient(
-    low = "gold",
+    low = "white",
     high = "green4",
-    na.value = "lightgrey"
+    na.value = "black"
   ) +
   labs(
     title = "Share of Protestants in 1839 in Ardèche",
@@ -3500,12 +3529,7 @@ alt="Siegfried’s (1949) Map of the Protestant Population in Ardèche" />
 Population in Ardèche</figcaption>
 </figure>
 
-Siegfried argued that the strong results for the Left (or, to put it
-another way, the weak results for the Right), in some areas of the
-department, were due to the high share of Protestants. Following his
-argument, I assume all communes not explicitly mentioned have no
-Protestants at all and regress FN vote share now on the share of
-Protestants in 1839:
+I can now regress FN vote share now on the share of Protestants in 1839:
 
 ``` r
 d_FN_ardeche <- bind_rows(
@@ -3540,6 +3564,7 @@ d_FN_ardeche <- bind_rows(
   filter(INSEE_DEP == "07") |> 
   mutate(share_protestant = case_when(
              is.na(share_protestant) ~ 0,
+             NOM %in% c("Tournon-sur-Rhône", "Saint-Jean-de-Muzols", "Mauves") ~ 2.18,
              TRUE ~ share_protestant)),
   ) |>
   mutate(Year = as.character(year)) |>
@@ -3840,3 +3865,297 @@ ggplot() +
 ```
 
 ![](code_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+
+# RDD
+
+``` r
+d_rdd <- d_FN_ardeche |> 
+  filter(Year == "2022")
+
+d_rdd$treated <- assign_treated(d_rdd |> 
+                                  st_as_sf(), 
+                                poly2_clip_dissolved |> 
+                                  st_as_sf(), 
+                                id = "codecommune")
+
+d_rdd$treated[d_rdd$NOM %in% c("Le Pouzin", "Cruas", "Rochemaure")] <- 0
+
+d_rdd$dist2cutoff <- as.numeric(
+  sf::st_distance(d_rdd |> 
+                    st_as_sf() |>
+                    st_transform(crs = 32643), 
+                  poly2_clip_dissolved |> 
+                    st_as_sf() |> 
+                    st_transform(crs = 32643) |>
+                    st_cast("MULTILINESTRING")))
+
+d_rdd$distrunning <- d_rdd$dist2cutoff
+# give the non-treated one's a negative score
+d_rdd$distrunning[d_rdd$treated == 0] <- -1 * d_rdd$distrunning[d_rdd$treated == 0]
+
+
+d_rdd$log_share_protestant <- log(d_rdd$share_protestant + 1)
+```
+
+The logic would be something like what follows graphically, although
+here all observations are represented and not just those within a
+smaller bandwidth.
+
+``` r
+cowplot::plot_grid(
+  ggplot(data = d_rdd, 
+         aes(x = distrunning, y = log_share_protestant, 
+             colour = treated, fill = treated)) + 
+    geom_point() + 
+    geom_smooth(method = "lm", alpha = 0.2) +
+    geom_vline(xintercept = 0, col = "black") +
+    labs(x = "Distance to the Border of the Diocese", 
+         y = "Log Share Protestant", 
+         title = "RD Plot for Log Share Protestant in 1839") +
+    theme(legend.position = "none"),
+  ggplot(data = d_rdd, 
+         aes(x = distrunning, y = pvoixRN, 
+             colour = treated, fill = treated)) + 
+    geom_point() + 
+    geom_smooth(method = "lm", alpha = 0.2) +
+    geom_vline(xintercept = 0, col = "black") +
+    labs(x = "Distance to the Border of the Diocese", 
+         y = "RN Vote Share", 
+         title = "RD Plot for RN Vote Share in 2022") +
+    theme(legend.position = "bottom"),
+  ncol = 1
+  
+)
+```
+
+![](code_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+
+``` r
+summary(rdrobust(y = d_rdd$log_share_protestant, x = d_rdd$distrunning, c = 0))
+```
+
+    ## Sharp RD estimates using local polynomial regression.
+    ## 
+    ## Number of Obs.                  335
+    ## BW type                       mserd
+    ## Kernel                   Triangular
+    ## VCE method                       NN
+    ## 
+    ## Number of Obs.                  282           53
+    ## Eff. Number of Obs.              27           51
+    ## Order est. (p)                    1            1
+    ## Order bias  (q)                   2            2
+    ## BW est. (h)                4974.155     4974.155
+    ## BW bias (b)                8314.569     8314.569
+    ## rho (h/b)                     0.598        0.598
+    ## Unique Obs.                     281           11
+    ## 
+    ## =====================================================================
+    ##                    Point    Robust Inference
+    ##                 Estimate         z     P>|z|      [ 95% C.I. ]       
+    ## ---------------------------------------------------------------------
+    ##      RD Effect     2.179     4.506     0.000     [1.432 , 3.637]     
+    ## =====================================================================
+
+``` r
+summary(rdrobust(y = d_rdd$pvoixRN, x = d_rdd$distrunning, fuzzy = d_rdd$log_share_protestant, c = 0))
+```
+
+    ## Fuzzy RD estimates using local polynomial regression.
+    ## 
+    ## Number of Obs.                  335
+    ## BW type                       mserd
+    ## Kernel                   Triangular
+    ## VCE method                       NN
+    ## 
+    ## Number of Obs.                  282           53
+    ## Eff. Number of Obs.              26           50
+    ## Order est. (p)                    1            1
+    ## Order bias  (q)                   2            2
+    ## BW est. (h)                4647.855     4647.855
+    ## BW bias (b)                7655.608     7655.608
+    ## rho (h/b)                     0.607        0.607
+    ## Unique Obs.                     281           11
+    ## 
+    ## First-stage estimates.
+    ## 
+    ## =====================================================================
+    ##                    Point    Robust Inference
+    ##                 Estimate         z     P>|z|      [ 95% C.I. ]       
+    ## =====================================================================
+    ##      Rd Effect     2.179     4.318     0.000     [1.384 , 3.686]     
+    ## =====================================================================
+    ## 
+    ## Treatment effect estimates.
+    ## 
+    ## =====================================================================
+    ##                    Point    Robust Inference
+    ##                 Estimate         z     P>|z|      [ 95% C.I. ]       
+    ## ---------------------------------------------------------------------
+    ##      RD Effect     0.782     0.790     0.429    [-1.594 , 3.749]     
+    ## =====================================================================
+
+``` r
+iv1 <- ivreg(pvoixRN ~ log_share_protestant | treated , 
+              data = d_rdd#, 
+              #subset = abs(distrunning) < 5000
+        )
+
+iv2 <- ivreg(pvoixRN ~ log_share_protestant + pop + revmoy | treated + pop + revmoy , 
+              data = d_rdd#, 
+              #subset = abs(distrunning) < 5000
+)
+
+iv3 <- ivreg(pvoixRN ~ log_share_protestant + pop + revmoy + psup | pop + revmoy + psup + treated , 
+              data = d_rdd#, 
+              #subset = abs(distrunning) < 5000
+)
+
+iv4 <- ivreg(psup ~ log_share_protestant + pop + revmoy | pop + revmoy + treated , 
+              data = d_rdd#, 
+              #subset = abs(distrunning) < 5000
+)
+
+modelsummary(dvnames(list(iv1, iv2, iv3, iv4)),
+        stars = TRUE
+        )
+```
+
+<table style="width:96%;">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 15%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>psup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(Intercept)</td>
+<td>17.315***</td>
+<td>15.716***</td>
+<td>17.373***</td>
+<td>0.204***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.655)</td>
+<td>(2.291)</td>
+<td>(2.353)</td>
+<td>(0.047)</td>
+</tr>
+<tr>
+<td>log_share_protestant</td>
+<td>1.055+</td>
+<td>1.168+</td>
+<td>1.222+</td>
+<td>0.007</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.558)</td>
+<td>(0.662)</td>
+<td>(0.657)</td>
+<td>(0.014)</td>
+</tr>
+<tr>
+<td>pop</td>
+<td></td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>revmoy</td>
+<td></td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000+</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>psup</td>
+<td></td>
+<td></td>
+<td>-8.127*</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(3.135)</td>
+<td></td>
+</tr>
+<tr>
+<td>Num.Obs.</td>
+<td>335</td>
+<td>239</td>
+<td>239</td>
+<td>239</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>-0.057</td>
+<td>-0.083</td>
+<td>-0.060</td>
+<td>0.015</td>
+</tr>
+<tr>
+<td>R2 Adj.</td>
+<td>-0.060</td>
+<td>-0.097</td>
+<td>-0.078</td>
+<td>0.002</td>
+</tr>
+<tr>
+<td>AIC</td>
+<td>2292.5</td>
+<td>1638.1</td>
+<td>1635.0</td>
+<td>-215.7</td>
+</tr>
+<tr>
+<td>BIC</td>
+<td>2303.9</td>
+<td>1655.5</td>
+<td>1655.8</td>
+<td>-198.4</td>
+</tr>
+<tr>
+<td>RMSE</td>
+<td>7.34</td>
+<td>7.29</td>
+<td>7.22</td>
+<td>0.15</td>
+</tr>
+</tbody><tfoot>
+<tr>
+<td colspan="5"><ul>
+<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
+</ul></td>
+</tr>
+</tfoot>
+&#10;</table>
