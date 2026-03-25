@@ -1434,7 +1434,8 @@ The logic would be something like what follows graphically, although here all ob
 
 ```{r, fig.width=8, fig.height = 12}
 cowplot::plot_grid(
-  ggplot(data = d_rdd, 
+  ggplot(data = d_rdd |>
+           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning)), 
          aes(x = distrunning, y = log_share_protestant, 
              colour = treated, fill = treated)) + 
     geom_point() + 
@@ -1444,7 +1445,8 @@ cowplot::plot_grid(
          y = "Log Share Protestant", 
          title = "RD Plot for Log Share Protestant in 1839") +
     theme(legend.position = "none"),
-  ggplot(data = d_rdd, 
+  ggplot(data = d_rdd |>
+           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning)), 
          aes(x = distrunning, y = pvoixRN, 
              colour = treated, fill = treated)) + 
     geom_point() + 
@@ -1463,30 +1465,46 @@ cowplot::plot_grid(
 ```{r}
 summary(rdrobust(y = d_rdd$log_share_protestant, x = d_rdd$distrunning, c = 0))
 
-summary(rdrobust(y = d_rdd$pvoixRN, x = d_rdd$distrunning, fuzzy = d_rdd$log_share_protestant, c = 0))
+fuzzy_rdd <- rdrobust(y = d_rdd$pvoixRN, x = d_rdd$distrunning, fuzzy = d_rdd$log_share_protestant, c = 0)
 
+summary(fuzzy_rdd)
+```
+
+
+```{r}
+
+fuzzy_rdd$bws["h",1] == fuzzy_rdd$bws["h",2]
+
+```
+
+
+```{r}
+
+firststage <- lm(log_share_protestant ~ treated, data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
+)
 
 iv1 <- ivreg(pvoixRN ~ log_share_protestant | treated , 
-              data = d_rdd#, 
-              #subset = abs(distrunning) < 5000
+              data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
         )
 
 iv2 <- ivreg(pvoixRN ~ log_share_protestant + pop + revmoy | treated + pop + revmoy , 
-              data = d_rdd#, 
-              #subset = abs(distrunning) < 5000
+              data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
 )
 
 iv3 <- ivreg(pvoixRN ~ log_share_protestant + pop + revmoy + psup | pop + revmoy + psup + treated , 
-              data = d_rdd#, 
-              #subset = abs(distrunning) < 5000
+              data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
 )
 
 iv4 <- ivreg(psup ~ log_share_protestant + pop + revmoy | pop + revmoy + treated , 
-              data = d_rdd#, 
-              #subset = abs(distrunning) < 5000
+              data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
 )
 
-modelsummary(dvnames(list(iv1, iv2, iv3, iv4)),
+modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
         stars = TRUE
         )
 

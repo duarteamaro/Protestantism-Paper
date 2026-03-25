@@ -3903,7 +3903,8 @@ smaller bandwidth.
 
 ``` r
 cowplot::plot_grid(
-  ggplot(data = d_rdd, 
+  ggplot(data = d_rdd |>
+           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning)), 
          aes(x = distrunning, y = log_share_protestant, 
              colour = treated, fill = treated)) + 
     geom_point() + 
@@ -3913,7 +3914,8 @@ cowplot::plot_grid(
          y = "Log Share Protestant", 
          title = "RD Plot for Log Share Protestant in 1839") +
     theme(legend.position = "none"),
-  ggplot(data = d_rdd, 
+  ggplot(data = d_rdd |>
+           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning)), 
          aes(x = distrunning, y = pvoixRN, 
              colour = treated, fill = treated)) + 
     geom_point() + 
@@ -3958,7 +3960,9 @@ summary(rdrobust(y = d_rdd$log_share_protestant, x = d_rdd$distrunning, c = 0))
     ## =====================================================================
 
 ``` r
-summary(rdrobust(y = d_rdd$pvoixRN, x = d_rdd$distrunning, fuzzy = d_rdd$log_share_protestant, c = 0))
+fuzzy_rdd <- rdrobust(y = d_rdd$pvoixRN, x = d_rdd$distrunning, fuzzy = d_rdd$log_share_protestant, c = 0)
+
+summary(fuzzy_rdd)
 ```
 
     ## Fuzzy RD estimates using local polynomial regression.
@@ -3996,42 +4000,54 @@ summary(rdrobust(y = d_rdd$pvoixRN, x = d_rdd$distrunning, fuzzy = d_rdd$log_sha
     ## =====================================================================
 
 ``` r
+fuzzy_rdd$bws["h",1] == fuzzy_rdd$bws["h",2]
+```
+
+    ## [1] TRUE
+
+``` r
+firststage <- lm(log_share_protestant ~ treated, data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
+)
+
 iv1 <- ivreg(pvoixRN ~ log_share_protestant | treated , 
-              data = d_rdd#, 
-              #subset = abs(distrunning) < 5000
+              data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
         )
 
 iv2 <- ivreg(pvoixRN ~ log_share_protestant + pop + revmoy | treated + pop + revmoy , 
-              data = d_rdd#, 
-              #subset = abs(distrunning) < 5000
+              data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
 )
 
 iv3 <- ivreg(pvoixRN ~ log_share_protestant + pop + revmoy + psup | pop + revmoy + psup + treated , 
-              data = d_rdd#, 
-              #subset = abs(distrunning) < 5000
+              data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
 )
 
 iv4 <- ivreg(psup ~ log_share_protestant + pop + revmoy | pop + revmoy + treated , 
-              data = d_rdd#, 
-              #subset = abs(distrunning) < 5000
+              data = d_rdd |>
+           filter(d_rdd$dist2cutoff < fuzzy_rdd$bws["h",1])
 )
 
-modelsummary(dvnames(list(iv1, iv2, iv3, iv4)),
+modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
         stars = TRUE
         )
 ```
 
 <table style="width:96%;">
 <colgroup>
-<col style="width: 31%" />
-<col style="width: 16%" />
-<col style="width: 16%" />
-<col style="width: 16%" />
-<col style="width: 15%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 12%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 10%" />
 </colgroup>
 <thead>
 <tr>
 <th></th>
+<th>log_share_protestant</th>
 <th>pvoixRN</th>
 <th>pvoixRN</th>
 <th>pvoixRN</th>
@@ -4041,35 +4057,56 @@ modelsummary(dvnames(list(iv1, iv2, iv3, iv4)),
 <tbody>
 <tr>
 <td>(Intercept)</td>
-<td>17.315***</td>
-<td>15.716***</td>
-<td>17.373***</td>
-<td>0.204***</td>
+<td>1.498***</td>
+<td>24.407***</td>
+<td>23.621**</td>
+<td>23.621**</td>
+<td>0.036</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.655)</td>
-<td>(2.291)</td>
-<td>(2.353)</td>
-<td>(0.047)</td>
+<td>(0.339)</td>
+<td>(3.354)</td>
+<td>(7.793)</td>
+<td>(7.949)</td>
+<td>(0.185)</td>
+</tr>
+<tr>
+<td>treated1</td>
+<td>1.055*</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>(0.431)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>log_share_protestant</td>
-<td>1.055+</td>
-<td>1.168+</td>
-<td>1.222+</td>
-<td>0.007</td>
+<td></td>
+<td>-1.833</td>
+<td>-2.386</td>
+<td>-2.386</td>
+<td>0.047</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.558)</td>
-<td>(0.662)</td>
-<td>(0.657)</td>
-<td>(0.014)</td>
+<td></td>
+<td>(1.517)</td>
+<td>(1.823)</td>
+<td>(1.733)</td>
+<td>(0.043)</td>
 </tr>
 <tr>
 <td>pop</td>
 <td></td>
+<td></td>
 <td>0.000</td>
 <td>0.000</td>
 <td>0.000</td>
@@ -4077,18 +4114,21 @@ modelsummary(dvnames(list(iv1, iv2, iv3, iv4)),
 <tr>
 <td></td>
 <td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
+<td></td>
+<td>(0.001)</td>
+<td>(0.001)</td>
 <td>(0.000)</td>
 </tr>
 <tr>
 <td>revmoy</td>
 <td></td>
+<td></td>
 <td>0.000</td>
 <td>0.000</td>
-<td>0.000+</td>
+<td>0.000</td>
 </tr>
 <tr>
+<td></td>
 <td></td>
 <td></td>
 <td>(0.000)</td>
@@ -4099,61 +4139,85 @@ modelsummary(dvnames(list(iv1, iv2, iv3, iv4)),
 <td>psup</td>
 <td></td>
 <td></td>
-<td>-8.127*</td>
+<td></td>
+<td>0.006</td>
 <td></td>
 </tr>
 <tr>
 <td></td>
 <td></td>
 <td></td>
-<td>(3.135)</td>
+<td></td>
+<td>(7.359)</td>
 <td></td>
 </tr>
 <tr>
 <td>Num.Obs.</td>
-<td>335</td>
-<td>239</td>
-<td>239</td>
-<td>239</td>
+<td>76</td>
+<td>76</td>
+<td>55</td>
+<td>55</td>
+<td>55</td>
 </tr>
 <tr>
 <td>R2</td>
-<td>-0.057</td>
-<td>-0.083</td>
-<td>-0.060</td>
-<td>0.015</td>
+<td>0.075</td>
+<td>-0.265</td>
+<td>-0.444</td>
+<td>-0.445</td>
+<td>-0.429</td>
 </tr>
 <tr>
 <td>R2 Adj.</td>
-<td>-0.060</td>
-<td>-0.097</td>
-<td>-0.078</td>
-<td>0.002</td>
+<td>0.062</td>
+<td>-0.282</td>
+<td>-0.529</td>
+<td>-0.560</td>
+<td>-0.513</td>
 </tr>
 <tr>
 <td>AIC</td>
-<td>2292.5</td>
-<td>1638.1</td>
-<td>1635.0</td>
-<td>-215.7</td>
+<td>311.0</td>
+<td>510.5</td>
+<td>388.2</td>
+<td>390.2</td>
+<td>-23.1</td>
 </tr>
 <tr>
 <td>BIC</td>
-<td>2303.9</td>
-<td>1655.5</td>
-<td>1655.8</td>
-<td>-198.4</td>
+<td>318.0</td>
+<td>517.5</td>
+<td>398.2</td>
+<td>402.2</td>
+<td>-13.1</td>
+</tr>
+<tr>
+<td>Log.Lik.</td>
+<td>-152.522</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F</td>
+<td>5.993</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>RMSE</td>
-<td>7.34</td>
-<td>7.29</td>
-<td>7.22</td>
-<td>0.15</td>
+<td>1.80</td>
+<td>6.69</td>
+<td>7.53</td>
+<td>7.53</td>
+<td>0.18</td>
 </tr>
 </tbody><tfoot>
 <tr>
-<td colspan="5"><ul>
+<td colspan="6"><ul>
 <li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
 </ul></td>
 </tr>
