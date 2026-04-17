@@ -1,7 +1,7 @@
 Protestantism Code
 ================
 Duarte Amaro
-2026-03-25
+2026-04-17
 
 # Cleaning the hand-transcribed data
 
@@ -455,91 +455,109 @@ d1993 <- read_csv("cage_piketty/leg1993comm.csv")
 
 d_FN <- bind_rows(
   d2022 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN, pvoixLR) |>
     mutate(year = 2022),
   d2017 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixLR) |>
     mutate(year = 2017),
   d2012 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2012),
   d2007 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2007),
   d2002 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2002),
   d1997 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1997),
   d1993 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1993)
 ) |>
-  mutate(pvoixRN = case_when(
-    year == 2022 ~ 100*pvoixRN,
-    .default = 100*pvoixFN
-  )) |>
+  mutate(
+    pvoixRN = case_when(
+      year == 2022 ~ 100*pvoixRN,
+      .default = 100*pvoixFN),
+    pvoixLR = case_when(
+      year %in% c(2022, 2017) ~ 100*pvoixLR,
+      year %in% c(2012, 2007, 2002) ~ 100*pvoixUMP,
+      year %in% c(1997, 1993) ~ 100*pvoixRPR
+    )
+    ) |>
   mutate(code_insee = as.numeric(codecommune)) |>
   right_join(d_map_1 |> filter(!is.na(share_protestant)))
 
 d_FN_2 <- bind_rows(
   d2022 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN, pvoixLR) |>
     mutate(year = 2022),
   d2017 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixLR) |>
     mutate(year = 2017),
   d2012 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2012),
   d2007 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2007),
   d2002 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2002),
   d1997 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1997),
   d1993 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1993)
 ) |>
-  mutate(pvoixRN = case_when(
-    year == 2022 ~ 100*pvoixRN,
-    .default = 100*pvoixFN
-  )) |>
+  mutate(
+    pvoixRN = case_when(
+      year == 2022 ~ 100*pvoixRN,
+      .default = 100*pvoixFN),
+    pvoixLR = case_when(
+      year %in% c(2022, 2017) ~ 100*pvoixLR,
+      year %in% c(2012, 2007, 2002) ~ 100*pvoixUMP,
+      year %in% c(1997, 1993) ~ 100*pvoixRPR
+    )
+    ) |>
   mutate(code_insee = as.numeric(codecommune)) |>
   right_join(d_map_2 |> filter(!is.na(share_protestant)))
 
 d_FN_3 <- bind_rows(
   d2022 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN, pvoixLR) |>
     mutate(year = 2022),
   d2017 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixLR) |>
     mutate(year = 2017),
   d2012 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2012),
   d2007 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2007),
   d2002 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2002),
   d1997 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1997),
   d1993 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1993)
 ) |>
-  mutate(pvoixRN = case_when(
-    year == 2022 ~ 100*pvoixRN,
-    .default = 100*pvoixFN
-  )) |>
+  mutate(
+    pvoixRN = case_when(
+      year == 2022 ~ 100*pvoixRN,
+      .default = 100*pvoixFN),
+    pvoixLR = case_when(
+      year %in% c(2022, 2017) ~ 100*pvoixLR,
+      year %in% c(2012, 2007, 2002) ~ 100*pvoixUMP,
+      year %in% c(1997, 1993) ~ 100*pvoixRPR
+    )
+    ) |>
   mutate(code_insee = as.numeric(codecommune)) |>
   right_join(d_map_3 |> filter(!is.na(share_protestant)))
 ```
@@ -1876,48 +1894,8 @@ m10 <- lm(data = d_FN_controls_2 |>
            mutate(year = as.character(year)),
          pconjsign1816 ~ share_protestant + year + dep + revmoy + pop)
 
-stargazer::stargazer(m1, m2, m3, m4, m5, m6, m7, m8, m9, type = "text", omit.stat = c("f", "ser"), star.cutoffs = c(0.05, 0.01, 0.001), omit = c("year", "dep"))
-```
+#stargazer::stargazer(m1, m2, m3, m4, m5, m6, m7, m8, m9, type = "text", omit.stat = c("f", "ser"), star.cutoffs = c(0.05, 0.01, 0.001), omit = c("year", "dep"))
 
-    ## 
-    ## =============================================================================================================
-    ##                                                      Dependent variable:                                     
-    ##                  --------------------------------------------------------------------------------------------
-    ##                                                 pvoixRN                                         psup         
-    ##                    (1)       (2)       (3)       (4)        (5)        (6)       (7)       (8)        (9)    
-    ## -------------------------------------------------------------------------------------------------------------
-    ## share_protestant 0.039*** -0.023*** -0.019*** -0.017***  -0.017***  -0.017*** -0.015*** 0.0003***  0.0003*** 
-    ##                  (0.002)   (0.002)   (0.003)   (0.003)    (0.003)    (0.003)   (0.003)   (0.0001)   (0.0001) 
-    ##                                                                                                              
-    ## revmoy                              -0.00003* 0.00005*** 0.00005*** 0.0001***  0.00001  0.00001*** 0.00001***
-    ##                                     (0.00001) (0.00001)  (0.00001)  (0.00001) (0.00001) (0.00000)  (0.00000) 
-    ##                                                                                                              
-    ## pop                                 -0.00000   -0.00000   -0.00000  -0.00000  -0.00000  0.00000*** 0.00000***
-    ##                                     (0.00000) (0.00000)  (0.00000)  (0.00000) (0.00000) (0.00000)  (0.00000) 
-    ##                                                                                                              
-    ## psup                                          -7.260***  -5.580***  -5.580*** -6.183***                      
-    ##                                                (0.379)    (0.594)    (0.595)   (0.596)                       
-    ##                                                                                                              
-    ## pbac                                                     -1.899***  -1.908*** -2.250***                      
-    ##                                                           (0.516)    (0.516)   (0.518)                       
-    ##                                                                                                              
-    ## pconjsign1816                                                        -0.600*   -0.433                0.007   
-    ##                                                                      (0.235)   (0.237)              (0.004)  
-    ##                                                                                                              
-    ## pserment1791                                                                  -5.681***                      
-    ##                                                                                (0.275)                       
-    ##                                                                                                              
-    ## Constant         8.455*** 8.249***  7.679***   8.622***   8.836***  9.195***  12.418***  0.131***   0.127*** 
-    ##                  (0.098)   (1.468)   (1.597)   (1.583)    (1.583)    (1.587)   (1.577)   (0.030)    (0.030)  
-    ##                                                                                                              
-    ## -------------------------------------------------------------------------------------------------------------
-    ## Observations      27,978   27,978    19,109     19,108     19,108    19,093    18,251     19,108     19,093  
-    ## R2                0.385     0.511     0.529     0.538      0.538      0.539     0.545     0.399      0.400   
-    ## Adjusted R2       0.385     0.511     0.528     0.537      0.537      0.538     0.544     0.398      0.399   
-    ## =============================================================================================================
-    ## Note:                                                                           *p<0.05; **p<0.01; ***p<0.001
-
-``` r
 modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
                   )), 
              vcov = "robust", 
@@ -3449,6 +3427,252 @@ modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
 </tfoot>
 &#10;</table>
 
+## Effect of Share of Protestants on RPR/UMP/LR Vote Share
+
+``` r
+m1 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixLR ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
+
+m1_log <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixLR ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
+
+m2 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixLR ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+
+m2_log <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixLR ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+
+
+modelsummary(list(m1, m1_log, m2, m2_log
+                  ), 
+             vcov = "robust", 
+             stars = TRUE,
+             
+             coef_omit = "year|dep",
+             coef_map = c(
+               "(Intercept)" = "Constant",
+               "share_protestant" = "Share of Protestants in 1839",
+               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
+               "revmoy" = "Average income",
+               "pop" = "Population", 
+               "pserment1791" = "Share of constitutional priests in 1791",
+               "psup" = "Percentage of people with higher education",
+               "pbac" = "Percentage of people with the bac",
+               "pconjsign1816" = "Literacy in 1816"),
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2),
+             add_rows = tibble::tribble(
+               ~term, ~m1, ~m1_log, ~m2, ~m2_log,
+               "Year FE", "Yes", "Yes", "Yes", "Yes", 
+               "Department FE", "Yes", "Yes", "Yes", "Yes"
+             ),
+             #output = "table1.tex",
+             #output = "text"
+             )
+```
+
+<table style="width:97%;">
+<colgroup>
+<col style="width: 46%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th><ol type="1">
+<li></li>
+</ol></th>
+<th><ol start="2" type="1">
+<li></li>
+</ol></th>
+<th><ol start="3" type="1">
+<li></li>
+</ol></th>
+<th><ol start="4" type="1">
+<li></li>
+</ol></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Constant</td>
+<td>22.591***</td>
+<td>22.884***</td>
+<td>22.037***</td>
+<td>22.584***</td>
+</tr>
+<tr>
+<td></td>
+<td>(3.900)</td>
+<td>(3.905)</td>
+<td>(3.943)</td>
+<td>(3.946)</td>
+</tr>
+<tr>
+<td>Share of Protestants in 1839</td>
+<td>-0.026***</td>
+<td></td>
+<td>-0.023***</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>(0.006)</td>
+<td></td>
+<td>(0.007)</td>
+<td></td>
+</tr>
+<tr>
+<td>Log of Share of Protestants in 1839</td>
+<td></td>
+<td>-0.256+</td>
+<td></td>
+<td>-0.209</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.144)</td>
+<td></td>
+<td>(0.150)</td>
+</tr>
+<tr>
+<td>Average income</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>Population</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>Share of constitutional priests in 1791</td>
+<td></td>
+<td></td>
+<td>-0.653</td>
+<td>-1.262</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(1.285)</td>
+<td>(1.280)</td>
+</tr>
+<tr>
+<td>Percentage of people with higher education</td>
+<td>5.448+</td>
+<td>5.531+</td>
+<td>7.071*</td>
+<td>7.180*</td>
+</tr>
+<tr>
+<td></td>
+<td>(3.013)</td>
+<td>(3.028)</td>
+<td>(3.025)</td>
+<td>(3.039)</td>
+</tr>
+<tr>
+<td>Percentage of people with the bac</td>
+<td>-4.217+</td>
+<td>-4.754+</td>
+<td>-4.224</td>
+<td>-4.659+</td>
+</tr>
+<tr>
+<td></td>
+<td>(2.551)</td>
+<td>(2.552)</td>
+<td>(2.586)</td>
+<td>(2.586)</td>
+</tr>
+<tr>
+<td>Literacy in 1816</td>
+<td>0.775</td>
+<td>0.727</td>
+<td>0.608</td>
+<td>0.550</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.989)</td>
+<td>(0.992)</td>
+<td>(1.019)</td>
+<td>(1.021)</td>
+</tr>
+<tr>
+<td>N</td>
+<td>4973</td>
+<td>4973</td>
+<td>4519</td>
+<td>4519</td>
+</tr>
+<tr>
+<td>R^2</td>
+<td>0.51</td>
+<td>0.51</td>
+<td>0.53</td>
+<td>0.53</td>
+</tr>
+<tr>
+<td>Adj. R^2</td>
+<td>0.51</td>
+<td>0.51</td>
+<td>0.53</td>
+<td>0.53</td>
+</tr>
+<tr>
+<td>Year FE</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Department FE</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody><tfoot>
+<tr>
+<td colspan="5"><ul>
+<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
+</ul></td>
+</tr>
+</tfoot>
+&#10;</table>
+
 # Replicating Siegfried (1949):
 
 Siegfried (1949) argued that the strong results for the Left (or, to put
@@ -3518,7 +3742,7 @@ ggplot() +
   theme(legend.position = "bottom") 
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 Compare to Siegfried’s map:
 
@@ -3864,7 +4088,7 @@ ggplot() +
   theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 # RDD
 
@@ -3930,7 +4154,7 @@ cowplot::plot_grid(
 )
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
 
 ``` r
 summary(rdrobust(y = d_rdd$log_share_protestant, x = d_rdd$distrunning, c = 0))

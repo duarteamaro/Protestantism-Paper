@@ -373,91 +373,109 @@ d1993 <- read_csv("cage_piketty/leg1993comm.csv")
 
 d_FN <- bind_rows(
   d2022 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN, pvoixLR) |>
     mutate(year = 2022),
   d2017 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixLR) |>
     mutate(year = 2017),
   d2012 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2012),
   d2007 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2007),
   d2002 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2002),
   d1997 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1997),
   d1993 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1993)
 ) |>
-  mutate(pvoixRN = case_when(
-    year == 2022 ~ 100*pvoixRN,
-    .default = 100*pvoixFN
-  )) |>
+  mutate(
+    pvoixRN = case_when(
+      year == 2022 ~ 100*pvoixRN,
+      .default = 100*pvoixFN),
+    pvoixLR = case_when(
+      year %in% c(2022, 2017) ~ 100*pvoixLR,
+      year %in% c(2012, 2007, 2002) ~ 100*pvoixUMP,
+      year %in% c(1997, 1993) ~ 100*pvoixRPR
+    )
+    ) |>
   mutate(code_insee = as.numeric(codecommune)) |>
   right_join(d_map_1 |> filter(!is.na(share_protestant)))
 
 d_FN_2 <- bind_rows(
   d2022 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN, pvoixLR) |>
     mutate(year = 2022),
   d2017 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixLR) |>
     mutate(year = 2017),
   d2012 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2012),
   d2007 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2007),
   d2002 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2002),
   d1997 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1997),
   d1993 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1993)
 ) |>
-  mutate(pvoixRN = case_when(
-    year == 2022 ~ 100*pvoixRN,
-    .default = 100*pvoixFN
-  )) |>
+  mutate(
+    pvoixRN = case_when(
+      year == 2022 ~ 100*pvoixRN,
+      .default = 100*pvoixFN),
+    pvoixLR = case_when(
+      year %in% c(2022, 2017) ~ 100*pvoixLR,
+      year %in% c(2012, 2007, 2002) ~ 100*pvoixUMP,
+      year %in% c(1997, 1993) ~ 100*pvoixRPR
+    )
+    ) |>
   mutate(code_insee = as.numeric(codecommune)) |>
   right_join(d_map_2 |> filter(!is.na(share_protestant)))
 
 d_FN_3 <- bind_rows(
   d2022 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN, pvoixLR) |>
     mutate(year = 2022),
   d2017 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixLR) |>
     mutate(year = 2017),
   d2012 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2012),
   d2007 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2007),
   d2002 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixUMP) |>
     mutate(year = 2002),
   d1997 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1997),
   d1993 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
+    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN, pvoixRPR) |>
     mutate(year = 1993)
 ) |>
-  mutate(pvoixRN = case_when(
-    year == 2022 ~ 100*pvoixRN,
-    .default = 100*pvoixFN
-  )) |>
+  mutate(
+    pvoixRN = case_when(
+      year == 2022 ~ 100*pvoixRN,
+      .default = 100*pvoixFN),
+    pvoixLR = case_when(
+      year %in% c(2022, 2017) ~ 100*pvoixLR,
+      year %in% c(2012, 2007, 2002) ~ 100*pvoixUMP,
+      year %in% c(1997, 1993) ~ 100*pvoixRPR
+    )
+    ) |>
   mutate(code_insee = as.numeric(codecommune)) |>
   right_join(d_map_3 |> filter(!is.na(share_protestant)))
 
@@ -961,7 +979,7 @@ m10 <- lm(data = d_FN_controls_2 |>
            mutate(year = as.character(year)),
          pconjsign1816 ~ share_protestant + year + dep + revmoy + pop)
 
-stargazer::stargazer(m1, m2, m3, m4, m5, m6, m7, m8, m9, type = "text", omit.stat = c("f", "ser"), star.cutoffs = c(0.05, 0.01, 0.001), omit = c("year", "dep"))
+#stargazer::stargazer(m1, m2, m3, m4, m5, m6, m7, m8, m9, type = "text", omit.stat = c("f", "ser"), star.cutoffs = c(0.05, 0.01, 0.001), omit = c("year", "dep"))
 
 modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
                   )), 
@@ -1216,6 +1234,61 @@ modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
 
 
 ```
+
+## Effect of Share of Protestants on RPR/UMP/LR Vote Share
+
+```{r}
+
+m1 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixLR ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
+
+m1_log <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixLR ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
+
+m2 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixLR ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+
+m2_log <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixLR ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+
+
+modelsummary(list(m1, m1_log, m2, m2_log
+                  ), 
+             vcov = "robust", 
+             stars = TRUE,
+             
+             coef_omit = "year|dep",
+             coef_map = c(
+               "(Intercept)" = "Constant",
+               "share_protestant" = "Share of Protestants in 1839",
+               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
+               "revmoy" = "Average income",
+               "pop" = "Population", 
+               "pserment1791" = "Share of constitutional priests in 1791",
+               "psup" = "Percentage of people with higher education",
+               "pbac" = "Percentage of people with the bac",
+               "pconjsign1816" = "Literacy in 1816"),
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2),
+             add_rows = tibble::tribble(
+               ~term, ~m1, ~m1_log, ~m2, ~m2_log,
+               "Year FE", "Yes", "Yes", "Yes", "Yes", 
+               "Department FE", "Yes", "Yes", "Yes", "Yes"
+             ),
+             #output = "table1.tex",
+             #output = "text"
+             )
+
+```
+
+
+
 
 # Replicating Siegfried (1949):
 
