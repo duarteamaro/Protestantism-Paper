@@ -1,12 +1,12 @@
 Protestantism Code
 ================
 Duarte Amaro
-2026-04-17
+2026-05-15
 
 # Cleaning the hand-transcribed data
 
 ``` r
-d_prots <- read_xlsx("Protestants by Commune - 1839.xlsx") |>
+d_prots_1 <- read_xlsx("Protestants by Commune - 1839.xlsx") |>
   rename(
     code_insee = `Code INSEE`,
     code_insee_full = `Code INSEE (Department, Arrondissement, Canton, Commune)`,
@@ -16,25 +16,79 @@ d_prots <- read_xlsx("Protestants by Commune - 1839.xlsx") |>
     dist = `Distance du chef-lieu de chaque commune au chef-lieu de la section`,
     residence = `Résidence du pasteur`,
     obs = `...16`
+  ) |>
+  mutate(
+    Departement = as.character(Departement),
+    Eglise = as.character(Eglise),
+    Consistoire = as.character(Consistoire),
+    Numeros = as.numeric(Numeros),
+    Noms = as.character(Noms),
+    Temples = as.character(Temples),
+    Communes = as.character(Communes),
+    code_insee = as.character(code_insee),
+    code_insee_full = as.character(code_insee_full),
+    pop_general = as.character(pop_general),
+    pop_protestant = as.character(pop_protestant),
+    pop_protestant_section = as.character(pop_protestant_section),
+    dist = as.character(dist),
+    residence = as.character(residence),
+    Pasteur = as.character(Pasteur),
+    obs = as.character(obs),
+    obs_2 = NA_character_
   )
+
+
+d_prots_2 <- read_xlsx("Protestants by Commune - 1839.xlsx", sheet = 2) |>
+  rename(
+    code_insee = `Code INSEE`,
+    pop_general = `Population générale`,
+    pop_protestant = `Population Protestante`,
+    pop_protestant_section = `Population protestante par section`,
+    dist = `Distance du chef-lieu de chaque commune au chef-lieu de la section`,
+    residence = `Résidence du pasteur`,
+    obs = `...15`,
+    obs_2 = `...16`
+  ) |>
+  mutate(
+    Departement = as.character(Departement),
+    Eglise = as.character(Eglise),
+    Consistoire = as.character(Consistoire),
+    Numeros = as.numeric(Numeros),
+    Noms = as.character(Noms),
+    Temples = as.character(Temples),
+    Communes = as.character(Communes),
+    code_insee = as.character(code_insee),
+    code_insee_full = NA_character_,
+    pop_general = as.character(pop_general),
+    pop_protestant = as.character(pop_protestant),
+    pop_protestant_section = as.character(pop_protestant_section),
+    dist = as.character(dist),
+    residence = as.character(residence),
+    Pasteur = as.character(Pasteur),
+    obs = as.character(obs),
+    obs_2 = as.character(code_insee_full)
+  ) |>
+  filter(!(Departement %in% c("Tarn", "Tarn et Garonne")))
+
+d_prots <- bind_rows(d_prots_1, d_prots_2)
 
 
 d_issues <- d_prots |> 
   filter(
-    (code_insee %in% unique(d_prots$code_insee[duplicated(d_prots$code_insee) == TRUE])) | !is.na(obs)) |>
-  dplyr::select(Departement, Communes, code_insee, pop_general, pop_protestant, obs)
+    (code_insee %in% unique(d_prots$code_insee[duplicated(d_prots$code_insee) == TRUE])) | !is.na(obs) | !is.na(obs_2)) |>
+  dplyr::select(Departement, Communes, code_insee, pop_general, pop_protestant, obs, obs_2)
 
 nrow(d_issues)
 ```
 
-    ## [1] 116
+    ## [1] 316
 
 ``` r
 #View(d_issues |> filter(is.na(code_insee)))
 ```
 
-There are 116 rows which might be problematic, including repeated codes
-or observations left during coding.
+UP TO TARN: There are 316 rows which might be problematic, including
+repeated codes or observations left during coding.
 
 Most rows lacking an INSEE code correspond to observations without
 reference to a concrete commune. Some mention a specific locality within
@@ -92,9 +146,9 @@ analysis.
 We can now move to cases where there is an INSEE code but the commune is
 either duplicated or no longer exists.
 
-We have 20 mergers: Saint-Maurice (17300), which merged with the the
-commune of La Rochelle (same code); Agonnay (17397) which merged with
-Saint-Savinien (same code); Rouquette, Saint-Sulpice-d’Eymet, and
+We have the following mergers: Saint-Maurice (17300), which merged with
+the the commune of La Rochelle (same code); Agonnay (17397) which merged
+with Saint-Savinien (same code); Rouquette, Saint-Sulpice-d’Eymet, and
 Cogulot (24167) which all merged with Eymet (same code); Le Canet and La
 Rouquette (24335) which merged with Port-Sainte-Foy-et-Ponchapt (same
 code); Puyguulhem and Mombos (24549) which merged with Thénac (same
@@ -109,11 +163,59 @@ Cambo (30058) merged with La Cadière-et-Cambo; Saint-Martin-de-Sossenac
 merged with Sumène; Paroisse-du-Vigan (30350) merged with Le Vigan;
 Appelles (33369) merged with Saint-André-et-Appelles; Saint-Nazaire
 (33378) merged with Saint-Avit-Saint-Nazaire; Le Pouzat (7204) merged
-with Saint-Agrève; and Naves (7334) merged with Les Vans.
+with Saint-Agrève; Naves (7334) merged with Les Vans; Ecoman (41273) was
+merged with Vievy-le-Rayé (41273); Saint-Gayrand (47112) was merged with
+Grateloup-Saint-Gayrand (47112); , Saint-Vincent (47038) was merged with
+Bourran (47038); Lesterne (47213) was merged with Prayssas (47213);
+Saint-Amant (47276) was merged with Saint-Sardos (47276); Etussan
+(47143) was merged with Lavardac (47143); Limon (47097) was merged with
+Feugarolles (47097); Angviller (57086) was merged into Belles-Forêts
+(57086); Landonvillers (57155) was merged into Courcelles-Chaussy
+(57155); Fives (59350), Moulins-Lille (59350), and Wazemmes (59350) were
+merged into Lille (59350); Selvigny (59631) was merged with
+Walincourt-Selvigny (59631); Audencourt (59139) was merged with Caudry
+(59139); Ranchicourt (62693) was merged with Rebreuve-Ranchicourt
+(62693); Sainte-Suzanne (64430) was merged with Orthez (64430);
+Montestrucq (64440) was merged with Ozenx-Montestrucq (64440); Arance
+(64396), Gouze (64396), and Lendresse (64396) were merged with Mont
+(64396); Bezing (64133) was merged with Boeil-Bezing (64133); Cassaber
+(64168) was merged with Carresee-Cassaber (64168); Aspis (64071) was
+merged with Athos-Aspis (64071); Bideren (64083) and Saint-Martin
+(64083) were merged with Autevielle-Saint-Martin-Bideren (64083);
+Parenties (64251) merged with Guinarthe-Parenties (64251); Rivareyte
+(64435) merged with Osserain-Rivareyte (64435); Arrive (64480) and
+Munein (64480) merged with Saint-Gladie-Arrive-Munein (64480); Camu
+(64096) merged with Barraute-Camu (64096); Saint-Esprit (64102) merged
+with Bayonne (64102); Hanhoffen (67046) merged with Bischwiller (67046);
+Niederseebach (67351) merged with Seebach (67351); Altenstadt (67544)
+merged with Wissembourg (67544); Birlenbach (67104) merged with
+Drachenbronn-Birlenbach (67104); Griesbach-le-Bastberg (67061) merged
+with Bouxwiller (67061); Bischtroff-sur-Sarre (67435) and Zollingen
+(67435) merged with Sarrewerden (67435); Wiler (67183) merged with
+Harskirchen (67183); Dornach (68224) merged with Mulhouse (68224);
+Saint-Rambert-l’île-Barbe (69123) merged with Lyon (69123); Valasse
+(76329) merged with Gruchet-le-Valasse (76329); Bielleville (76543)
+merged with Rouville (76543); Buglise (76167) and Rimbertot (76167)
+merged with Cauville-sur-Mer (76167); Ecuquetot (76716) merged with
+Turretot (76716); Émalleville (76650) merged with
+Saint-Sauveur-d’Émalleville (76650); Graville-Sainte-Honorine (76351),
+Bléville (76351), Sanvic (76351) merged with Le Havre (76351);
+L’Enclave-de-la-Martinière (79264) merged with
+Saint-Léger-de-la-Martinière (79264); Montigné (79061) and
+Verrines-sous-Celles (79061) merged with Celles-sur-Belle (79061);
+Souché (79191), Sainte-Pezenne (79191), Saint-Florent (79191), and
+Saint-Liguaire (79191) merged with Niort (79191); Saint Carlais (79048)
+and Chavagné (79048) merged with La Crèche (79048); Saint-Denis (79066)
+merged with Champdenier-Saint-Denis (79066); Rouvre (79133) merged with
+Germond-Rouvre (79133); La Ronde (79123) merged with La Forêt-sur-Sèvre
+(79123); Plantières (57463), itself listed twice, is merged into Metz
+(57463), as well as Devant-les-Ponts (57463); Vallières-lès-Metz (57463)
+and Magny (57463); Vineuil-Saint-Firmin (60695) merged with Vinueil
+(60695).
 
 ``` r
 d_merged <- d_issues |>
-  filter(code_insee %in% c("17300", "17397", "24167", "24335", "24549", "26020", "26128", "26136", "26276", "28036", "28120", "28190", "30058", "30106", "30325", "30350", "33369", "33378", "7204", "7334")) |>
+  filter(code_insee %in% c("17300", "17397", "24167", "24335", "24549", "26020", "26128", "26136", "26276", "28036", "28120", "28190", "30058", "30106", "30325", "30350", "33369", "33378", "7204", "7334", "41273", "47112", "47213", "47038", "47213", "47276", "47143", "47097", "57086", "57155", "59350", "59631", "59139", "62693", "64430", "64440", "64396", "64133", "64168", "64071", "64083", "64251", "64435", "64480", "64096", "64102", "67046", "67351", "67544", "67104", "67061", "67435", "67183", "68224", "69123", "76329" , "76543" , "76167" , "76716" , "76650" , "76351" , "79264", "79061", "79191", "79048", "79066", "79133" , "79123", "57463", "60695")) |>
   mutate(pop_general = as.numeric(pop_general),
          pop_protestant = as.numeric(pop_protestant)) |>
   group_by(code_insee) |>
@@ -149,11 +251,22 @@ protestant population could not retrieved from the first entry; I’ll
 assume the second entry corresponds to the true value. Pommiers (30199)
 is a similar case, listed twice with the same general population but
 with different values for the protestant population. I will assume the
-lower value is correct.
+lower value is correct. La Chefresne (50128) listed twice, with the same
+values for both general and Protestant population, suggesting double
+counting. Athis-de-l’Orne (61007), Flers (61169), Alençon (61001),
+Sainte-Honorine-la-Chardonne (61407), Berjou (61044),
+Montilly-sur-Noireau (61287) and Frênes (61177) are listed twice with
+the same data, so I will assume that they have been double-counted.
+
+Cherbourg (50129) is similarly listed twice though with similar but
+different values. I assume double-counting and will take the higher
+value for both the general (13395) and the Protestant (360) populations.
 
 ``` r
 d_duplicates_1 <- d_issues |>
-  filter(code_insee %in% c("17021", "26264", "30199")) |> 
+  filter(code_insee %in% c("17021", "26264", "30199", "50128",
+                           "61007", "61169", "61001", "61407", 
+                           "61044", "61287", "61177")) |> 
   mutate(pop_general = as.numeric(pop_general),
          pop_protestant = as.numeric(pop_protestant)) |>
   group_by(code_insee) |>
@@ -163,6 +276,20 @@ d_duplicates_1 <- d_issues |>
     pop_general = max(pop_general),
     pop_protestant = min(pop_protestant, na.rm = TRUE),
     obs = NA
+  ) |>
+  bind_rows(
+    d_issues |>
+      filter(code_insee %in% c("50129")) |> 
+      mutate(pop_general = as.numeric(pop_general),
+             pop_protestant = as.numeric(pop_protestant)) |>
+      group_by(code_insee) |>
+      summarise(
+        Departement = first(Departement),
+        Communes = first(Communes),
+        pop_general = max(pop_general),
+        pop_protestant = max(pop_protestant, na.rm = TRUE),
+        obs = NA
+      )
   )
 ```
 
@@ -230,26 +357,54 @@ the real Protestant population here corresponds to their sum and I will
 therefore consider it as such. The case of Gageac-et-Rouillac (24193) is
 similar: the overall population listed is the same, the number of
 protestants differs and is quite small by reference to the overall
-population (50 and 70). Gardonne (24194) is listed twice, once as Partie
-Nord and another as Partie Sud. The overall population is the same but
-the protestant population differs, indicating that the total corresponds
-to their sum (140 and 47). Dourbies (30105) is also listed twice with
-the same general population but differing in their protestant population
-(30 and 40), which corresponds, I will assume, to their sum.
-Saint-André-de-Majencoules (30229) is listed twice, once as Hameau du
-Roy dans la commune de Saint-André-de-Majencoules, which suggests that
-the protestant population in the overall commune corresponds to their
-sum.
+population (50 and 70). Same goes for Verteuil (47317), Villeton
+(47325), Clermont (60157), Houchain (62456), Fomperron (79121). Josnes
+(41105) is listed twice, with a similar overall population (1503 vs
+1500) and different Protestant population numbers (216 vs 400). The
+second listing mentions a particular canton, and it seems reasonable to
+assume that the correct number is their sum. Gardonne (24194) is listed
+twice, once as Partie Nord and another as Partie Sud. The overall
+population is the same but the protestant population differs, indicating
+that the total corresponds to their sum (140 and 47). Lasalle Prunet
+(48186) is similar. Dourbies (30105) is also listed twice with the same
+general population but differing in their protestant population (30 and
+40), which corresponds, I will assume, to their sum. Barr (67021) is
+listed twice, once as the proper commune and another time as La scierie,
+Commune de Barr. The overall population listed is the same but the
+Protestant population differs, suggesting that the overall Protestant
+population corresponds to their sum. Saint-Frézal-de-Ventalon (48175) is
+listed twice, without any indication of the general population, but
+mentions of a *partie est* and a *partie ouest* suggest that the
+Protestant population corresponds to its sum.
 
-Finally, Les Ollières-sur-Eyrieux (7167) is listed twice with the total
-number of protestants corresponding to the sum, but with different
-population values. The overall population seems, on the basis of the
-Cassini figures, to correspond roughly to their sum as well.
+Les Ollières-sur-Eyrieux (7167) is listed twice with the total number of
+protestants corresponding to the sum, but with different population
+values. The overall population seems, on the basis of the Cassini
+figures, to correspond roughly to their sum as well. The same goes for
+Saint-Étienne-Vallée-Française (48148).
+
+Finally, we have cases like Saint-André-de-Majencoules (30229), which is
+listed twice, once as Hameau du Roy dans la commune de
+Saint-André-de-Majencoules, which suggests that the protestant
+population in the overall commune corresponds to their sum while the
+overall population is the greater value. Similarly, Giencourt (listed
+under 60107) is a locality of Breuil-le-Vert (60107) - the Protestant
+population seems to have been counted separately. Saint-Julien-lès-Metz
+(57616) is also listed twice, in the first occurrence seemingly as a
+part of the commune and without listing the general population. Laventie
+(62491) is listed twice, first without an indication of the general
+population and with 22 Protestants, and then with a general population
+of 4415 and a Protestant population of 15. I will assume the Protestant
+population corresponds to its sum. Saint-Michel-de-Dèze (48173) is
+similarly listed twice, and the Protestant population likely corresponds
+to the sum. However, the general population for the second half is not
+listed - and that for the first half is unlikely to correspond to the
+entire population. For these cases, I will sum the Protestant population
+and keep the greater value for the overall population.
 
 ``` r
 d_duplicates_3 <- d_issues |>
-  filter(code_insee %in% c("17050", "24193", "24194", 
-                           "30105", "30229")) |> 
+  filter(code_insee %in% c("17050", "24193", "47317", "47325", "60157", "62456", "79121", "41105", "24194", "48186", "30105", "67021", "48175")) |> 
   mutate(pop_general = as.numeric(pop_general),
          pop_protestant = as.numeric(pop_protestant)) |>
   group_by(code_insee) |>
@@ -262,7 +417,7 @@ d_duplicates_3 <- d_issues |>
   ) |>
   bind_rows(
     d_issues |>
-      filter(code_insee == "7167") |> 
+      filter(code_insee %in% c("7167", "48148")) |> 
       mutate(pop_general = as.numeric(pop_general),
              pop_protestant = as.numeric(pop_protestant)) |>
       group_by(code_insee) |>
@@ -272,8 +427,21 @@ d_duplicates_3 <- d_issues |>
         pop_general = sum(pop_general, na.rm = TRUE),
         pop_protestant = sum(pop_protestant, na.rm = TRUE),
         obs = NA
-      )
+      ),
+    d_issues |>
+        filter(code_insee %in% c("30229", "60107", "57616", "62491", "48173")) |> 
+        mutate(pop_general = as.numeric(pop_general),
+               pop_protestant = as.numeric(pop_protestant)) |>
+        group_by(code_insee) |>
+        summarise(
+            Departement = first(Departement),
+            Communes = first(Communes),
+            pop_general = max(pop_general, na.rm = TRUE),
+            pop_protestant = sum(pop_protestant, na.rm = TRUE),
+            obs = NA
+        )
   )
+
 
 d_solved <- bind_rows(
   d_salles |>
@@ -288,7 +456,7 @@ d_solved <- bind_rows(
 )
 ```
 
-We also have 66 entries where the population or the number of
+We also have some entries where the population or the number of
 Protestants could not be established, many of which because there is no
 concrete commune to which the entry refers. There is also one
 observation where the Protestant population is greater than the overall
@@ -296,11 +464,16 @@ population, Collorgues (30086). This value has been checked again
 against the digitised records and the mistake is not in the
 transcription. The observation has been discarded.
 
-There are 1040 clean observations.
+For Le Chambon-Feugerolles (42044) and Firminy (42095), the Protestant
+population of 60 is listed for the two. Same for Saint Chamond (42207)
+and Rive-de-Gier (42186) and their joint Protestant population of 65.
+
+There are 1894 clean observations.
 
 ``` r
 d_clean <- d_prots |>
-  filter(!(code_insee %in% unique(d_issues$code_insee))) |>
+  filter(!(code_insee %in% unique(d_issues$code_insee)) & 
+           !(code_insee %in% c("42044", "42095", "42207", "42186"))) |>
   dplyr::select(Departement, Communes, code_insee, pop_general, pop_protestant, obs) |>
   mutate(pop_general = as.numeric(pop_general),
          pop_protestant = as.numeric(pop_protestant)) |>
@@ -321,7 +494,9 @@ not explicitly mentioned
 d_missing <- d_prots |> 
   mutate(pop_general_num = as.numeric(pop_general),
          pop_protestant_num = as.numeric(pop_protestant)) |>
-  filter(is.na(pop_general_num) | is.na(pop_protestant_num))
+  filter(is.na(pop_general_num) | is.na(pop_protestant_num) | (code_insee %in% c("42044", "42095", 
+                                                                                 "42207", "42186"))
+         )
 
 names <- unique(d_clean$Departement[!(d_clean$Departement %in% unique(d_missing$Departement))])
 ```
@@ -344,8 +519,8 @@ which we have information on the concrete protestant population of some
 communes but no reference to any more dispersed population); 3) as
 before, but further assigning asigning a value of 0 to all communes in
 departments which should have been covered in the original document
-(i.e., any departments alphabetically prior to Hérault) but which are
-not mentioned.
+(i.e., any departments alphabetically prior to Somme) but which are not
+mentioned.
 
 ``` r
 d_map_1 <- full_join(d_clean |> 
@@ -360,7 +535,12 @@ d_map_2 <- full_join(d_clean |>
   mutate(
     share_protestant = case_when(
       !is.na(share_protestant) ~ share_protestant,
-      is.na(share_protestant) & INSEE_DEP %in% c("09", "12", "16", "24", "29", "31", "32", "34") ~ 0,
+      is.na(share_protestant) & INSEE_DEP %in% c("09", "12", "16", "24", 
+                                                 "29", "31", "32", "34", 
+                                                 "43", "44", "41", "54", 
+                                                 "62", "63", "67", "68", 
+                                                 "69", "77", "78", "92", 
+                                                 "91", "80") ~ 0,
       .default = NA
     )
   )
@@ -369,7 +549,7 @@ d_map_2 <- full_join(d_clean |>
 deps <- unique(
   d_map_2$INSEE_DEP[!(
     d_map_2$INSEE_DEP %in% unique(d_map_2$INSEE_DEP[!is.na(d_map_2$share_protestant)])) & 
-      as.numeric(d_map_2$INSEE_DEP) < 34]
+      as.numeric(d_map_2$INSEE_DEP) < 80]
   )
 
 d_map_3 <- full_join(d_clean |> 
@@ -380,7 +560,12 @@ d_map_3 <- full_join(d_clean |>
     share_protestant = case_when(
       !is.na(share_protestant) ~ share_protestant,
       is.na(share_protestant) & 
-        INSEE_DEP %in% c("09", "12", "16", "24", "29", "31", "32", "34") ~ 0,
+        INSEE_DEP %in% c("09", "12", "16", "24", 
+                         "29", "31", "32", "34", 
+                         "43", "44", "41", "54", 
+                         "62", "63", "67", "68", 
+                         "69", "77", "78", "92", 
+                         "91", "80") ~ 0,
       is.na(share_protestant) &
         INSEE_DEP %in% deps ~ 0,
       .default = NA
@@ -392,8 +577,8 @@ cowplot::plot_grid(d_map_1 |>
                      ggplot() +
                      geom_sf(aes(geometry = geometry,
                                  fill = share_protestant), colour = NA) +
-                     scale_fill_gradient(low = "gold", high = "green4",
-                                         na.value = "lightgrey") +
+                     scale_fill_gradient(low = "white", high = "red4",
+                                         na.value = "grey") +
                      labs(title = "Share of Protestants in 1839 (Communes explicitly mentioned)"),
                    d_map_1 |>
                      ggplot() +
@@ -408,8 +593,8 @@ cowplot::plot_grid(d_map_2 |>
                      ggplot() +
                      geom_sf(aes(geometry = geometry,
                                  fill = share_protestant), colour = NA) +
-                     scale_fill_gradient(low = "gold", high = "green4",
-                                         na.value = "lightgrey") +
+                     scale_fill_gradient(low = "white", high = "red4",
+                                         na.value = "grey") +
                      labs(title = "Share of Protestants in 1839 (Departments mentioned with some zeros inputted)"),
                    d_map_2 |>
                      ggplot() +
@@ -423,10 +608,10 @@ cowplot::plot_grid(d_map_2 |>
 cowplot::plot_grid(d_map_3 |>
                      ggplot() +
                      geom_sf(aes(geometry = geometry,
-                                 fill = share_protestant), colour = NA) +
-                     scale_fill_gradient(low = "gold", high = "green4",
-                                         na.value = "lightgrey") +
-                     labs(title = "Share of Protestants in 1839 (All Departments up to Hérault with some zeros inputted)"),
+                                 fill = share_protestant), colour = "NA") +
+                     scale_fill_gradient(low = "white", high = "red4",
+                                         na.value = "grey") +
+                     labs(title = "Share of Protestants in 1839 (All Departments up to Somme with some zeros inputted)"),
                    d_map_3 |>
                      ggplot() +
                      geom_histogram(aes(x = share_protestant), bins = 50),
@@ -604,12 +789,12 @@ modelsummary(list(m1, m2, m3, m4, m5, m6
 
 <table style="width:95%;">
 <colgroup>
-<col style="width: 29%" />
+<col style="width: 28%" />
 <col style="width: 11%" />
 <col style="width: 11%" />
-<col style="width: 10%" />
 <col style="width: 11%" />
-<col style="width: 10%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
 <col style="width: 11%" />
 </colgroup>
 <thead>
@@ -638,66 +823,66 @@ modelsummary(list(m1, m2, m3, m4, m5, m6
 <tbody>
 <tr>
 <td>Constant</td>
-<td>11.612***</td>
-<td>8.570***</td>
-<td>8.455***</td>
-<td>8.249***</td>
-<td>9.205***</td>
-<td>7.769***</td>
+<td>12.108***</td>
+<td>8.261***</td>
+<td>10.692***</td>
+<td>7.971***</td>
+<td>10.365***</td>
+<td>7.686***</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.223)</td>
-<td>(1.624)</td>
-<td>(0.091)</td>
-<td>(1.658)</td>
-<td>(0.068)</td>
-<td>(1.771)</td>
+<td>(0.149)</td>
+<td>(1.627)</td>
+<td>(0.059)</td>
+<td>(1.692)</td>
+<td>(0.040)</td>
+<td>(1.748)</td>
 </tr>
 <tr>
 <td>Share of Protestants in 1839</td>
-<td>-0.006*</td>
-<td>-0.029***</td>
-<td>0.039***</td>
-<td>-0.023***</td>
-<td>0.020***</td>
-<td>-0.023***</td>
+<td>-0.025***</td>
+<td>-0.019***</td>
+<td>-0.005*</td>
+<td>-0.014***</td>
+<td>-0.004*</td>
+<td>-0.014***</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.003)</td>
-<td>(0.003)</td>
 <td>(0.002)</td>
-<td>(0.003)</td>
 <td>(0.002)</td>
-<td>(0.003)</td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+<td>(0.002)</td>
 </tr>
 <tr>
 <td>N</td>
-<td>7210</td>
-<td>7210</td>
-<td>27978</td>
-<td>27978</td>
-<td>54759</td>
-<td>54759</td>
+<td>13160</td>
+<td>13160</td>
+<td>70627</td>
+<td>70627</td>
+<td>149500</td>
+<td>149500</td>
 </tr>
 <tr>
 <td>R^2</td>
+<td>0.37</td>
+<td>0.54</td>
+<td>0.37</td>
+<td>0.52</td>
 <td>0.36</td>
-<td>0.51</td>
-<td>0.39</td>
-<td>0.51</td>
-<td>0.36</td>
-<td>0.57</td>
+<td>0.53</td>
 </tr>
 <tr>
 <td>Adj. R^2</td>
+<td>0.37</td>
+<td>0.53</td>
+<td>0.37</td>
+<td>0.52</td>
 <td>0.36</td>
-<td>0.51</td>
-<td>0.39</td>
-<td>0.51</td>
-<td>0.36</td>
-<td>0.57</td>
+<td>0.53</td>
 </tr>
 <tr>
 <td>Year FE</td>
@@ -784,7 +969,17 @@ diplomes <- diplomes |>
                            names_to = "Year", values_to = "psup") |> 
               mutate(Year = str_sub(Year, -4, -1))) |> 
   dplyr::select(-ends_with(c("1993", "1997", "2002", 
-                             "2007", "2012", "2017", "2022"))) 
+                             "2007", "2012", "2017", "2022")))
+etrangers <- read_csv("cage_piketty/etrangerscommunes.csv") |> 
+  dplyr::select(dep, nomdep, codecommune, nomcommune, 
+                starts_with(c("petranger")) & 
+                  ends_with(c("1993", "1997", "2002", 
+                              "2007", "2012", "2017", "2022"))) |>
+  pivot_longer(cols = starts_with("petranger"), 
+               names_to = "Year", values_to = "petranger") |>
+  mutate(Year = str_sub(Year, -4, -1))
+
+
 
 d_controls <- full_join(diplomes, 
                         revenus |>
@@ -799,9 +994,13 @@ d_controls <- full_join(diplomes,
               rename(nomcommune_4 = nomcommune),
             by = c("dep", "nomdep", "codecommune")
             ) |>
-  dplyr::select(-c(nomcommune_2, nomcommune_3, nomdep_3, nomcommune_4))
+  full_join(etrangers|>
+              rename(nomcommune_5 = nomcommune),
+            by = c("dep", "nomdep", "codecommune", "Year")
+            ) |>
+  dplyr::select(-c(nomcommune_2, nomcommune_3, nomdep_3, nomcommune_4, nomcommune_5))
 
-nrow(d_controls) == 7*(c(revenus$codecommune, diplomes$codecommune, religiosite1791$codecommune, alphabetisation$codecommune) |> unique() |> length())
+nrow(d_controls) == 7*(c(revenus$codecommune, diplomes$codecommune, religiosite1791$codecommune, alphabetisation$codecommune, etrangers$codecommune) |> unique() |> length())
 ```
 
     ## [1] TRUE
@@ -810,54 +1009,69 @@ nrow(d_controls) == 7*(c(revenus$codecommune, diplomes$codecommune, religiosite1
 d_FN_controls <- left_join(d_FN |>
                              mutate(Year = as.character(year)), 
                            d_controls, by = c("dep", "nomdep", "codecommune", 
-                                              "nomcommune", "Year"))
+                                              "nomcommune", "Year")) |>
+  filter(!is.na(Year))
 
 d_FN_controls_2 <- left_join(d_FN_2 |>
                                mutate(Year = as.character(year)), 
                              d_controls, by = c("dep", "nomdep", "codecommune", 
-                                                "nomcommune", "Year"))
+                                                "nomcommune", "Year")) |>
+  filter(!is.na(Year))
 
 d_FN_controls_3 <- left_join(d_FN_3 |>
                                mutate(Year = as.character(year)), 
                              d_controls, by = c("dep", "nomdep", "codecommune", 
-                                                "nomcommune", "Year"))
+                                                "nomcommune", "Year")) |>
+  filter(!is.na(Year))
 ```
 
-The following models consider only the communes explicitly mentioned in
-the original document.
+With the most liberal approach to dealing with NAs, we find a
+statistically significant negative association between the share of
+Protestants in 1839 and the vote share of the RN/FN since 1993:
 
 ``` r
-m1 <- lm(data = d_FN_controls |> 
+m1 <- lm(data = d_FN_controls_3 |> 
            mutate(year = as.character(year)), 
          pvoixRN ~ share_protestant + year)
 
-m2 <- lm(data = d_FN_controls|> 
+m2 <- lm(data = d_FN_controls_3 |> 
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep)
 
-m3 <- lm(data = d_FN_controls|> 
+m3 <- lm(data = d_FN_controls_3 |> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger)
 
-m4 <- lm(data = d_FN_controls|> 
+m4 <- lm(data = d_FN_controls_3 |> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup)
 
-m5 <- lm(data = d_FN_controls|> 
+m5 <- lm(data = d_FN_controls_3 |> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac)
 
-m6 <- lm(data = d_FN_controls|> 
+m6 <- lm(data = d_FN_controls_3 |> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816)
 
-m7 <- lm(data = d_FN_controls|> 
+m7 <- lm(data = d_FN_controls_3 |> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816 + pserment1791)
 
+m8 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         psup ~ share_protestant + year + dep + revmoy + pop + petranger)
 
-modelsummary(list(m1, m2, m3, m4, m5, m6, m7
-                  ), 
+m9 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         psup ~ share_protestant + year + dep + revmoy + pop + petranger + pconjsign1816)
+
+m10 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         pconjsign1816 ~ share_protestant + year + dep + revmoy + pop + petranger)
+
+modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
+                  )), 
              vcov = "robust", 
              stars = TRUE,
              
@@ -867,101 +1081,107 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
                "share_protestant" = "Share of Protestants in 1839",
                "revmoy" = "Average income",
                "pop" = "Population", 
+               "petranger" = "Percentage of foreigners",
                "psup" = "Percentage of people with higher education",
                "pbac" = "Percentage of people with the bac",
                "pconjsign1816" = "Literacy in 1816",
-               "pserment1791" = "Share of constitutional priests in 1791"),
+               "pserment1791" = "Share of constitutional priests in 1791"
+               ),
              gof_map = tibble::tribble(~raw, ~clean, ~fmt,
                                        "nobs", "N", 0,
                                        "r.squared", "R^2", 2,
                                        "adj.r.squared", "Adj. R^2", 2),
              add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
+               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
+               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
              ),
              #output = "table1.tex",
              #output = "text"
              )
 ```
 
-<table style="width:96%;">
+<table style="width:95%;">
 <colgroup>
-<col style="width: 33%" />
+<col style="width: 24%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 7%" />
 <col style="width: 8%" />
 <col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 9%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
+<col style="width: 5%" />
+<col style="width: 5%" />
 <col style="width: 8%" />
 </colgroup>
 <thead>
 <tr>
 <th></th>
-<th><ol type="1">
-<li></li>
-</ol></th>
-<th><ol start="2" type="1">
-<li></li>
-</ol></th>
-<th><ol start="3" type="1">
-<li></li>
-</ol></th>
-<th><ol start="4" type="1">
-<li></li>
-</ol></th>
-<th><ol start="5" type="1">
-<li></li>
-</ol></th>
-<th><ol start="6" type="1">
-<li></li>
-</ol></th>
-<th><ol start="7" type="1">
-<li></li>
-</ol></th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>psup</th>
+<th>psup</th>
+<th>pconjsign1816</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Constant</td>
-<td>11.612***</td>
-<td>8.570***</td>
-<td>5.678**</td>
-<td>7.642***</td>
-<td>8.079***</td>
-<td>9.013***</td>
-<td>12.650***</td>
+<td>10.365***</td>
+<td>7.686***</td>
+<td>13.904***</td>
+<td>14.932***</td>
+<td>15.022***</td>
+<td>15.380***</td>
+<td>15.433***</td>
+<td>0.133***</td>
+<td>0.121***</td>
+<td>0.472***</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.223)</td>
-<td>(1.624)</td>
-<td>(2.004)</td>
-<td>(1.942)</td>
-<td>(1.970)</td>
-<td>(1.979)</td>
-<td>(1.970)</td>
+<td>(0.040)</td>
+<td>(1.748)</td>
+<td>(1.714)</td>
+<td>(1.686)</td>
+<td>(1.694)</td>
+<td>(1.696)</td>
+<td>(1.745)</td>
+<td>(0.025)</td>
+<td>(0.024)</td>
+<td>(0.054)</td>
 </tr>
 <tr>
 <td>Share of Protestants in 1839</td>
-<td>-0.006*</td>
-<td>-0.029***</td>
-<td>-0.024***</td>
-<td>-0.021***</td>
-<td>-0.020***</td>
-<td>-0.020***</td>
-<td>-0.016***</td>
+<td>-0.004*</td>
+<td>-0.014***</td>
+<td>-0.013***</td>
+<td>-0.011***</td>
+<td>-0.011***</td>
+<td>-0.011***</td>
+<td>-0.013***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000*</td>
 </tr>
 <tr>
 <td></td>
+<td>(0.002)</td>
+<td>(0.002)</td>
 <td>(0.003)</td>
 <td>(0.003)</td>
 <td>(0.003)</td>
 <td>(0.003)</td>
 <td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.004)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
 </tr>
 <tr>
 <td>Average income</td>
@@ -972,11 +1192,17 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td>0.000***</td>
 <td>0.000***</td>
 <td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
 <td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
 <td>(0.000)</td>
 <td>(0.000)</td>
 <td>(0.000)</td>
@@ -987,11 +1213,14 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td>Population</td>
 <td></td>
 <td></td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000**</td>
 <td>0.000+</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
 </tr>
 <tr>
 <td></td>
@@ -1002,26 +1231,61 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td>(0.000)</td>
 <td>(0.000)</td>
 <td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>Percentage of foreigners</td>
+<td></td>
+<td></td>
+<td>-12.752***</td>
+<td>-12.184***</td>
+<td>-12.130***</td>
+<td>-11.718***</td>
+<td>-13.424***</td>
+<td>0.074***</td>
+<td>0.060***</td>
+<td>0.462***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.751)</td>
+<td>(0.742)</td>
+<td>(0.743)</td>
+<td>(0.745)</td>
+<td>(0.827)</td>
+<td>(0.015)</td>
+<td>(0.015)</td>
+<td>(0.025)</td>
 </tr>
 <tr>
 <td>Percentage of people with higher education</td>
 <td></td>
 <td></td>
 <td></td>
-<td>-11.391***</td>
-<td>-7.703***</td>
-<td>-7.690***</td>
-<td>-7.032***</td>
+<td>-7.744***</td>
+<td>-6.851***</td>
+<td>-6.733***</td>
+<td>-6.235***</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td></td>
 <td></td>
 <td></td>
 <td></td>
-<td>(1.179)</td>
-<td>(1.962)</td>
-<td>(1.970)</td>
-<td>(1.989)</td>
+<td>(0.278)</td>
+<td>(0.459)</td>
+<td>(0.459)</td>
+<td>(0.486)</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>Percentage of people with the bac</td>
@@ -1029,9 +1293,12 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td></td>
 <td></td>
 <td></td>
-<td>-4.002*</td>
-<td>-3.919*</td>
-<td>-4.690**</td>
+<td>-0.980*</td>
+<td>-1.007**</td>
+<td>-1.220**</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td></td>
@@ -1039,9 +1306,12 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td></td>
 <td></td>
 <td></td>
-<td>(1.671)</td>
-<td>(1.676)</td>
-<td>(1.706)</td>
+<td>(0.383)</td>
+<td>(0.383)</td>
+<td>(0.404)</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>Literacy in 1816</td>
@@ -1050,8 +1320,11 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td></td>
 <td></td>
 <td></td>
-<td>-1.681***</td>
-<td>-1.294**</td>
+<td>-0.819***</td>
+<td>-0.882***</td>
+<td></td>
+<td>0.025***</td>
+<td></td>
 </tr>
 <tr>
 <td></td>
@@ -1060,8 +1333,11 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td></td>
 <td></td>
 <td></td>
-<td>(0.441)</td>
-<td>(0.456)</td>
+<td>(0.104)</td>
+<td>(0.114)</td>
+<td></td>
+<td>(0.002)</td>
+<td></td>
 </tr>
 <tr>
 <td>Share of constitutional priests in 1791</td>
@@ -1071,7 +1347,10 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td></td>
 <td></td>
 <td></td>
-<td>-7.316***</td>
+<td>0.262</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td></td>
@@ -1081,40 +1360,55 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td></td>
 <td></td>
 <td></td>
-<td>(0.688)</td>
+<td>(0.164)</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>N</td>
-<td>7210</td>
-<td>7210</td>
-<td>4974</td>
-<td>4973</td>
-<td>4973</td>
-<td>4973</td>
-<td>4519</td>
+<td>149500</td>
+<td>149500</td>
+<td>97902</td>
+<td>97898</td>
+<td>97898</td>
+<td>97820</td>
+<td>84672</td>
+<td>97906</td>
+<td>97828</td>
+<td>97832</td>
 </tr>
 <tr>
 <td>R^2</td>
 <td>0.36</td>
-<td>0.51</td>
 <td>0.53</td>
-<td>0.54</td>
-<td>0.55</td>
-<td>0.55</td>
-<td>0.55</td>
+<td>0.56</td>
+<td>0.57</td>
+<td>0.57</td>
+<td>0.57</td>
+<td>0.59</td>
+<td>0.40</td>
+<td>0.40</td>
+<td>0.48</td>
 </tr>
 <tr>
 <td>Adj. R^2</td>
 <td>0.36</td>
-<td>0.51</td>
 <td>0.53</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.55</td>
+<td>0.56</td>
+<td>0.57</td>
+<td>0.57</td>
+<td>0.57</td>
+<td>0.59</td>
+<td>0.40</td>
+<td>0.40</td>
+<td>0.48</td>
 </tr>
 <tr>
 <td>Year FE</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
 <td>Yes</td>
 <td>Yes</td>
 <td>Yes</td>
@@ -1132,10 +1426,367 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
 <td>Yes</td>
 <td>Yes</td>
 <td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
 </tr>
 </tbody><tfoot>
 <tr>
-<td colspan="8"><ul>
+<td colspan="11"><ul>
+<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
+</ul></td>
+</tr>
+</tfoot>
+&#10;</table>
+
+This holds if we restrict to the communes explicitly mentioned in the
+original document.
+
+``` r
+m1 <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)), 
+         pvoixRN ~ share_protestant + year)
+
+m2 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep)
+
+m3 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger)
+
+m4 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup)
+
+m5 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac)
+
+m6 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816)
+
+m7 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816 + pserment1791)
+
+m8 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         psup ~ share_protestant + year + dep + revmoy + pop + petranger + pconjsign1816 + pserment1791)
+
+
+modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8)), 
+             vcov = "robust", 
+             stars = TRUE,
+             
+             coef_omit = "year|dep",
+             coef_map = c(
+               "(Intercept)" = "Constant",
+               "share_protestant" = "Share of Protestants in 1839",
+               "revmoy" = "Average income",
+               "pop" = "Population", 
+               "petranger" = "Percentage of foreigners",
+               "psup" = "Percentage of people with higher education",
+               "pbac" = "Percentage of people with the bac",
+               "pconjsign1816" = "Literacy in 1816",
+               "pserment1791" = "Share of constitutional priests in 1791"),
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2),
+             add_rows = tibble::tribble(
+               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8,
+               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
+             ),
+             #output = "table1.tex",
+             #output = "text"
+             )
+```
+
+<table style="width:96%;">
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+<col style="width: 6%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>pvoixRN</th>
+<th>psup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Constant</td>
+<td>12.108***</td>
+<td>8.261***</td>
+<td>13.477***</td>
+<td>14.222***</td>
+<td>14.343***</td>
+<td>14.851***</td>
+<td>18.478***</td>
+<td>0.069*</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.149)</td>
+<td>(1.627)</td>
+<td>(1.754)</td>
+<td>(1.755)</td>
+<td>(1.771)</td>
+<td>(1.791)</td>
+<td>(1.829)</td>
+<td>(0.027)</td>
+</tr>
+<tr>
+<td>Share of Protestants in 1839</td>
+<td>-0.025***</td>
+<td>-0.019***</td>
+<td>-0.016***</td>
+<td>-0.013***</td>
+<td>-0.013***</td>
+<td>-0.013***</td>
+<td>-0.011***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+<td>(0.003)</td>
+<td>(0.003)</td>
+<td>(0.003)</td>
+<td>(0.003)</td>
+<td>(0.003)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>Average income</td>
+<td></td>
+<td></td>
+<td>0.000***</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>Population</td>
+<td></td>
+<td></td>
+<td>0.000***</td>
+<td>0.000**</td>
+<td>0.000**</td>
+<td>0.000+</td>
+<td>0.000*</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>Percentage of foreigners</td>
+<td></td>
+<td></td>
+<td>-12.931***</td>
+<td>-10.278***</td>
+<td>-10.166***</td>
+<td>-7.995**</td>
+<td>-9.996***</td>
+<td>0.164***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(2.636)</td>
+<td>(2.562)</td>
+<td>(2.572)</td>
+<td>(2.582)</td>
+<td>(2.618)</td>
+<td>(0.050)</td>
+</tr>
+<tr>
+<td>Percentage of people with higher education</td>
+<td></td>
+<td></td>
+<td></td>
+<td>-12.464***</td>
+<td>-10.937***</td>
+<td>-10.873***</td>
+<td>-9.947***</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.944)</td>
+<td>(1.648)</td>
+<td>(1.652)</td>
+<td>(1.754)</td>
+<td></td>
+</tr>
+<tr>
+<td>Percentage of people with the bac</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-1.610</td>
+<td>-1.492</td>
+<td>-2.790+</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(1.365)</td>
+<td>(1.371)</td>
+<td>(1.469)</td>
+<td></td>
+</tr>
+<tr>
+<td>Literacy in 1816</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-2.028***</td>
+<td>-2.046***</td>
+<td>0.014*</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.333)</td>
+<td>(0.355)</td>
+<td>(0.006)</td>
+</tr>
+<tr>
+<td>Share of constitutional priests in 1791</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-6.278***</td>
+<td>0.027**</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.593)</td>
+<td>(0.009)</td>
+</tr>
+<tr>
+<td>N</td>
+<td>13160</td>
+<td>13160</td>
+<td>8803</td>
+<td>8802</td>
+<td>8802</td>
+<td>8802</td>
+<td>7615</td>
+<td>7615</td>
+</tr>
+<tr>
+<td>R^2</td>
+<td>0.37</td>
+<td>0.54</td>
+<td>0.56</td>
+<td>0.57</td>
+<td>0.58</td>
+<td>0.58</td>
+<td>0.58</td>
+<td>0.45</td>
+</tr>
+<tr>
+<td>Adj. R^2</td>
+<td>0.37</td>
+<td>0.53</td>
+<td>0.56</td>
+<td>0.57</td>
+<td>0.57</td>
+<td>0.57</td>
+<td>0.58</td>
+<td>0.44</td>
+</tr>
+<tr>
+<td>Year FE</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Department FE</td>
+<td>No</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody><tfoot>
+<tr>
+<td colspan="9"><ul>
 <li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
 </ul></td>
 </tr>
@@ -1147,7 +1798,7 @@ results <- d_FN_controls |>
   group_by(Year) |>
   group_modify(~ {
     model <- lm(
-      pvoixRN ~ share_protestant + dep + revmoy + pop + psup + pbac + 
+      pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + psup + pbac + 
         pconjsign1816 + pserment1791,
       data = .x
     )
@@ -1164,7 +1815,7 @@ results <- d_FN_controls |>
   group_by(Year) |>
   group_modify(~ {
     model <- lm(
-      pvoixRN ~ share_protestant + dep + revmoy + pop + 
+      pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + 
         pconjsign1816 + pserment1791,
       data = .x
     )
@@ -1182,7 +1833,7 @@ results <- d_FN_controls |>
       group_by(Year) |>
       group_modify(~ {
         model <- lm(
-          pvoixRN ~ share_protestant + dep + revmoy + pop + psup + pbac + 
+          pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + psup + pbac + 
             pconjsign1816 + pserment1791,
           data = .x
         )
@@ -1201,7 +1852,7 @@ results <- d_FN_controls |>
       group_by(Year) |>
       group_modify(~ {
         model <- lm(
-          pvoixRN ~ share_protestant + dep + revmoy + pop + 
+          pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + 
             pconjsign1816 + pserment1791,
           data = .x
         )
@@ -1220,7 +1871,7 @@ results <- d_FN_controls |>
       group_by(Year) |>
       group_modify(~ {
         model <- lm(
-          pvoixRN ~ share_protestant + dep + revmoy + pop + psup + pbac + 
+          pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + psup + pbac + 
             pconjsign1816 + pserment1791,
           data = .x
         )
@@ -1239,7 +1890,7 @@ results <- d_FN_controls |>
       group_by(Year) |>
       group_modify(~ {
         model <- lm(
-          pvoixRN ~ share_protestant + dep + revmoy + pop + 
+          pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + 
             pconjsign1816 + pserment1791,
           data = .x
         )
@@ -1263,7 +1914,7 @@ ggplot(results, aes(x = as.numeric(Year), y = estimate, colour = group, shape = 
   scale_colour_manual(values = c("1" = "blue", "2" = "orange", "3" = "green4"),
                       labels = c("1" = "Only Communes Explicitly Mentioned",
                                  "2" = "All Departments Mentioned",
-                                 "3" = "All Departments up to Hérault"),
+                                 "3" = "All Departments up to Somme"),
                       name = "") +
   scale_shape_manual(values = c("With Educ" = 16, "No Educ" = 17),
                      labels = c("With Educ" = "With Education Controls",
@@ -1273,2181 +1924,26 @@ ggplot(results, aes(x = as.numeric(Year), y = estimate, colour = group, shape = 
     x = "Year",
     y = "Coefficient of Share of Protestants",
     title = "Coefficient of Share of Protestants (Separate Regressions per Year)",
-    subtitle = "Controlling for Department FEs, Average Income, Population, Literacy in 1816, Share of Constitutional Priests in 1791, \nand  Share of Bac and of Higher Education (when included)"
+    subtitle = "Controlling for Department FEs, Average Income, Population, Share of Foreigners, Literacy in 1816, \nShare of Constitutional Priests in 1791, and  Share of Bac and of Higher Education (when included)"
   ) +
   theme(legend.position = "bottom", legend.box = "vertical")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
-
-``` r
-m1 <- lm(data = d_FN_controls |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ log(share_protestant + 1) + year)
-
-m2 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep)
-
-m3 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-
-modelsummary(list(m1, m2, m3, m4, m5, m6, m7
-                  ), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-```
-
-<table style="width:96%;">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 9%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-</colgroup>
-<thead>
-<tr>
-<th></th>
-<th><ol type="1">
-<li></li>
-</ol></th>
-<th><ol start="2" type="1">
-<li></li>
-</ol></th>
-<th><ol start="3" type="1">
-<li></li>
-</ol></th>
-<th><ol start="4" type="1">
-<li></li>
-</ol></th>
-<th><ol start="5" type="1">
-<li></li>
-</ol></th>
-<th><ol start="6" type="1">
-<li></li>
-</ol></th>
-<th><ol start="7" type="1">
-<li></li>
-</ol></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Constant</td>
-<td>11.956***</td>
-<td>9.571***</td>
-<td>6.605***</td>
-<td>8.524***</td>
-<td>8.962***</td>
-<td>9.919***</td>
-<td>13.410***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.253)</td>
-<td>(1.629)</td>
-<td>(2.004)</td>
-<td>(1.946)</td>
-<td>(1.974)</td>
-<td>(1.986)</td>
-<td>(1.970)</td>
-</tr>
-<tr>
-<td>Log of Share of Protestants in 1839</td>
-<td>-0.209***</td>
-<td>-0.564***</td>
-<td>-0.550***</td>
-<td>-0.499***</td>
-<td>-0.487***</td>
-<td>-0.487***</td>
-<td>-0.416***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.056)</td>
-<td>(0.062)</td>
-<td>(0.072)</td>
-<td>(0.071)</td>
-<td>(0.071)</td>
-<td>(0.072)</td>
-<td>(0.074)</td>
-</tr>
-<tr>
-<td>Average income</td>
-<td></td>
-<td></td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Population</td>
-<td></td>
-<td></td>
-<td>0.000+</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Share of constitutional priests in 1791</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-7.320***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.681)</td>
-</tr>
-<tr>
-<td>Percentage of people with higher education</td>
-<td></td>
-<td></td>
-<td></td>
-<td>-11.512***</td>
-<td>-7.667***</td>
-<td>-7.654***</td>
-<td>-7.005***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(1.173)</td>
-<td>(1.962)</td>
-<td>(1.969)</td>
-<td>(1.988)</td>
-</tr>
-<tr>
-<td>Percentage of people with the bac</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-4.161*</td>
-<td>-4.071*</td>
-<td>-4.733**</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(1.674)</td>
-<td>(1.679)</td>
-<td>(1.708)</td>
-</tr>
-<tr>
-<td>Literacy in 1816</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-1.720***</td>
-<td>-1.308**</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.441)</td>
-<td>(0.456)</td>
-</tr>
-<tr>
-<td>N</td>
-<td>7210</td>
-<td>7210</td>
-<td>4974</td>
-<td>4973</td>
-<td>4973</td>
-<td>4973</td>
-<td>4519</td>
-</tr>
-<tr>
-<td>R^2</td>
-<td>0.36</td>
-<td>0.51</td>
-<td>0.53</td>
-<td>0.54</td>
-<td>0.55</td>
-<td>0.55</td>
-<td>0.55</td>
-</tr>
-<tr>
-<td>Adj. R^2</td>
-<td>0.36</td>
-<td>0.50</td>
-<td>0.53</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.55</td>
-</tr>
-<tr>
-<td>Year FE</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>Department FE</td>
-<td>No</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-</tbody><tfoot>
-<tr>
-<td colspan="8"><ul>
-<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
-</ul></td>
-</tr>
-</tfoot>
-&#10;</table>
-
-``` r
-m1 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop)
-
-m1log <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m2 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop + pconjsign1816 + pserment1791)
-
-m2log <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop + pconjsign1816 + pserment1791)
-
-m3 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ share_protestant + year + dep + revmoy + pop)
-
-m3log <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ log(share_protestant + 1) + year + dep + revmoy + pop + pserment1791)
-
-modelsummary(dvnames(list(m1, m1log, m2, m2log, m3, m3log
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m1log, ~m2, ~m2log, ~m3, ~m3log, 
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-```
-
-<table style="width:96%;">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 12%" />
-<col style="width: 13%" />
-</colgroup>
-<thead>
-<tr>
-<th></th>
-<th>psup</th>
-<th>psup</th>
-<th>psup</th>
-<th>psup</th>
-<th>pconjsign1816</th>
-<th>pconjsign1816</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Constant</td>
-<td>0.175***</td>
-<td>0.170***</td>
-<td>0.166***</td>
-<td>0.159***</td>
-<td>0.568***</td>
-<td>0.541***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.027)</td>
-<td>(0.027)</td>
-<td>(0.027)</td>
-<td>(0.027)</td>
-<td>(0.068)</td>
-<td>(0.069)</td>
-</tr>
-<tr>
-<td>Share of Protestants in 1839</td>
-<td>0.000***</td>
-<td></td>
-<td>0.000***</td>
-<td></td>
-<td>0.000</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td>(0.000)</td>
-<td></td>
-<td>(0.000)</td>
-<td></td>
-<td>(0.000)</td>
-<td></td>
-</tr>
-<tr>
-<td>Log of Share of Protestants in 1839</td>
-<td></td>
-<td>0.004***</td>
-<td></td>
-<td>0.004***</td>
-<td></td>
-<td>0.003</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td>(0.001)</td>
-<td></td>
-<td>(0.001)</td>
-<td></td>
-<td>(0.002)</td>
-</tr>
-<tr>
-<td>Average income</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Population</td>
-<td>0.000**</td>
-<td>0.000**</td>
-<td>0.000**</td>
-<td>0.000**</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Share of constitutional priests in 1791</td>
-<td></td>
-<td></td>
-<td>0.026*</td>
-<td>0.029**</td>
-<td></td>
-<td>0.057*</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.011)</td>
-<td>(0.011)</td>
-<td></td>
-<td>(0.023)</td>
-</tr>
-<tr>
-<td>Literacy in 1816</td>
-<td></td>
-<td></td>
-<td>0.011</td>
-<td>0.011</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.007)</td>
-<td>(0.007)</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>N</td>
-<td>4973</td>
-<td>4973</td>
-<td>4519</td>
-<td>4519</td>
-<td>4974</td>
-<td>4520</td>
-</tr>
-<tr>
-<td>R^2</td>
-<td>0.41</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.31</td>
-<td>0.31</td>
-</tr>
-<tr>
-<td>Adj. R^2</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.30</td>
-<td>0.30</td>
-</tr>
-<tr>
-<td>Year FE</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>Department FE</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-</tbody><tfoot>
-<tr>
-<td colspan="7"><ul>
-<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
-</ul></td>
-</tr>
-</tfoot>
-&#10;</table>
-
-``` r
-m1 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ share_protestant + year)
-
-m2 <- lm(data = d_FN_controls_2|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep)
-
-m3 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m8 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop)
-
-m9 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop + pconjsign1816)
-
-m10 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ share_protestant + year + dep + revmoy + pop)
-
-#stargazer::stargazer(m1, m2, m3, m4, m5, m6, m7, m8, m9, type = "text", omit.stat = c("f", "ser"), star.cutoffs = c(0.05, 0.01, 0.001), omit = c("year", "dep"))
-
-modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-```
-
-<table style="width:95%;">
-<colgroup>
-<col style="width: 24%" />
-<col style="width: 5%" />
-<col style="width: 6%" />
-<col style="width: 6%" />
-<col style="width: 7%" />
-<col style="width: 7%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 5%" />
-<col style="width: 5%" />
-<col style="width: 8%" />
-</colgroup>
-<thead>
-<tr>
-<th></th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>psup</th>
-<th>psup</th>
-<th>pconjsign1816</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Constant</td>
-<td>8.455***</td>
-<td>8.249***</td>
-<td>7.679***</td>
-<td>8.622***</td>
-<td>8.836***</td>
-<td>9.195***</td>
-<td>12.418***</td>
-<td>0.131***</td>
-<td>0.127***</td>
-<td>0.578***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.091)</td>
-<td>(1.658)</td>
-<td>(1.888)</td>
-<td>(1.851)</td>
-<td>(1.865)</td>
-<td>(1.863)</td>
-<td>(1.842)</td>
-<td>(0.027)</td>
-<td>(0.027)</td>
-<td>(0.065)</td>
-</tr>
-<tr>
-<td>Share of Protestants in 1839</td>
-<td>0.039***</td>
-<td>-0.023***</td>
-<td>-0.019***</td>
-<td>-0.017***</td>
-<td>-0.017***</td>
-<td>-0.017***</td>
-<td>-0.015***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000+</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.002)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Average income</td>
-<td></td>
-<td></td>
-<td>0.000+</td>
-<td>0.000**</td>
-<td>0.000**</td>
-<td>0.000***</td>
-<td>0.000</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Population</td>
-<td></td>
-<td></td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Percentage of people with higher education</td>
-<td></td>
-<td></td>
-<td></td>
-<td>-7.260***</td>
-<td>-5.580***</td>
-<td>-5.580***</td>
-<td>-6.183***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.538)</td>
-<td>(0.880)</td>
-<td>(0.881)</td>
-<td>(0.888)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Percentage of people with the bac</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-1.899*</td>
-<td>-1.908*</td>
-<td>-2.250**</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.763)</td>
-<td>(0.764)</td>
-<td>(0.768)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Share of constitutional priests in 1791</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-5.681***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.277)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Literacy in 1816</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-0.600*</td>
-<td>-0.433+</td>
-<td></td>
-<td>0.007</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.239)</td>
-<td>(0.241)</td>
-<td></td>
-<td>(0.005)</td>
-<td></td>
-</tr>
-<tr>
-<td>N</td>
-<td>27978</td>
-<td>27978</td>
-<td>19109</td>
-<td>19108</td>
-<td>19108</td>
-<td>19093</td>
-<td>18251</td>
-<td>19108</td>
-<td>19093</td>
-<td>19094</td>
-</tr>
-<tr>
-<td>R^2</td>
-<td>0.39</td>
-<td>0.51</td>
-<td>0.53</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.22</td>
-</tr>
-<tr>
-<td>Adj. R^2</td>
-<td>0.39</td>
-<td>0.51</td>
-<td>0.53</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.22</td>
-</tr>
-<tr>
-<td>Year FE</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>Department FE</td>
-<td>No</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-</tbody><tfoot>
-<tr>
-<td colspan="11"><ul>
-<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
-</ul></td>
-</tr>
-</tfoot>
-&#10;</table>
-
-``` r
-m1 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ share_protestant + year)
-
-m2 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep)
-
-m3 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m8 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop)
-
-m9 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop + pconjsign1816)
-
-m10 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ share_protestant + year + dep + revmoy + pop)
-
-modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-```
-
-<table style="width:95%;">
-<colgroup>
-<col style="width: 24%" />
-<col style="width: 5%" />
-<col style="width: 6%" />
-<col style="width: 6%" />
-<col style="width: 7%" />
-<col style="width: 7%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 5%" />
-<col style="width: 5%" />
-<col style="width: 8%" />
-</colgroup>
-<thead>
-<tr>
-<th></th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>psup</th>
-<th>psup</th>
-<th>pconjsign1816</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Constant</td>
-<td>9.205***</td>
-<td>7.769***</td>
-<td>8.039***</td>
-<td>9.191***</td>
-<td>9.495***</td>
-<td>9.801***</td>
-<td>10.632***</td>
-<td>0.169***</td>
-<td>0.159***</td>
-<td>0.602***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.068)</td>
-<td>(1.771)</td>
-<td>(1.980)</td>
-<td>(1.931)</td>
-<td>(1.953)</td>
-<td>(1.949)</td>
-<td>(1.941)</td>
-<td>(0.026)</td>
-<td>(0.025)</td>
-<td>(0.064)</td>
-</tr>
-<tr>
-<td>Share of Protestants in 1839</td>
-<td>0.020***</td>
-<td>-0.023***</td>
-<td>-0.019***</td>
-<td>-0.017***</td>
-<td>-0.017***</td>
-<td>-0.017***</td>
-<td>-0.018***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000+</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.002)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.004)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Average income</td>
-<td></td>
-<td></td>
-<td>0.000***</td>
-<td>0.000+</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000**</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Population</td>
-<td></td>
-<td></td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Percentage of people with higher education</td>
-<td></td>
-<td></td>
-<td></td>
-<td>-6.806***</td>
-<td>-4.262***</td>
-<td>-4.237***</td>
-<td>-4.408***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.427)</td>
-<td>(0.684)</td>
-<td>(0.684)</td>
-<td>(0.691)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Percentage of people with the bac</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-2.824***</td>
-<td>-2.833***</td>
-<td>-2.840***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.568)</td>
-<td>(0.568)</td>
-<td>(0.573)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Share of constitutional priests in 1791</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-0.907***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.222)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Literacy in 1816</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-0.495**</td>
-<td>-0.573***</td>
-<td></td>
-<td>0.017***</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.170)</td>
-<td>(0.174)</td>
-<td></td>
-<td>(0.003)</td>
-<td></td>
-</tr>
-<tr>
-<td>N</td>
-<td>54759</td>
-<td>54759</td>
-<td>37310</td>
-<td>37308</td>
-<td>37308</td>
-<td>37283</td>
-<td>35485</td>
-<td>37308</td>
-<td>37283</td>
-<td>37285</td>
-</tr>
-<tr>
-<td>R^2</td>
-<td>0.36</td>
-<td>0.57</td>
-<td>0.58</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.38</td>
-<td>0.38</td>
-<td>0.36</td>
-</tr>
-<tr>
-<td>Adj. R^2</td>
-<td>0.36</td>
-<td>0.57</td>
-<td>0.58</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.38</td>
-<td>0.38</td>
-<td>0.36</td>
-</tr>
-<tr>
-<td>Year FE</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>Department FE</td>
-<td>No</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-</tbody><tfoot>
-<tr>
-<td colspan="11"><ul>
-<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
-</ul></td>
-</tr>
-</tfoot>
-&#10;</table>
-
-``` r
-m1 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ log(share_protestant + 1) + year)
-
-m2 <- lm(data = d_FN_controls_2|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep)
-
-m3 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m8 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m9 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop + pconjsign1816)
-
-m10 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-stargazer::stargazer(m1, m2, m3, m4, m5, m6, m7, m8, m9, type = "text", omit.stat = c("f", "ser"), star.cutoffs = c(0.05, 0.01, 0.001), omit = c("year", "dep"))
-```
-
-    ## 
-    ## ====================================================================================================================
-    ##                                                              Dependent variable:                                    
-    ##                           ------------------------------------------------------------------------------------------
-    ##                                                         pvoixRN                                        psup         
-    ##                             (1)      (2)       (3)       (4)        (5)       (6)       (7)       (8)        (9)    
-    ## --------------------------------------------------------------------------------------------------------------------
-    ## log(share_protestant + 1) 0.858*** -0.107*   -0.102     -0.082    -0.078    -0.076    -0.091    0.003**    0.003**  
-    ##                           (0.028)  (0.045)   (0.053)   (0.053)    (0.053)   (0.053)   (0.054)   (0.001)    (0.001)  
-    ##                                                                                                                     
-    ## revmoy                                      -0.00002* 0.00005*** 0.0001*** 0.0001***  0.00001  0.00001*** 0.00001***
-    ##                                             (0.00001) (0.00001)  (0.00001) (0.00001) (0.00001) (0.00000)  (0.00000) 
-    ##                                                                                                                     
-    ## pop                                         -0.00000   -0.00000  -0.00000  -0.00000  -0.00000  0.00000*** 0.00000***
-    ##                                             (0.00000) (0.00000)  (0.00000) (0.00000) (0.00000) (0.00000)  (0.00000) 
-    ##                                                                                                                     
-    ## psup                                                  -7.333***  -5.572*** -5.572*** -6.186***                      
-    ##                                                        (0.380)    (0.595)   (0.595)   (0.597)                       
-    ##                                                                                                                     
-    ## pbac                                                             -1.989*** -1.998*** -2.318***                      
-    ##                                                                   (0.517)   (0.516)   (0.518)                       
-    ##                                                                                                                     
-    ## pconjsign1816                                                              -0.613**   -0.448                0.007   
-    ##                                                                             (0.235)   (0.237)              (0.004)  
-    ##                                                                                                                     
-    ## pserment1791                                                                         -5.771***                      
-    ##                                                                                       (0.275)                       
-    ##                                                                                                                     
-    ## Constant                  8.184*** 8.121*** 7.614***   8.550***  8.771***  9.133***  12.487***  0.129***   0.124*** 
-    ##                           (0.098)  (1.474)   (1.604)   (1.589)    (1.589)   (1.592)   (1.583)   (0.030)    (0.030)  
-    ##                                                                                                                     
-    ## --------------------------------------------------------------------------------------------------------------------
-    ## Observations               27,978   27,978   19,109     19,108    19,108    19,093    18,251     19,108     19,093  
-    ## R2                         0.396    0.510     0.528     0.537      0.537     0.538     0.544     0.398      0.399   
-    ## Adjusted R2                0.395    0.509     0.527     0.536      0.536     0.538     0.543     0.397      0.398   
-    ## ====================================================================================================================
-    ## Note:                                                                                  *p<0.05; **p<0.01; ***p<0.001
-
-``` r
-modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-```
-
-<table style="width:95%;">
-<colgroup>
-<col style="width: 24%" />
-<col style="width: 5%" />
-<col style="width: 5%" />
-<col style="width: 6%" />
-<col style="width: 7%" />
-<col style="width: 7%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 5%" />
-<col style="width: 5%" />
-<col style="width: 8%" />
-</colgroup>
-<thead>
-<tr>
-<th></th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>psup</th>
-<th>psup</th>
-<th>pconjsign1816</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Constant</td>
-<td>8.184***</td>
-<td>8.121***</td>
-<td>7.614***</td>
-<td>8.550***</td>
-<td>8.771***</td>
-<td>9.133***</td>
-<td>12.487***</td>
-<td>0.129***</td>
-<td>0.124***</td>
-<td>0.570***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.090)</td>
-<td>(1.677)</td>
-<td>(1.913)</td>
-<td>(1.870)</td>
-<td>(1.885)</td>
-<td>(1.881)</td>
-<td>(1.856)</td>
-<td>(0.028)</td>
-<td>(0.027)</td>
-<td>(0.064)</td>
-</tr>
-<tr>
-<td>Log of Share of Protestants in 1839</td>
-<td>0.858***</td>
-<td>-0.107*</td>
-<td>-0.102+</td>
-<td>-0.082</td>
-<td>-0.078</td>
-<td>-0.076</td>
-<td>-0.091</td>
-<td>0.003**</td>
-<td>0.003**</td>
-<td>0.004**</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.032)</td>
-<td>(0.049)</td>
-<td>(0.058)</td>
-<td>(0.057)</td>
-<td>(0.057)</td>
-<td>(0.057)</td>
-<td>(0.057)</td>
-<td>(0.001)</td>
-<td>(0.001)</td>
-<td>(0.002)</td>
-</tr>
-<tr>
-<td>Average income</td>
-<td></td>
-<td></td>
-<td>0.000+</td>
-<td>0.000**</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Population</td>
-<td></td>
-<td></td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Percentage of people with higher education</td>
-<td></td>
-<td></td>
-<td></td>
-<td>-7.333***</td>
-<td>-5.572***</td>
-<td>-5.572***</td>
-<td>-6.186***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.538)</td>
-<td>(0.882)</td>
-<td>(0.882)</td>
-<td>(0.889)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Percentage of people with the bac</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-1.989**</td>
-<td>-1.998**</td>
-<td>-2.318**</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.764)</td>
-<td>(0.765)</td>
-<td>(0.768)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Share of constitutional priests in 1791</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-5.771***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.277)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Literacy in 1816</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-0.613*</td>
-<td>-0.448+</td>
-<td></td>
-<td>0.007</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.240)</td>
-<td>(0.242)</td>
-<td></td>
-<td>(0.005)</td>
-<td></td>
-</tr>
-<tr>
-<td>N</td>
-<td>27978</td>
-<td>27978</td>
-<td>19109</td>
-<td>19108</td>
-<td>19108</td>
-<td>19093</td>
-<td>18251</td>
-<td>19108</td>
-<td>19093</td>
-<td>19094</td>
-</tr>
-<tr>
-<td>R^2</td>
-<td>0.40</td>
-<td>0.51</td>
-<td>0.53</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.22</td>
-</tr>
-<tr>
-<td>Adj. R^2</td>
-<td>0.40</td>
-<td>0.51</td>
-<td>0.53</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.54</td>
-<td>0.40</td>
-<td>0.40</td>
-<td>0.22</td>
-</tr>
-<tr>
-<td>Year FE</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>Department FE</td>
-<td>No</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-</tbody><tfoot>
-<tr>
-<td colspan="11"><ul>
-<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
-</ul></td>
-</tr>
-</tfoot>
-&#10;</table>
-
-``` r
-m1 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ log(share_protestant + 1) + year)
-
-m2 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep)
-
-m3 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m8 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m9 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop + pconjsign1816)
-
-m10 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-```
-
-<table style="width:95%;">
-<colgroup>
-<col style="width: 24%" />
-<col style="width: 5%" />
-<col style="width: 5%" />
-<col style="width: 6%" />
-<col style="width: 7%" />
-<col style="width: 7%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 5%" />
-<col style="width: 5%" />
-<col style="width: 8%" />
-</colgroup>
-<thead>
-<tr>
-<th></th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>pvoixRN</th>
-<th>psup</th>
-<th>psup</th>
-<th>pconjsign1816</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Constant</td>
-<td>9.138***</td>
-<td>7.637***</td>
-<td>7.960***</td>
-<td>9.097***</td>
-<td>9.399***</td>
-<td>9.706***</td>
-<td>10.584***</td>
-<td>0.166***</td>
-<td>0.156***</td>
-<td>0.594***</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.069)</td>
-<td>(1.789)</td>
-<td>(2.004)</td>
-<td>(1.951)</td>
-<td>(1.973)</td>
-<td>(1.968)</td>
-<td>(1.960)</td>
-<td>(0.026)</td>
-<td>(0.025)</td>
-<td>(0.064)</td>
-</tr>
-<tr>
-<td>Log of Share of Protestants in 1839</td>
-<td>0.432***</td>
-<td>-0.105*</td>
-<td>-0.093</td>
-<td>-0.073</td>
-<td>-0.067</td>
-<td>-0.065</td>
-<td>-0.076</td>
-<td>0.003**</td>
-<td>0.003**</td>
-<td>0.004**</td>
-</tr>
-<tr>
-<td></td>
-<td>(0.032)</td>
-<td>(0.049)</td>
-<td>(0.058)</td>
-<td>(0.057)</td>
-<td>(0.057)</td>
-<td>(0.057)</td>
-<td>(0.058)</td>
-<td>(0.001)</td>
-<td>(0.001)</td>
-<td>(0.002)</td>
-</tr>
-<tr>
-<td>Average income</td>
-<td></td>
-<td></td>
-<td>0.000***</td>
-<td>0.000+</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000**</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Population</td>
-<td></td>
-<td></td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-</tr>
-<tr>
-<td>Percentage of people with higher education</td>
-<td></td>
-<td></td>
-<td></td>
-<td>-6.846***</td>
-<td>-4.261***</td>
-<td>-4.236***</td>
-<td>-4.408***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.427)</td>
-<td>(0.684)</td>
-<td>(0.684)</td>
-<td>(0.692)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Percentage of people with the bac</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-2.869***</td>
-<td>-2.877***</td>
-<td>-2.885***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.568)</td>
-<td>(0.568)</td>
-<td>(0.574)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Share of constitutional priests in 1791</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-0.963***</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.222)</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Literacy in 1816</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-0.500**</td>
-<td>-0.583***</td>
-<td></td>
-<td>0.017***</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(0.170)</td>
-<td>(0.174)</td>
-<td></td>
-<td>(0.003)</td>
-<td></td>
-</tr>
-<tr>
-<td>N</td>
-<td>54759</td>
-<td>54759</td>
-<td>37310</td>
-<td>37308</td>
-<td>37308</td>
-<td>37283</td>
-<td>35485</td>
-<td>37308</td>
-<td>37283</td>
-<td>37285</td>
-</tr>
-<tr>
-<td>R^2</td>
-<td>0.36</td>
-<td>0.57</td>
-<td>0.58</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.38</td>
-<td>0.38</td>
-<td>0.36</td>
-</tr>
-<tr>
-<td>Adj. R^2</td>
-<td>0.36</td>
-<td>0.57</td>
-<td>0.58</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.59</td>
-<td>0.38</td>
-<td>0.38</td>
-<td>0.36</td>
-</tr>
-<tr>
-<td>Year FE</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>Department FE</td>
-<td>No</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-</tbody><tfoot>
-<tr>
-<td colspan="11"><ul>
-<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
-</ul></td>
-</tr>
-</tfoot>
-&#10;</table>
+![](code_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ## Effect of Share of Protestants on RPR/UMP/LR Vote Share
 
 ``` r
-m1 <- lm(data = d_FN_controls|> 
+m1 <- lm(data = d_FN_controls_3|> 
            mutate(year = as.character(year)),
-         pvoixLR ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
+         pvoixLR ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816)
 
-m1_log <- lm(data = d_FN_controls|> 
+m2 <- lm(data = d_FN_controls_3|> 
            mutate(year = as.character(year)),
-         pvoixLR ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m2 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixLR ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m2_log <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixLR ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+         pvoixLR ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816 + pserment1791)
 
 
-modelsummary(list(m1, m1_log, m2, m2_log
+modelsummary(list(m1, m2
                   ), 
              vcov = "robust", 
              stars = TRUE,
@@ -3459,6 +1955,7 @@ modelsummary(list(m1, m1_log, m2, m2_log
                "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
                "revmoy" = "Average income",
                "pop" = "Population", 
+               "petranger" = "Percentage of foreigners",
                "pserment1791" = "Share of constitutional priests in 1791",
                "psup" = "Percentage of people with higher education",
                "pbac" = "Percentage of people with the bac",
@@ -3468,22 +1965,20 @@ modelsummary(list(m1, m1_log, m2, m2_log
                                        "r.squared", "R^2", 2,
                                        "adj.r.squared", "Adj. R^2", 2),
              add_rows = tibble::tribble(
-               ~term, ~m1, ~m1_log, ~m2, ~m2_log,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", 
-               "Department FE", "Yes", "Yes", "Yes", "Yes"
+               ~term, ~m1, ~m2,
+               "Year FE", "Yes", "Yes",
+               "Department FE", "Yes", "Yes"
              ),
              #output = "table1.tex",
              #output = "text"
              )
 ```
 
-<table style="width:97%;">
+<table style="width:96%;">
 <colgroup>
-<col style="width: 46%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
+<col style="width: 62%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
 </colgroup>
 <thead>
 <tr>
@@ -3494,166 +1989,116 @@ modelsummary(list(m1, m1_log, m2, m2_log
 <th><ol start="2" type="1">
 <li></li>
 </ol></th>
-<th><ol start="3" type="1">
-<li></li>
-</ol></th>
-<th><ol start="4" type="1">
-<li></li>
-</ol></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Constant</td>
-<td>22.591***</td>
-<td>22.884***</td>
-<td>22.037***</td>
-<td>22.584***</td>
+<td>28.214***</td>
+<td>28.265***</td>
 </tr>
 <tr>
 <td></td>
-<td>(3.900)</td>
-<td>(3.905)</td>
-<td>(3.943)</td>
-<td>(3.946)</td>
+<td>(3.986)</td>
+<td>(4.032)</td>
 </tr>
 <tr>
 <td>Share of Protestants in 1839</td>
-<td>-0.026***</td>
-<td></td>
-<td>-0.023***</td>
-<td></td>
+<td>-0.020***</td>
+<td>-0.013*</td>
 </tr>
 <tr>
 <td></td>
 <td>(0.006)</td>
-<td></td>
-<td>(0.007)</td>
-<td></td>
-</tr>
-<tr>
-<td>Log of Share of Protestants in 1839</td>
-<td></td>
-<td>-0.256+</td>
-<td></td>
-<td>-0.209</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td>(0.144)</td>
-<td></td>
-<td>(0.150)</td>
+<td>(0.006)</td>
 </tr>
 <tr>
 <td>Average income</td>
 <td>0.000***</td>
 <td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
 <td>(0.000)</td>
 <td>(0.000)</td>
 </tr>
 <tr>
 <td>Population</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
+<td>0.000***</td>
+<td>0.000***</td>
 </tr>
 <tr>
 <td></td>
 <td>(0.000)</td>
 <td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
+</tr>
+<tr>
+<td>Percentage of foreigners</td>
+<td>-7.972***</td>
+<td>-4.419*</td>
+</tr>
+<tr>
+<td></td>
+<td>(1.479)</td>
+<td>(1.724)</td>
 </tr>
 <tr>
 <td>Share of constitutional priests in 1791</td>
 <td></td>
-<td></td>
-<td>-0.653</td>
-<td>-1.262</td>
+<td>-1.559***</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td></td>
-<td>(1.285)</td>
-<td>(1.280)</td>
+<td>(0.356)</td>
 </tr>
 <tr>
 <td>Percentage of people with higher education</td>
-<td>5.448+</td>
-<td>5.531+</td>
-<td>7.071*</td>
-<td>7.180*</td>
+<td>-5.022***</td>
+<td>-4.485***</td>
 </tr>
 <tr>
 <td></td>
-<td>(3.013)</td>
-<td>(3.028)</td>
-<td>(3.025)</td>
-<td>(3.039)</td>
+<td>(0.721)</td>
+<td>(0.753)</td>
 </tr>
 <tr>
 <td>Percentage of people with the bac</td>
-<td>-4.217+</td>
-<td>-4.754+</td>
-<td>-4.224</td>
-<td>-4.659+</td>
+<td>1.409*</td>
+<td>1.304*</td>
 </tr>
 <tr>
 <td></td>
-<td>(2.551)</td>
-<td>(2.552)</td>
-<td>(2.586)</td>
-<td>(2.586)</td>
+<td>(0.623)</td>
+<td>(0.650)</td>
 </tr>
 <tr>
 <td>Literacy in 1816</td>
-<td>0.775</td>
-<td>0.727</td>
-<td>0.608</td>
-<td>0.550</td>
+<td>-1.986***</td>
+<td>-1.658***</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.989)</td>
-<td>(0.992)</td>
-<td>(1.019)</td>
-<td>(1.021)</td>
+<td>(0.245)</td>
+<td>(0.266)</td>
 </tr>
 <tr>
 <td>N</td>
-<td>4973</td>
-<td>4973</td>
-<td>4519</td>
-<td>4519</td>
+<td>97820</td>
+<td>84672</td>
 </tr>
 <tr>
 <td>R^2</td>
-<td>0.51</td>
-<td>0.51</td>
-<td>0.53</td>
-<td>0.53</td>
+<td>0.44</td>
+<td>0.44</td>
 </tr>
 <tr>
 <td>Adj. R^2</td>
-<td>0.51</td>
-<td>0.51</td>
-<td>0.53</td>
-<td>0.53</td>
+<td>0.44</td>
+<td>0.44</td>
 </tr>
 <tr>
 <td>Year FE</td>
-<td>Yes</td>
-<td>Yes</td>
 <td>Yes</td>
 <td>Yes</td>
 </tr>
@@ -3661,12 +2106,10 @@ modelsummary(list(m1, m1_log, m2, m2_log
 <td>Department FE</td>
 <td>Yes</td>
 <td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
 </tr>
 </tbody><tfoot>
 <tr>
-<td colspan="5"><ul>
+<td colspan="3"><ul>
 <li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
 </ul></td>
 </tr>
@@ -3742,7 +2185,7 @@ ggplot() +
   theme(legend.position = "bottom") 
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Compare to Siegfried’s map:
 
@@ -3798,19 +2241,19 @@ d_FN_ardeche <- bind_rows(
 
 ``` r
 m1 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year)
+         pvoixRN ~ share_protestant + year)
 
 m3 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop)
+         pvoixRN ~ share_protestant + year + revmoy + pop + petranger)
 
 m4 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup)
+         pvoixRN ~ share_protestant + year + revmoy + pop + petranger + psup)
 
 m5 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup + pbac)
+         pvoixRN ~ share_protestant + year + revmoy + pop + petranger + psup + pbac)
 
 m6 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup + pbac + pconjsign1816)
+         pvoixRN ~ share_protestant + year + revmoy + pop + petranger + psup + pbac + pconjsign1816)
 
 # m7 <- lm(data = d_FN_controls |> 
 #            filter(nomdep == "ARDECHE") |>
@@ -3818,10 +2261,10 @@ m6 <- lm(data = d_FN_ardeche,
 #          pvoixRN ~ share_protestant + year + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
 
 m7 <- lm(data = d_FN_ardeche,
-         psup ~ log(share_protestant + 1) + year + revmoy + pop)
+         psup ~ share_protestant + year + revmoy + pop + petranger)
 
 m8 <- lm(data = d_FN_ardeche,
-         psup ~ log(share_protestant + 1) + year + revmoy + pop + pconjsign1816)
+         psup ~ share_protestant + year + revmoy + pop + petranger + pconjsign1816)
 
 
 modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
@@ -3832,9 +2275,10 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
              coef_omit = "year",
              coef_map = c(
                "(Intercept)" = "Constant",
-               "log(share_protestant + 1)" = "Log Share of Protestants in 1839",
+               "share_protestant" = "Share of Protestants in 1839",
                "revmoy" = "Average income",
                "pop" = "Population",
+               "petranger" = "Percentage of foreigners",
                "psup" = "Percentage of people with higher education",
                "pbac" = "Percentage of people with the bac",
                "pconjsign1816" = "Literacy in 1816"#,
@@ -3879,43 +2323,43 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <tbody>
 <tr>
 <td>Constant</td>
-<td>-463.581***</td>
-<td>-461.137***</td>
-<td>-553.766***</td>
-<td>-579.034***</td>
-<td>-574.094***</td>
-<td>-10.806***</td>
-<td>-10.638***</td>
+<td>-463.648***</td>
+<td>-501.115***</td>
+<td>-576.745***</td>
+<td>-585.136***</td>
+<td>-581.399***</td>
+<td>-10.398***</td>
+<td>-10.197***</td>
 </tr>
 <tr>
 <td></td>
-<td>(26.753)</td>
-<td>(43.509)</td>
-<td>(46.693)</td>
-<td>(47.228)</td>
-<td>(47.791)</td>
-<td>(0.729)</td>
-<td>(0.744)</td>
+<td>(26.737)</td>
+<td>(43.156)</td>
+<td>(45.944)</td>
+<td>(46.554)</td>
+<td>(47.108)</td>
+<td>(0.736)</td>
+<td>(0.755)</td>
 </tr>
 <tr>
-<td>Log Share of Protestants in 1839</td>
-<td>-0.453***</td>
-<td>-0.485***</td>
-<td>-0.462***</td>
-<td>-0.465***</td>
-<td>-0.457***</td>
-<td>0.003+</td>
-<td>0.003*</td>
+<td>Share of Protestants in 1839</td>
+<td>-0.032***</td>
+<td>-0.028***</td>
+<td>-0.027***</td>
+<td>-0.027***</td>
+<td>-0.026***</td>
+<td>0.000</td>
+<td>0.000</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.077)</td>
-<td>(0.096)</td>
-<td>(0.095)</td>
-<td>(0.096)</td>
-<td>(0.097)</td>
-<td>(0.001)</td>
-<td>(0.002)</td>
+<td>(0.005)</td>
+<td>(0.006)</td>
+<td>(0.006)</td>
+<td>(0.006)</td>
+<td>(0.006)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
 </tr>
 <tr>
 <td>Average income</td>
@@ -3940,12 +2384,12 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <tr>
 <td>Population</td>
 <td></td>
-<td>0.000+</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000+</td>
-<td>0.000**</td>
-<td>0.000</td>
+<td>0.000*</td>
+<td>0.000*</td>
+<td>0.000*</td>
+<td>0.000*</td>
+<td>0.000***</td>
+<td>0.000*</td>
 </tr>
 <tr>
 <td></td>
@@ -3956,14 +2400,34 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <td>(0.000)</td>
 <td>(0.000)</td>
 <td>(0.000)</td>
+</tr>
+<tr>
+<td>Percentage of foreigners</td>
+<td></td>
+<td>-44.948***</td>
+<td>-41.413***</td>
+<td>-40.374***</td>
+<td>-40.014***</td>
+<td>0.486***</td>
+<td>0.500***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(6.908)</td>
+<td>(6.838)</td>
+<td>(7.117)</td>
+<td>(7.155)</td>
+<td>(0.100)</td>
+<td>(0.102)</td>
 </tr>
 <tr>
 <td>Percentage of people with higher education</td>
 <td></td>
 <td></td>
-<td>-8.572***</td>
-<td>-4.104</td>
-<td>-4.202</td>
+<td>-7.274***</td>
+<td>-5.746+</td>
+<td>-5.802+</td>
 <td></td>
 <td></td>
 </tr>
@@ -3971,9 +2435,9 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <td></td>
 <td></td>
 <td></td>
-<td>(1.915)</td>
-<td>(3.344)</td>
-<td>(3.354)</td>
+<td>(1.838)</td>
+<td>(3.267)</td>
+<td>(3.273)</td>
 <td></td>
 <td></td>
 </tr>
@@ -3982,8 +2446,8 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <td></td>
 <td></td>
 <td></td>
-<td>-4.552+</td>
-<td>-4.534+</td>
+<td>-1.594</td>
+<td>-1.607</td>
 <td></td>
 <td></td>
 </tr>
@@ -3992,8 +2456,8 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <td></td>
 <td></td>
 <td></td>
-<td>(2.704)</td>
-<td>(2.710)</td>
+<td>(2.740)</td>
+<td>(2.745)</td>
 <td></td>
 <td></td>
 </tr>
@@ -4003,9 +2467,9 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <td></td>
 <td></td>
 <td></td>
-<td>-1.213</td>
+<td>-0.909</td>
 <td></td>
-<td>-0.036*</td>
+<td>-0.040*</td>
 </tr>
 <tr>
 <td></td>
@@ -4013,7 +2477,7 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <td></td>
 <td></td>
 <td></td>
-<td>(1.194)</td>
+<td>(1.210)</td>
 <td></td>
 <td>(0.017)</td>
 </tr>
@@ -4030,22 +2494,22 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <tr>
 <td>R^2</td>
 <td>0.13</td>
-<td>0.12</td>
-<td>0.14</td>
-<td>0.14</td>
-<td>0.14</td>
-<td>0.38</td>
-<td>0.38</td>
+<td>0.15</td>
+<td>0.15</td>
+<td>0.15</td>
+<td>0.16</td>
+<td>0.39</td>
+<td>0.39</td>
 </tr>
 <tr>
 <td>Adj. R^2</td>
 <td>0.13</td>
-<td>0.12</td>
-<td>0.13</td>
 <td>0.14</td>
-<td>0.14</td>
-<td>0.38</td>
-<td>0.38</td>
+<td>0.15</td>
+<td>0.15</td>
+<td>0.15</td>
+<td>0.39</td>
+<td>0.39</td>
 </tr>
 <tr>
 <td>Year FE</td>
@@ -4088,7 +2552,7 @@ ggplot() +
   theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 # RDD
 
@@ -4154,7 +2618,7 @@ cowplot::plot_grid(
 )
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 ``` r
 summary(rdrobust(y = d_rdd$log_share_protestant, x = d_rdd$distrunning, c = 0))

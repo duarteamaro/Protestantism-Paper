@@ -35,7 +35,7 @@ knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE,
 ```{r}
 
 
-d_prots <- read_xlsx("Protestants by Commune - 1839.xlsx") |>
+d_prots_1 <- read_xlsx("Protestants by Commune - 1839.xlsx") |>
   rename(
     code_insee = `Code INSEE`,
     code_insee_full = `Code INSEE (Department, Arrondissement, Canton, Commune)`,
@@ -45,13 +45,67 @@ d_prots <- read_xlsx("Protestants by Commune - 1839.xlsx") |>
     dist = `Distance du chef-lieu de chaque commune au chef-lieu de la section`,
     residence = `Résidence du pasteur`,
     obs = `...16`
+  ) |>
+  mutate(
+    Departement = as.character(Departement),
+    Eglise = as.character(Eglise),
+    Consistoire = as.character(Consistoire),
+    Numeros = as.numeric(Numeros),
+    Noms = as.character(Noms),
+    Temples = as.character(Temples),
+    Communes = as.character(Communes),
+    code_insee = as.character(code_insee),
+    code_insee_full = as.character(code_insee_full),
+    pop_general = as.character(pop_general),
+    pop_protestant = as.character(pop_protestant),
+    pop_protestant_section = as.character(pop_protestant_section),
+    dist = as.character(dist),
+    residence = as.character(residence),
+    Pasteur = as.character(Pasteur),
+    obs = as.character(obs),
+    obs_2 = NA_character_
   )
+
+
+d_prots_2 <- read_xlsx("Protestants by Commune - 1839.xlsx", sheet = 2) |>
+  rename(
+    code_insee = `Code INSEE`,
+    pop_general = `Population générale`,
+    pop_protestant = `Population Protestante`,
+    pop_protestant_section = `Population protestante par section`,
+    dist = `Distance du chef-lieu de chaque commune au chef-lieu de la section`,
+    residence = `Résidence du pasteur`,
+    obs = `...15`,
+    obs_2 = `...16`
+  ) |>
+  mutate(
+    Departement = as.character(Departement),
+    Eglise = as.character(Eglise),
+    Consistoire = as.character(Consistoire),
+    Numeros = as.numeric(Numeros),
+    Noms = as.character(Noms),
+    Temples = as.character(Temples),
+    Communes = as.character(Communes),
+    code_insee = as.character(code_insee),
+    code_insee_full = NA_character_,
+    pop_general = as.character(pop_general),
+    pop_protestant = as.character(pop_protestant),
+    pop_protestant_section = as.character(pop_protestant_section),
+    dist = as.character(dist),
+    residence = as.character(residence),
+    Pasteur = as.character(Pasteur),
+    obs = as.character(obs),
+    obs_2 = as.character(code_insee_full)
+  ) |>
+  filter(!(Departement %in% c("Tarn", "Tarn et Garonne")))
+
+d_prots <- bind_rows(d_prots_1, d_prots_2)
 
 
 d_issues <- d_prots |> 
   filter(
-    (code_insee %in% unique(d_prots$code_insee[duplicated(d_prots$code_insee) == TRUE])) | !is.na(obs)) |>
-  dplyr::select(Departement, Communes, code_insee, pop_general, pop_protestant, obs)
+    (code_insee %in% unique(d_prots$code_insee[duplicated(d_prots$code_insee) == TRUE])) | !is.na(obs) | !is.na(obs_2)) |>
+  dplyr::select(Departement, Communes, code_insee, pop_general, pop_protestant, obs, obs_2)
 
 nrow(d_issues)
 
@@ -59,7 +113,7 @@ nrow(d_issues)
 
 ```
 
-There are 116 rows which might be problematic, including repeated codes or observations left during coding.
+UP TO TARN: There are 316 rows which might be problematic, including repeated codes or observations left during coding.
 
 Most rows lacking an INSEE code correspond to observations without reference to a concrete commune. Some mention a specific locality within a commune (e.g., Maine-Geoffroy in Royan or Saint-Césaire in Nîmes). These can be safely discarded.
 
@@ -91,12 +145,13 @@ The other observations without a corresponding INSEE code are observations where
 
 We can now move to cases where there is an INSEE code but the commune is either duplicated or no longer exists.
 
-We have 20 mergers: Saint-Maurice (17300), which merged with the the commune of La Rochelle (same code); Agonnay (17397) which merged with Saint-Savinien (same code); Rouquette, Saint-Sulpice-d'Eymet, and Cogulot (24167) which all merged with Eymet (same code); Le Canet and La Rouquette (24335) which merged with Port-Sainte-Foy-et-Ponchapt (same code); Puyguulhem and Mombos (24549) which merged with Thénac (same code); La Répara (26020) which merged with La Répara-Auriples; L'Escoulin (26128) which merged with Eygluy-Escoulin; La Bâtie-Crémazin (26136) which merged with Val-Maravel; Béconne (26276) merged with Roche-Saint-Secret-Béconne; La Ville-l'Évêque (28036) merged with Berchères-sur-Vesgre; Mainterne and Vitray-sous-Brézolles (28120) merged with Crucey-Villages; Bourneville (28190) merged with Guillonville; Cambo (30058) merged with La Cadière-et-Cambo; Saint-Martin-de-Sossenac (30106) merged with Durfort-et-Saint-Martin-de-Sossenac; Cézas (30325) merged with Sumène; Paroisse-du-Vigan (30350) merged with Le Vigan; Appelles (33369) merged with Saint-André-et-Appelles; Saint-Nazaire (33378) merged with Saint-Avit-Saint-Nazaire; Le Pouzat (7204) merged with Saint-Agrève; and Naves (7334) merged with Les Vans.
+We have the following mergers: Saint-Maurice (17300), which merged with the the commune of La Rochelle (same code); Agonnay (17397) which merged with Saint-Savinien (same code); Rouquette, Saint-Sulpice-d'Eymet, and Cogulot (24167) which all merged with Eymet (same code); Le Canet and La Rouquette (24335) which merged with Port-Sainte-Foy-et-Ponchapt (same code); Puyguulhem and Mombos (24549) which merged with Thénac (same code); La Répara (26020) which merged with La Répara-Auriples; L'Escoulin (26128) which merged with Eygluy-Escoulin; La Bâtie-Crémazin (26136) which merged with Val-Maravel; Béconne (26276) merged with Roche-Saint-Secret-Béconne; La Ville-l'Évêque (28036) merged with Berchères-sur-Vesgre; Mainterne and Vitray-sous-Brézolles (28120) merged with Crucey-Villages; Bourneville (28190) merged with Guillonville; Cambo (30058) merged with La Cadière-et-Cambo; Saint-Martin-de-Sossenac (30106) merged with Durfort-et-Saint-Martin-de-Sossenac; Cézas (30325) merged with Sumène; Paroisse-du-Vigan (30350) merged with Le Vigan; Appelles (33369) merged with Saint-André-et-Appelles; Saint-Nazaire (33378) merged with Saint-Avit-Saint-Nazaire; Le Pouzat (7204) merged with Saint-Agrève; Naves (7334) merged with Les Vans; Ecoman (41273) was merged with Vievy-le-Rayé (41273); Saint-Gayrand (47112) was merged with Grateloup-Saint-Gayrand (47112); , Saint-Vincent (47038) was merged with Bourran (47038); Lesterne (47213) was merged with Prayssas (47213); Saint-Amant (47276) was merged with Saint-Sardos (47276); Etussan (47143) was merged with Lavardac (47143); Limon (47097) was merged with Feugarolles (47097); Angviller (57086) was merged into Belles-Forêts (57086); Landonvillers (57155) was merged into Courcelles-Chaussy (57155); Fives (59350), Moulins-Lille (59350), and Wazemmes (59350) were merged into Lille (59350); Selvigny (59631) was merged with Walincourt-Selvigny (59631); Audencourt (59139) was merged with Caudry (59139); Ranchicourt (62693) was merged with Rebreuve-Ranchicourt (62693); Sainte-Suzanne (64430) was merged with Orthez (64430); Montestrucq (64440) was merged with Ozenx-Montestrucq (64440); Arance (64396), Gouze (64396), and Lendresse (64396) were merged with Mont (64396); Bezing (64133) was merged with Boeil-Bezing (64133); Cassaber (64168) was merged with Carresee-Cassaber (64168); Aspis (64071) was merged with Athos-Aspis (64071); Bideren (64083) and Saint-Martin (64083) were merged with Autevielle-Saint-Martin-Bideren (64083); Parenties (64251) merged with Guinarthe-Parenties (64251); Rivareyte (64435) merged with Osserain-Rivareyte (64435); Arrive (64480) and Munein (64480) merged with Saint-Gladie-Arrive-Munein (64480); Camu (64096) merged with Barraute-Camu (64096); Saint-Esprit (64102) merged with Bayonne (64102); Hanhoffen (67046) merged with Bischwiller (67046); Niederseebach (67351) merged with Seebach (67351); Altenstadt (67544) merged with Wissembourg (67544); Birlenbach (67104) merged with Drachenbronn-Birlenbach (67104); Griesbach-le-Bastberg (67061) merged with Bouxwiller (67061); Bischtroff-sur-Sarre (67435) and Zollingen (67435) merged with Sarrewerden (67435); Wiler (67183) merged with Harskirchen (67183); Dornach (68224) merged with Mulhouse (68224); Saint-Rambert-l'île-Barbe (69123) merged with Lyon (69123); Valasse (76329) merged with Gruchet-le-Valasse (76329); Bielleville (76543) merged with Rouville (76543); Buglise (76167) and Rimbertot (76167) merged with Cauville-sur-Mer (76167); Ecuquetot (76716) merged with Turretot (76716); Émalleville (76650) merged with Saint-Sauveur-d'Émalleville (76650); Graville-Sainte-Honorine (76351), Bléville (76351), Sanvic (76351) merged with Le Havre (76351); L'Enclave-de-la-Martinière (79264) merged with Saint-Léger-de-la-Martinière (79264); Montigné (79061) and Verrines-sous-Celles (79061) merged with Celles-sur-Belle (79061); Souché (79191), Sainte-Pezenne (79191), Saint-Florent (79191), and Saint-Liguaire (79191) merged with Niort (79191); Saint Carlais (79048) and Chavagné (79048) merged with La Crèche (79048); Saint-Denis (79066) merged with Champdenier-Saint-Denis (79066); Rouvre (79133) merged with Germond-Rouvre (79133); La Ronde (79123) merged with La Forêt-sur-Sèvre (79123); Plantières (57463), itself listed twice, is merged into Metz (57463), as well as Devant-les-Ponts (57463); Vallières-lès-Metz (57463) and Magny (57463); Vineuil-Saint-Firmin (60695) merged with Vinueil (60695). 
+
 
 ```{r}
 
 d_merged <- d_issues |>
-  filter(code_insee %in% c("17300", "17397", "24167", "24335", "24549", "26020", "26128", "26136", "26276", "28036", "28120", "28190", "30058", "30106", "30325", "30350", "33369", "33378", "7204", "7334")) |>
+  filter(code_insee %in% c("17300", "17397", "24167", "24335", "24549", "26020", "26128", "26136", "26276", "28036", "28120", "28190", "30058", "30106", "30325", "30350", "33369", "33378", "7204", "7334", "41273", "47112", "47213", "47038", "47213", "47276", "47143", "47097", "57086", "57155", "59350", "59631", "59139", "62693", "64430", "64440", "64396", "64133", "64168", "64071", "64083", "64251", "64435", "64480", "64096", "64102", "67046", "67351", "67544", "67104", "67061", "67435", "67183", "68224", "69123", "76329" , "76543" , "76167" , "76716" , "76650" , "76351" , "79264", "79061", "79191", "79048", "79066", "79133" , "79123", "57463", "60695")) |>
   mutate(pop_general = as.numeric(pop_general),
          pop_protestant = as.numeric(pop_protestant)) |>
   group_by(code_insee) |>
@@ -121,12 +176,16 @@ d_merged <- d_issues |>
 
 We then have cases where the same commune is mentioned twice. The true protestant population is therefore either the sum of each entry or one of the listed values.
 
-For cases where it is only one the values, I have followed the conservative approach of using the lesser one. We have the case of Arvert (17021), mentioned twice with the same general population but different values of Protestants (658 and 727). As the sum is greater than the overall population, these are presumably two different measures of the same population. I will go with the conservative approach and use the lower value. Rémuzat (26264) is also listed twice although the protestant population could not retrieved from the first entry; I'll assume the second entry corresponds to the true value. Pommiers (30199) is a similar case, listed twice with the same general population but with different values for the protestant population. I will assume the lower value is correct. 
+For cases where it is only one the values, I have followed the conservative approach of using the lesser one. We have the case of Arvert (17021), mentioned twice with the same general population but different values of Protestants (658 and 727). As the sum is greater than the overall population, these are presumably two different measures of the same population. I will go with the conservative approach and use the lower value. Rémuzat (26264) is also listed twice although the protestant population could not retrieved from the first entry; I'll assume the second entry corresponds to the true value. Pommiers (30199) is a similar case, listed twice with the same general population but with different values for the protestant population. I will assume the lower value is correct. La Chefresne (50128) listed twice, with the same values for both general and Protestant population, suggesting double counting. Athis-de-l'Orne (61007), Flers (61169), Alençon (61001), Sainte-Honorine-la-Chardonne (61407), Berjou (61044), Montilly-sur-Noireau (61287) and Frênes (61177) are listed twice with the same data, so I will assume that they have been double-counted.
+
+Cherbourg (50129) is similarly listed twice though with similar but different values. I assume double-counting and will take the higher value for both the general (13395) and the Protestant (360) populations.
 
 ```{r}
 
 d_duplicates_1 <- d_issues |>
-  filter(code_insee %in% c("17021", "26264", "30199")) |> 
+  filter(code_insee %in% c("17021", "26264", "30199", "50128",
+                           "61007", "61169", "61001", "61407", 
+                           "61044", "61287", "61177")) |> 
   mutate(pop_general = as.numeric(pop_general),
          pop_protestant = as.numeric(pop_protestant)) |>
   group_by(code_insee) |>
@@ -136,11 +195,26 @@ d_duplicates_1 <- d_issues |>
     pop_general = max(pop_general),
     pop_protestant = min(pop_protestant, na.rm = TRUE),
     obs = NA
+  ) |>
+  bind_rows(
+    d_issues |>
+      filter(code_insee %in% c("50129")) |> 
+      mutate(pop_general = as.numeric(pop_general),
+             pop_protestant = as.numeric(pop_protestant)) |>
+      group_by(code_insee) |>
+      summarise(
+        Departement = first(Departement),
+        Communes = first(Communes),
+        pop_general = max(pop_general),
+        pop_protestant = max(pop_protestant, na.rm = TRUE),
+        obs = NA
+      )
   )
 ```
 
 
 In the case of Marennes (17219), the same commune is listed twice and in immediate succession. One of the entries has a population a little above the registered overall population, at 4900 inhabitants, while the other is quite below at around 490. It would hardly be the case that the overall population corresponds to their sum; instead, the second entry probably refers to another commune and was mistakenly inputted as Marennes. I will therefore assume both population values are correct in the first entry. Chabeuil (26064) is also listed twice, once as 'Portion de Chabeuil'. It's made clear that the second entry corresponds to the whole Protestant population. Two entries were identified as referring to Saint-Germain-du-Seudre (17342), although one was only listed as Saint-Germain. It is possible that it refers to another commune, so I will assume that the second entry is the only correct one. Montdardier (30176) is listed twice, once with a slightly greater general population and another time with a value in line with the Cassini figures. The number of Prostestants differs - I will assume again the more conservative figure is correct. Péronville (28296) appears to be listed twice: once with a seemingly incorrect overall population and a protestant population of 20, and another time with a population more in line with the Cassini estimates but without listing the protestant population. I will assume the population was 20 but flagging this for the future. Similarly, Pranles (7184) is listed twice, once with a correct general population and another time with a much smaller general population. I will assume the second entry, with the correct population, is the more trustworthy value for the Protestant population as well.
+
 
 ```{r}
 
@@ -177,18 +251,17 @@ d_duplicates_2 <- bind_rows(
 ```
 
 
+Cases where the number of Protestants corresponds to the sum of each entry are more straighforward. Bois (17050) is similarly mentioned twice and with the same population. In this case, however, the values for the Protestant population are very small (10 and 13). It is possible that the real Protestant population here corresponds to their sum and I will therefore consider it as such. The case of Gageac-et-Rouillac (24193) is similar: the overall population listed is the same, the number of protestants differs and is quite small by reference to the overall population (50 and 70). Same goes for Verteuil (47317), Villeton (47325), Clermont (60157), Houchain (62456), Fomperron (79121). Josnes (41105) is listed twice, with a similar overall population (1503 vs 1500) and different Protestant population numbers (216 vs 400). The second listing mentions a particular canton, and it seems reasonable to assume that the correct number is their sum. Gardonne (24194) is listed twice, once as Partie Nord and another as Partie Sud. The overall population is the same but the protestant population differs, indicating that the total corresponds to their sum (140 and 47). Lasalle Prunet (48186) is similar. Dourbies (30105) is also listed twice with the same general population but differing in their protestant population (30 and 40), which corresponds, I will assume, to their sum. Barr (67021) is listed twice, once as the proper commune and another time as La scierie, Commune de Barr. The overall population listed is the same but the Protestant population differs, suggesting that the overall Protestant population corresponds to their sum. Saint-Frézal-de-Ventalon (48175) is listed twice, without any indication of the general population, but mentions of a *partie est* and a *partie ouest* suggest that the Protestant population corresponds to its sum.
 
-Cases where the number of Protestants corresponds to the sum of each entry are more straighforward. Bois (17050) is similarly mentioned twice and with the same population. In this case, however, the values for the Protestant population are very small (10 and 13). It is possible that the real Protestant population here corresponds to their sum and I will therefore consider it as such. The case of Gageac-et-Rouillac (24193) is similar: the overall population listed is the same, the number of protestants differs and is quite small by reference to the overall population (50 and 70). Gardonne (24194) is listed twice, once as Partie Nord and another as Partie Sud. The overall population is the same but the protestant population differs, indicating that the total corresponds to their sum (140 and 47). Dourbies (30105) is also listed twice with the same general population but differing in their protestant population (30 and 40), which corresponds, I will assume, to their sum. Saint-André-de-Majencoules (30229) is listed twice, once as Hameau du Roy dans la commune de Saint-André-de-Majencoules, which suggests that the protestant population in the overall commune corresponds to their sum.
+Les Ollières-sur-Eyrieux (7167) is listed twice with the total number of protestants corresponding to the sum, but with different population values. The overall population seems, on the basis of the Cassini figures, to correspond roughly to their sum as well. The same goes for Saint-Étienne-Vallée-Française (48148).
 
-Finally, Les Ollières-sur-Eyrieux (7167) is listed twice with the total number of protestants corresponding to the sum, but with different population values. The overall population seems, on the basis of the Cassini figures, to correspond roughly to their sum as well.
-
+Finally, we have cases like Saint-André-de-Majencoules (30229), which is listed twice, once as Hameau du Roy dans la commune de Saint-André-de-Majencoules, which suggests that the protestant population in the overall commune corresponds to their sum while the overall population is the greater value. Similarly, Giencourt (listed under 60107) is a locality of Breuil-le-Vert (60107) - the Protestant population seems to have been counted separately. Saint-Julien-lès-Metz (57616) is also listed twice, in the first occurrence seemingly as a part of the commune and without listing the general population. Laventie (62491) is listed twice, first without an indication of the general population and with 22 Protestants, and then with a general population of 4415 and a Protestant population of 15. I will assume the Protestant population corresponds to its sum. Saint-Michel-de-Dèze (48173) is similarly listed twice, and the Protestant population likely corresponds to the sum. However, the general population for the second half is not listed - and that for the first half is unlikely to correspond to the entire population. For these cases, I will sum the Protestant population and keep the greater value for the overall population.
 
 ```{r}
 
 
 d_duplicates_3 <- d_issues |>
-  filter(code_insee %in% c("17050", "24193", "24194", 
-                           "30105", "30229")) |> 
+  filter(code_insee %in% c("17050", "24193", "47317", "47325", "60157", "62456", "79121", "41105", "24194", "48186", "30105", "67021", "48175")) |> 
   mutate(pop_general = as.numeric(pop_general),
          pop_protestant = as.numeric(pop_protestant)) |>
   group_by(code_insee) |>
@@ -201,7 +274,7 @@ d_duplicates_3 <- d_issues |>
   ) |>
   bind_rows(
     d_issues |>
-      filter(code_insee == "7167") |> 
+      filter(code_insee %in% c("7167", "48148")) |> 
       mutate(pop_general = as.numeric(pop_general),
              pop_protestant = as.numeric(pop_protestant)) |>
       group_by(code_insee) |>
@@ -211,8 +284,21 @@ d_duplicates_3 <- d_issues |>
         pop_general = sum(pop_general, na.rm = TRUE),
         pop_protestant = sum(pop_protestant, na.rm = TRUE),
         obs = NA
-      )
+      ),
+    d_issues |>
+        filter(code_insee %in% c("30229", "60107", "57616", "62491", "48173")) |> 
+        mutate(pop_general = as.numeric(pop_general),
+               pop_protestant = as.numeric(pop_protestant)) |>
+        group_by(code_insee) |>
+        summarise(
+            Departement = first(Departement),
+            Communes = first(Communes),
+            pop_general = max(pop_general, na.rm = TRUE),
+            pop_protestant = sum(pop_protestant, na.rm = TRUE),
+            obs = NA
+        )
   )
+
 
 d_solved <- bind_rows(
   d_salles |>
@@ -229,15 +315,18 @@ d_solved <- bind_rows(
 ```
 
 
-We also have 66 entries where the population or the number of Protestants could not be established, many of which because there is no concrete commune to which the entry refers. There is also one observation where the Protestant population is greater than the overall population, Collorgues (30086). This value has been checked again against the digitised records and the mistake is not in the transcription. The observation has been discarded.
+We also have some entries where the population or the number of Protestants could not be established, many of which because there is no concrete commune to which the entry refers. There is also one observation where the Protestant population is greater than the overall population, Collorgues (30086). This value has been checked again against the digitised records and the mistake is not in the transcription. The observation has been discarded.
 
-There are 1040 clean observations.
+For Le Chambon-Feugerolles	(42044) and Firminy	(42095), the Protestant population of	60 is listed for the two. Same for Saint Chamond	(42207) and Rive-de-Gier (42186) and their joint Protestant population of 65.
+
+There are 1894 clean observations.
 
 
 ```{r}
 
 d_clean <- d_prots |>
-  filter(!(code_insee %in% unique(d_issues$code_insee))) |>
+  filter(!(code_insee %in% unique(d_issues$code_insee)) & 
+           !(code_insee %in% c("42044", "42095", "42207", "42186"))) |>
   dplyr::select(Departement, Communes, code_insee, pop_general, pop_protestant, obs) |>
   mutate(pop_general = as.numeric(pop_general),
          pop_protestant = as.numeric(pop_protestant)) |>
@@ -256,7 +345,9 @@ While for some departments some observations state a rough number of communes, m
 d_missing <- d_prots |> 
   mutate(pop_general_num = as.numeric(pop_general),
          pop_protestant_num = as.numeric(pop_protestant)) |>
-  filter(is.na(pop_general_num) | is.na(pop_protestant_num))
+  filter(is.na(pop_general_num) | is.na(pop_protestant_num) | (code_insee %in% c("42044", "42095", 
+                                                                                 "42207", "42186"))
+         )
 
 names <- unique(d_clean$Departement[!(d_clean$Departement %in% unique(d_missing$Departement))])
 
@@ -270,7 +361,7 @@ comm <- read_sf("commune-frmetdrom/COMMUNE_FRMETDROM.shp") |>
   rename(code_insee = INSEE_COM)
 ```
 
-Each of the three following maps and corresponding dataframes follows one approach: 1) simply assign a value for the share of Protestants in 1839 to the communes explicitly mentioned in the original document, leaving all others NA; 2) as before, but also assigning a value of 0 to communes in departments mentioned in the original document and where no ambiguous "surrounding communes" are mentioned (e.g., Ariège (09), for which we have information on the concrete protestant population of some communes but no reference to any more dispersed population); 3) as before, but further assigning asigning a value of 0 to all communes in departments which should have been covered in the original document (i.e., any departments alphabetically prior to Hérault) but which are not mentioned. 
+Each of the three following maps and corresponding dataframes follows one approach: 1) simply assign a value for the share of Protestants in 1839 to the communes explicitly mentioned in the original document, leaving all others NA; 2) as before, but also assigning a value of 0 to communes in departments mentioned in the original document and where no ambiguous "surrounding communes" are mentioned (e.g., Ariège (09), for which we have information on the concrete protestant population of some communes but no reference to any more dispersed population); 3) as before, but further assigning asigning a value of 0 to all communes in departments which should have been covered in the original document (i.e., any departments alphabetically prior to Somme) but which are not mentioned. 
 
 ```{r}
 
@@ -287,7 +378,12 @@ d_map_2 <- full_join(d_clean |>
   mutate(
     share_protestant = case_when(
       !is.na(share_protestant) ~ share_protestant,
-      is.na(share_protestant) & INSEE_DEP %in% c("09", "12", "16", "24", "29", "31", "32", "34") ~ 0,
+      is.na(share_protestant) & INSEE_DEP %in% c("09", "12", "16", "24", 
+                                                 "29", "31", "32", "34", 
+                                                 "43", "44", "41", "54", 
+                                                 "62", "63", "67", "68", 
+                                                 "69", "77", "78", "92", 
+                                                 "91", "80") ~ 0,
       .default = NA
     )
   )
@@ -296,7 +392,7 @@ d_map_2 <- full_join(d_clean |>
 deps <- unique(
   d_map_2$INSEE_DEP[!(
     d_map_2$INSEE_DEP %in% unique(d_map_2$INSEE_DEP[!is.na(d_map_2$share_protestant)])) & 
-      as.numeric(d_map_2$INSEE_DEP) < 34]
+      as.numeric(d_map_2$INSEE_DEP) < 80]
   )
 
 d_map_3 <- full_join(d_clean |> 
@@ -307,7 +403,12 @@ d_map_3 <- full_join(d_clean |>
     share_protestant = case_when(
       !is.na(share_protestant) ~ share_protestant,
       is.na(share_protestant) & 
-        INSEE_DEP %in% c("09", "12", "16", "24", "29", "31", "32", "34") ~ 0,
+        INSEE_DEP %in% c("09", "12", "16", "24", 
+                         "29", "31", "32", "34", 
+                         "43", "44", "41", "54", 
+                         "62", "63", "67", "68", 
+                         "69", "77", "78", "92", 
+                         "91", "80") ~ 0,
       is.na(share_protestant) &
         INSEE_DEP %in% deps ~ 0,
       .default = NA
@@ -319,8 +420,8 @@ cowplot::plot_grid(d_map_1 |>
                      ggplot() +
                      geom_sf(aes(geometry = geometry,
                                  fill = share_protestant), colour = NA) +
-                     scale_fill_gradient(low = "gold", high = "green4",
-                                         na.value = "lightgrey") +
+                     scale_fill_gradient(low = "white", high = "red4",
+                                         na.value = "grey") +
                      labs(title = "Share of Protestants in 1839 (Communes explicitly mentioned)"),
                    d_map_1 |>
                      ggplot() +
@@ -331,8 +432,8 @@ cowplot::plot_grid(d_map_2 |>
                      ggplot() +
                      geom_sf(aes(geometry = geometry,
                                  fill = share_protestant), colour = NA) +
-                     scale_fill_gradient(low = "gold", high = "green4",
-                                         na.value = "lightgrey") +
+                     scale_fill_gradient(low = "white", high = "red4",
+                                         na.value = "grey") +
                      labs(title = "Share of Protestants in 1839 (Departments mentioned with some zeros inputted)"),
                    d_map_2 |>
                      ggplot() +
@@ -342,10 +443,10 @@ cowplot::plot_grid(d_map_2 |>
 cowplot::plot_grid(d_map_3 |>
                      ggplot() +
                      geom_sf(aes(geometry = geometry,
-                                 fill = share_protestant), colour = NA) +
-                     scale_fill_gradient(low = "gold", high = "green4",
-                                         na.value = "lightgrey") +
-                     labs(title = "Share of Protestants in 1839 (All Departments up to Hérault with some zeros inputted)"),
+                                 fill = share_protestant), colour = "NA") +
+                     scale_fill_gradient(low = "white", high = "red4",
+                                         na.value = "grey") +
+                     labs(title = "Share of Protestants in 1839 (All Departments up to Somme with some zeros inputted)"),
                    d_map_3 |>
                      ggplot() +
                      geom_histogram(aes(x = share_protestant), bins = 50),
@@ -575,7 +676,17 @@ diplomes <- diplomes |>
                            names_to = "Year", values_to = "psup") |> 
               mutate(Year = str_sub(Year, -4, -1))) |> 
   dplyr::select(-ends_with(c("1993", "1997", "2002", 
-                             "2007", "2012", "2017", "2022"))) 
+                             "2007", "2012", "2017", "2022")))
+etrangers <- read_csv("cage_piketty/etrangerscommunes.csv") |> 
+  dplyr::select(dep, nomdep, codecommune, nomcommune, 
+                starts_with(c("petranger")) & 
+                  ends_with(c("1993", "1997", "2002", 
+                              "2007", "2012", "2017", "2022"))) |>
+  pivot_longer(cols = starts_with("petranger"), 
+               names_to = "Year", values_to = "petranger") |>
+  mutate(Year = str_sub(Year, -4, -1))
+
+
 
 d_controls <- full_join(diplomes, 
                         revenus |>
@@ -590,9 +701,13 @@ d_controls <- full_join(diplomes,
               rename(nomcommune_4 = nomcommune),
             by = c("dep", "nomdep", "codecommune")
             ) |>
-  dplyr::select(-c(nomcommune_2, nomcommune_3, nomdep_3, nomcommune_4))
+  full_join(etrangers|>
+              rename(nomcommune_5 = nomcommune),
+            by = c("dep", "nomdep", "codecommune", "Year")
+            ) |>
+  dplyr::select(-c(nomcommune_2, nomcommune_3, nomdep_3, nomcommune_4, nomcommune_5))
 
-nrow(d_controls) == 7*(c(revenus$codecommune, diplomes$codecommune, religiosite1791$codecommune, alphabetisation$codecommune) |> unique() |> length())
+nrow(d_controls) == 7*(c(revenus$codecommune, diplomes$codecommune, religiosite1791$codecommune, alphabetisation$codecommune, etrangers$codecommune) |> unique() |> length())
 
 ```
 
@@ -602,21 +717,102 @@ nrow(d_controls) == 7*(c(revenus$codecommune, diplomes$codecommune, religiosite1
 d_FN_controls <- left_join(d_FN |>
                              mutate(Year = as.character(year)), 
                            d_controls, by = c("dep", "nomdep", "codecommune", 
-                                              "nomcommune", "Year"))
+                                              "nomcommune", "Year")) |>
+  filter(!is.na(Year))
 
 d_FN_controls_2 <- left_join(d_FN_2 |>
                                mutate(Year = as.character(year)), 
                              d_controls, by = c("dep", "nomdep", "codecommune", 
-                                                "nomcommune", "Year"))
+                                                "nomcommune", "Year")) |>
+  filter(!is.na(Year))
 
 d_FN_controls_3 <- left_join(d_FN_3 |>
                                mutate(Year = as.character(year)), 
                              d_controls, by = c("dep", "nomdep", "codecommune", 
-                                                "nomcommune", "Year"))
+                                                "nomcommune", "Year")) |>
+  filter(!is.na(Year))
 
 ```
 
-The following models consider only the communes explicitly mentioned in the original document.
+With the most liberal approach to dealing with NAs, we find a statistically significant negative association between the share of Protestants in 1839 and the vote share of the RN/FN since 1993:
+
+```{r}
+
+m1 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)), 
+         pvoixRN ~ share_protestant + year)
+
+m2 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep)
+
+m3 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger)
+
+m4 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup)
+
+m5 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac)
+
+m6 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816)
+
+m7 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816 + pserment1791)
+
+m8 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         psup ~ share_protestant + year + dep + revmoy + pop + petranger)
+
+m9 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         psup ~ share_protestant + year + dep + revmoy + pop + petranger + pconjsign1816)
+
+m10 <- lm(data = d_FN_controls_3 |> 
+           mutate(year = as.character(year)),
+         pconjsign1816 ~ share_protestant + year + dep + revmoy + pop + petranger)
+
+modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
+                  )), 
+             vcov = "robust", 
+             stars = TRUE,
+             
+             coef_omit = "year|dep",
+             coef_map = c(
+               "(Intercept)" = "Constant",
+               "share_protestant" = "Share of Protestants in 1839",
+               "revmoy" = "Average income",
+               "pop" = "Population", 
+               "petranger" = "Percentage of foreigners",
+               "psup" = "Percentage of people with higher education",
+               "pbac" = "Percentage of people with the bac",
+               "pconjsign1816" = "Literacy in 1816",
+               "pserment1791" = "Share of constitutional priests in 1791"
+               ),
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2),
+             add_rows = tibble::tribble(
+               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
+               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+             ),
+             #output = "table1.tex",
+             #output = "text"
+             )
+
+
+```
+
+
+This holds if we restrict to the communes explicitly mentioned in the original document.
 
 ```{r}
 m1 <- lm(data = d_FN_controls |> 
@@ -629,27 +825,30 @@ m2 <- lm(data = d_FN_controls|>
 
 m3 <- lm(data = d_FN_controls|> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger)
 
 m4 <- lm(data = d_FN_controls|> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup)
 
 m5 <- lm(data = d_FN_controls|> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac)
 
 m6 <- lm(data = d_FN_controls|> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816)
 
 m7 <- lm(data = d_FN_controls|> 
            mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+         pvoixRN ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816 + pserment1791)
+
+m8 <- lm(data = d_FN_controls|> 
+           mutate(year = as.character(year)),
+         psup ~ share_protestant + year + dep + revmoy + pop + petranger + pconjsign1816 + pserment1791)
 
 
-modelsummary(list(m1, m2, m3, m4, m5, m6, m7
-                  ), 
+modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8)), 
              vcov = "robust", 
              stars = TRUE,
              
@@ -659,6 +858,7 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
                "share_protestant" = "Share of Protestants in 1839",
                "revmoy" = "Average income",
                "pop" = "Population", 
+               "petranger" = "Percentage of foreigners",
                "psup" = "Percentage of people with higher education",
                "pbac" = "Percentage of people with the bac",
                "pconjsign1816" = "Literacy in 1816",
@@ -668,9 +868,9 @@ modelsummary(list(m1, m2, m3, m4, m5, m6, m7
                                        "r.squared", "R^2", 2,
                                        "adj.r.squared", "Adj. R^2", 2),
              add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
+               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8,
+               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
              ),
              #output = "table1.tex",
              #output = "text"
@@ -685,7 +885,7 @@ results <- d_FN_controls |>
   group_by(Year) |>
   group_modify(~ {
     model <- lm(
-      pvoixRN ~ share_protestant + dep + revmoy + pop + psup + pbac + 
+      pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + psup + pbac + 
         pconjsign1816 + pserment1791,
       data = .x
     )
@@ -702,7 +902,7 @@ results <- d_FN_controls |>
   group_by(Year) |>
   group_modify(~ {
     model <- lm(
-      pvoixRN ~ share_protestant + dep + revmoy + pop + 
+      pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + 
         pconjsign1816 + pserment1791,
       data = .x
     )
@@ -720,7 +920,7 @@ results <- d_FN_controls |>
       group_by(Year) |>
       group_modify(~ {
         model <- lm(
-          pvoixRN ~ share_protestant + dep + revmoy + pop + psup + pbac + 
+          pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + psup + pbac + 
             pconjsign1816 + pserment1791,
           data = .x
         )
@@ -739,7 +939,7 @@ results <- d_FN_controls |>
       group_by(Year) |>
       group_modify(~ {
         model <- lm(
-          pvoixRN ~ share_protestant + dep + revmoy + pop + 
+          pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + 
             pconjsign1816 + pserment1791,
           data = .x
         )
@@ -758,7 +958,7 @@ results <- d_FN_controls |>
       group_by(Year) |>
       group_modify(~ {
         model <- lm(
-          pvoixRN ~ share_protestant + dep + revmoy + pop + psup + pbac + 
+          pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + psup + pbac + 
             pconjsign1816 + pserment1791,
           data = .x
         )
@@ -777,7 +977,7 @@ results <- d_FN_controls |>
       group_by(Year) |>
       group_modify(~ {
         model <- lm(
-          pvoixRN ~ share_protestant + dep + revmoy + pop + 
+          pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + 
             pconjsign1816 + pserment1791,
           data = .x
         )
@@ -801,7 +1001,7 @@ ggplot(results, aes(x = as.numeric(Year), y = estimate, colour = group, shape = 
   scale_colour_manual(values = c("1" = "blue", "2" = "orange", "3" = "green4"),
                       labels = c("1" = "Only Communes Explicitly Mentioned",
                                  "2" = "All Departments Mentioned",
-                                 "3" = "All Departments up to Hérault"),
+                                 "3" = "All Departments up to Somme"),
                       name = "") +
   scale_shape_manual(values = c("With Educ" = 16, "No Educ" = 17),
                      labels = c("With Educ" = "With Education Controls",
@@ -811,452 +1011,28 @@ ggplot(results, aes(x = as.numeric(Year), y = estimate, colour = group, shape = 
     x = "Year",
     y = "Coefficient of Share of Protestants",
     title = "Coefficient of Share of Protestants (Separate Regressions per Year)",
-    subtitle = "Controlling for Department FEs, Average Income, Population, Literacy in 1816, Share of Constitutional Priests in 1791, \nand  Share of Bac and of Higher Education (when included)"
+    subtitle = "Controlling for Department FEs, Average Income, Population, Share of Foreigners, Literacy in 1816, \nShare of Constitutional Priests in 1791, and  Share of Bac and of Higher Education (when included)"
   ) +
   theme(legend.position = "bottom", legend.box = "vertical")
 
 ```
 
 
-```{r}
-m1 <- lm(data = d_FN_controls |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ log(share_protestant + 1) + year)
-
-m2 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep)
-
-m3 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-
-modelsummary(list(m1, m2, m3, m4, m5, m6, m7
-                  ), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-
-```
-
-```{r}
-
-
-m1 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop)
-
-m1log <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m2 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop + pconjsign1816 + pserment1791)
-
-m2log <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop + pconjsign1816 + pserment1791)
-
-m3 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ share_protestant + year + dep + revmoy + pop)
-
-m3log <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ log(share_protestant + 1) + year + dep + revmoy + pop + pserment1791)
-
-modelsummary(dvnames(list(m1, m1log, m2, m2log, m3, m3log
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m1log, ~m2, ~m2log, ~m3, ~m3log, 
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-
-
-```
-
-```{r}
-
-m1 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ share_protestant + year)
-
-m2 <- lm(data = d_FN_controls_2|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep)
-
-m3 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m8 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop)
-
-m9 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop + pconjsign1816)
-
-m10 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ share_protestant + year + dep + revmoy + pop)
-
-#stargazer::stargazer(m1, m2, m3, m4, m5, m6, m7, m8, m9, type = "text", omit.stat = c("f", "ser"), star.cutoffs = c(0.05, 0.01, 0.001), omit = c("year", "dep"))
-
-modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-
-
-```
-
-```{r}
-
-m1 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ share_protestant + year)
-
-m2 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep)
-
-m3 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m8 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop)
-
-m9 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         psup ~ share_protestant + year + dep + revmoy + pop + pconjsign1816)
-
-m10 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ share_protestant + year + dep + revmoy + pop)
-
-modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-
-
-```
-
-```{r}
-
-m1 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ log(share_protestant + 1) + year)
-
-m2 <- lm(data = d_FN_controls_2|> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep)
-
-m3 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m8 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m9 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop + pconjsign1816)
-
-m10 <- lm(data = d_FN_controls_2 |> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-stargazer::stargazer(m1, m2, m3, m4, m5, m6, m7, m8, m9, type = "text", omit.stat = c("f", "ser"), star.cutoffs = c(0.05, 0.01, 0.001), omit = c("year", "dep"))
-
-modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-
-
-```
-
-```{r}
-
-m1 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)), 
-         pvoixRN ~ log(share_protestant + 1) + year)
-
-m2 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep)
-
-m3 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m4 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup)
-
-m5 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac)
-
-m6 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m7 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m8 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-m9 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop + pconjsign1816)
-
-m10 <- lm(data = d_FN_controls_3 |> 
-           mutate(year = as.character(year)),
-         pconjsign1816 ~ log(share_protestant + 1) + year + dep + revmoy + pop)
-
-modelsummary(dvnames(list(m1, m2, m3, m4, m5, m6, m7, m8, m9, m10
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population", 
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pserment1791" = "Share of constitutional priests in 1791",
-               "pconjsign1816" = "Literacy in 1816"),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-               "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             ),
-             #output = "table1.tex",
-             #output = "text"
-             )
-
-
-```
 
 ## Effect of Share of Protestants on RPR/UMP/LR Vote Share
 
 ```{r}
 
-m1 <- lm(data = d_FN_controls|> 
+m1 <- lm(data = d_FN_controls_3|> 
            mutate(year = as.character(year)),
-         pvoixLR ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
+         pvoixLR ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816)
 
-m1_log <- lm(data = d_FN_controls|> 
+m2 <- lm(data = d_FN_controls_3|> 
            mutate(year = as.character(year)),
-         pvoixLR ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816)
-
-m2 <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixLR ~ share_protestant + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
-
-m2_log <- lm(data = d_FN_controls|> 
-           mutate(year = as.character(year)),
-         pvoixLR ~ log(share_protestant + 1) + year + dep + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+         pvoixLR ~ share_protestant + year + dep + revmoy + pop + petranger + psup + pbac + pconjsign1816 + pserment1791)
 
 
-modelsummary(list(m1, m1_log, m2, m2_log
+modelsummary(list(m1, m2
                   ), 
              vcov = "robust", 
              stars = TRUE,
@@ -1268,6 +1044,7 @@ modelsummary(list(m1, m1_log, m2, m2_log
                "log(share_protestant + 1)" = "Log of Share of Protestants in 1839",
                "revmoy" = "Average income",
                "pop" = "Population", 
+               "petranger" = "Percentage of foreigners",
                "pserment1791" = "Share of constitutional priests in 1791",
                "psup" = "Percentage of people with higher education",
                "pbac" = "Percentage of people with the bac",
@@ -1277,9 +1054,9 @@ modelsummary(list(m1, m1_log, m2, m2_log
                                        "r.squared", "R^2", 2,
                                        "adj.r.squared", "Adj. R^2", 2),
              add_rows = tibble::tribble(
-               ~term, ~m1, ~m1_log, ~m2, ~m2_log,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", 
-               "Department FE", "Yes", "Yes", "Yes", "Yes"
+               ~term, ~m1, ~m2,
+               "Year FE", "Yes", "Yes",
+               "Department FE", "Yes", "Yes"
              ),
              #output = "table1.tex",
              #output = "text"
@@ -1392,19 +1169,19 @@ d_FN_ardeche <- bind_rows(
 
 ```{r}
 m1 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year)
+         pvoixRN ~ share_protestant + year)
 
 m3 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop)
+         pvoixRN ~ share_protestant + year + revmoy + pop + petranger)
 
 m4 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup)
+         pvoixRN ~ share_protestant + year + revmoy + pop + petranger + psup)
 
 m5 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup + pbac)
+         pvoixRN ~ share_protestant + year + revmoy + pop + petranger + psup + pbac)
 
 m6 <- lm(data = d_FN_ardeche,
-         pvoixRN ~ log(share_protestant + 1) + year + revmoy + pop + psup + pbac + pconjsign1816)
+         pvoixRN ~ share_protestant + year + revmoy + pop + petranger + psup + pbac + pconjsign1816)
 
 # m7 <- lm(data = d_FN_controls |> 
 #            filter(nomdep == "ARDECHE") |>
@@ -1412,10 +1189,10 @@ m6 <- lm(data = d_FN_ardeche,
 #          pvoixRN ~ share_protestant + year + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
 
 m7 <- lm(data = d_FN_ardeche,
-         psup ~ log(share_protestant + 1) + year + revmoy + pop)
+         psup ~ share_protestant + year + revmoy + pop + petranger)
 
 m8 <- lm(data = d_FN_ardeche,
-         psup ~ log(share_protestant + 1) + year + revmoy + pop + pconjsign1816)
+         psup ~ share_protestant + year + revmoy + pop + petranger + pconjsign1816)
 
 
 modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
@@ -1426,9 +1203,10 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
              coef_omit = "year",
              coef_map = c(
                "(Intercept)" = "Constant",
-               "log(share_protestant + 1)" = "Log Share of Protestants in 1839",
+               "share_protestant" = "Share of Protestants in 1839",
                "revmoy" = "Average income",
                "pop" = "Population",
+               "petranger" = "Percentage of foreigners",
                "psup" = "Percentage of people with higher education",
                "pbac" = "Percentage of people with the bac",
                "pconjsign1816" = "Literacy in 1816"#,
