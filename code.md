@@ -1,7 +1,7 @@
 Protestantism Code
 ================
 Duarte Amaro
-2026-05-17
+2026-05-18
 
 # Cleaning the hand-transcribed data
 
@@ -1249,8 +1249,39 @@ nicolas_briefer <- nicolas_brief |>
   )
 ```
 
+Data on the linguistic composition of France (in 1886 as the earliest
+proxy) from Müller-Crepon, Schvitz, and Cederman
+([2025](#ref-muller-creponRightPeoplingStateNationalism2025)). The
+authors consider the share of people belonging to an ‘ethnic group’,
+which is linguistically-defined. We use the share of French speakers.
+
+``` r
+heg.obj <- hegdata$new()
+
+r <- heg.obj$loadHEGGroup(group = "french", year = 1886) |>
+  rast()
+
+crs(r) <- "EPSG:4326"
+
+communes_vect <- vect(comm)
+
+extracted <- terra::extract(
+  r,
+  communes_vect,
+  fun = mean,
+  na.rm = TRUE
+)
+
+comm$heg_value <- extracted[,2]
+
+lang <- comm |>
+  st_drop_geometry() |>
+  dplyr::select(code_insee, heg_value)
+```
+
 Finally, we get controls for geographical coordinates and mean altitude
-levels from French government data.
+levels from French government data
+[source](https://www.data.gouv.fr/datasets/communes-et-villes-de-france-en-csv-excel-json-parquet-et-feather).
 
 ``` r
 communes <- read_csv("communes-france-2025.csv") |> 
@@ -1274,6 +1305,8 @@ d_controls <- d_controls_cp |>
       rename(codecommune = insee_2021),
     by = "codecommune"
   ) |>
+  full_join(lang |>
+              rename(codecommune = code_insee), by = "codecommune") |>
   full_join(
     communes |>
       dplyr::select(
@@ -1314,6 +1347,7 @@ d_FN_controls <- left_join(d_FN |>
     pouvr = 100*pouvr,
     pchom = 100*pchom,
     prsa = 100*prsa,
+    heg_value = 100*heg_value,
     prixbien = prixbien/1000,
     letter = case_when(is.na(letter) ~ 0, 
                        !is.na(letter) ~ letter),
@@ -1348,7 +1382,7 @@ m_dep <- lm(data = d_FN_controls |>
 m_hist <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 +
            altitude_moyenne + latitude_centre + longitude_centre)
 
@@ -1360,7 +1394,7 @@ m_cont <- lm(data = d_FN_controls |>
 m_all <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien)
@@ -1368,7 +1402,7 @@ m_all <- lm(data = d_FN_controls |>
 m_all_sup <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien + psup)
@@ -1376,7 +1410,7 @@ m_all_sup <- lm(data = d_FN_controls |>
 m_all_educ <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien + psup + pbac)
@@ -1386,7 +1420,7 @@ m_all_educ <- lm(data = d_FN_controls |>
 m_educ_hist <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          psup ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 +
            altitude_moyenne + latitude_centre + longitude_centre)
 
@@ -1398,7 +1432,7 @@ m_educ_cont <- lm(data = d_FN_controls |>
 m_educ_all <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          psup ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 +
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien)
@@ -1463,20 +1497,20 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>(Intercept)</td>
 <td>7.111***</td>
-<td>-45.808***</td>
+<td>-47.479***</td>
 <td>14.516***</td>
-<td>-37.196***</td>
-<td>-35.554***</td>
-<td>-35.554***</td>
+<td>-37.793***</td>
+<td>-35.995***</td>
+<td>-35.997***</td>
 </tr>
 <tr>
 <td></td>
 <td>(2.027)</td>
-<td>(4.544)</td>
+<td>(4.554)</td>
 <td>(1.678)</td>
-<td>(4.248)</td>
-<td>(4.195)</td>
-<td>(4.196)</td>
+<td>(4.263)</td>
+<td>(4.210)</td>
+<td>(4.211)</td>
 </tr>
 <tr>
 <td>share_protestant</td>
@@ -1484,8 +1518,8 @@ modelsummary(list("Dep FEs" = m_dep,
 <td>-0.026***</td>
 <td>-0.025***</td>
 <td>-0.024***</td>
-<td>-0.023***</td>
-<td>-0.023***</td>
+<td>-0.024***</td>
+<td>-0.024***</td>
 </tr>
 <tr>
 <td></td>
@@ -1499,11 +1533,11 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>letter</td>
 <td></td>
-<td>-0.351***</td>
+<td>-0.360***</td>
 <td></td>
-<td>-0.475***</td>
-<td>-0.577***</td>
-<td>-0.577***</td>
+<td>-0.493***</td>
+<td>-0.595***</td>
+<td>-0.595***</td>
 </tr>
 <tr>
 <td></td>
@@ -1511,22 +1545,22 @@ modelsummary(list("Dep FEs" = m_dep,
 <td>(0.085)</td>
 <td></td>
 <td>(0.083)</td>
-<td>(0.082)</td>
-<td>(0.082)</td>
+<td>(0.083)</td>
+<td>(0.083)</td>
 </tr>
 <tr>
 <td>brigade</td>
 <td></td>
-<td>-1.289***</td>
+<td>-1.286***</td>
 <td></td>
-<td>-1.166***</td>
-<td>-1.158***</td>
-<td>-1.158***</td>
+<td>-1.164***</td>
+<td>-1.156***</td>
+<td>-1.156***</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td>(0.110)</td>
+<td>(0.111)</td>
 <td></td>
 <td>(0.107)</td>
 <td>(0.106)</td>
@@ -1553,11 +1587,11 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>HubDist</td>
 <td></td>
-<td>-0.014***</td>
+<td>-0.013***</td>
 <td></td>
-<td>-0.018***</td>
-<td>-0.020***</td>
-<td>-0.020***</td>
+<td>-0.019***</td>
+<td>-0.021***</td>
+<td>-0.021***</td>
 </tr>
 <tr>
 <td></td>
@@ -1571,11 +1605,11 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>revratio1790</td>
 <td></td>
-<td>-1.581***</td>
+<td>-1.584***</td>
 <td></td>
-<td>-0.126</td>
-<td>0.110</td>
-<td>0.110</td>
+<td>-0.137+</td>
+<td>0.099</td>
+<td>0.098</td>
 </tr>
 <tr>
 <td></td>
@@ -1585,6 +1619,24 @@ modelsummary(list("Dep FEs" = m_dep,
 <td>(0.082)</td>
 <td>(0.081)</td>
 <td>(0.081)</td>
+</tr>
+<tr>
+<td>heg_value</td>
+<td></td>
+<td>0.009***</td>
+<td></td>
+<td>0.001</td>
+<td>0.001</td>
+<td>0.001</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.002)</td>
+<td></td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+<td>(0.002)</td>
 </tr>
 <tr>
 <td>total_protests</td>
@@ -1625,7 +1677,7 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>pserment1791</td>
 <td></td>
-<td>0.006***</td>
+<td>0.005***</td>
 <td></td>
 <td>0.003*</td>
 <td>0.001</td>
@@ -1661,11 +1713,11 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>latitude_centre</td>
 <td></td>
-<td>1.118***</td>
+<td>1.133***</td>
 <td></td>
-<td>1.107***</td>
-<td>1.086***</td>
-<td>1.086***</td>
+<td>1.116***</td>
+<td>1.093***</td>
+<td>1.093***</td>
 </tr>
 <tr>
 <td></td>
@@ -1673,17 +1725,17 @@ modelsummary(list("Dep FEs" = m_dep,
 <td>(0.082)</td>
 <td></td>
 <td>(0.080)</td>
-<td>(0.079)</td>
-<td>(0.079)</td>
+<td>(0.080)</td>
+<td>(0.080)</td>
 </tr>
 <tr>
 <td>longitude_centre</td>
 <td></td>
-<td>1.103***</td>
+<td>1.115***</td>
 <td></td>
-<td>1.117***</td>
-<td>1.086***</td>
-<td>1.086***</td>
+<td>1.127***</td>
+<td>1.094***</td>
+<td>1.094***</td>
 </tr>
 <tr>
 <td></td>
@@ -1735,7 +1787,7 @@ modelsummary(list("Dep FEs" = m_dep,
 <td></td>
 <td></td>
 <td>-0.113***</td>
-<td>-0.127***</td>
+<td>-0.126***</td>
 <td>-0.121***</td>
 <td>-0.121***</td>
 </tr>
@@ -1823,11 +1875,11 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>N</td>
 <td>184723</td>
-<td>138508</td>
+<td>138344</td>
 <td>159806</td>
-<td>136111</td>
-<td>136107</td>
-<td>136107</td>
+<td>135947</td>
+<td>135943</td>
+<td>135943</td>
 </tr>
 <tr>
 <td>R^2</td>
@@ -1907,21 +1959,21 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 <tbody>
 <tr>
 <td>(Intercept)</td>
-<td>42.939***</td>
+<td>47.213***</td>
 <td>7.865***</td>
-<td>22.433***</td>
+<td>24.639***</td>
 </tr>
 <tr>
 <td></td>
-<td>(6.669)</td>
+<td>(6.680)</td>
 <td>(2.259)</td>
-<td>(6.257)</td>
+<td>(6.279)</td>
 </tr>
 <tr>
 <td>share_protestant</td>
 <td>0.013**</td>
 <td>0.009*</td>
-<td>0.007+</td>
+<td>0.008+</td>
 </tr>
 <tr>
 <td></td>
@@ -1931,9 +1983,9 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 </tr>
 <tr>
 <td>letter</td>
-<td>-1.947***</td>
+<td>-1.968***</td>
 <td></td>
-<td>-1.414***</td>
+<td>-1.413***</td>
 </tr>
 <tr>
 <td></td>
@@ -1943,15 +1995,15 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 </tr>
 <tr>
 <td>brigade</td>
-<td>0.271</td>
+<td>0.276+</td>
 <td></td>
-<td>0.117</td>
+<td>0.123</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.167)</td>
+<td>(0.168)</td>
 <td></td>
-<td>(0.136)</td>
+<td>(0.137)</td>
 </tr>
 <tr>
 <td>dist_cassini</td>
@@ -1967,9 +2019,9 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 </tr>
 <tr>
 <td>HubDist</td>
-<td>-0.055***</td>
+<td>-0.059***</td>
 <td></td>
-<td>-0.031***</td>
+<td>-0.032***</td>
 </tr>
 <tr>
 <td></td>
@@ -1979,9 +2031,9 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 </tr>
 <tr>
 <td>revratio1790</td>
-<td>7.666***</td>
+<td>7.651***</td>
 <td></td>
-<td>3.276***</td>
+<td>3.285***</td>
 </tr>
 <tr>
 <td></td>
@@ -1990,10 +2042,22 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 <td>(0.154)</td>
 </tr>
 <tr>
-<td>total_protests</td>
-<td>0.195***</td>
+<td>heg_value</td>
+<td>-0.026***</td>
 <td></td>
-<td>0.022+</td>
+<td>-0.011***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.003)</td>
+<td></td>
+<td>(0.003)</td>
+</tr>
+<tr>
+<td>total_protests</td>
+<td>0.194***</td>
+<td></td>
+<td>0.020+</td>
 </tr>
 <tr>
 <td></td>
@@ -2015,7 +2079,7 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 </tr>
 <tr>
 <td>pserment1791</td>
-<td>-0.036***</td>
+<td>-0.035***</td>
 <td></td>
 <td>-0.017***</td>
 </tr>
@@ -2039,9 +2103,9 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 </tr>
 <tr>
 <td>latitude_centre</td>
-<td>-0.300*</td>
+<td>-0.332**</td>
 <td></td>
-<td>-0.294*</td>
+<td>-0.314*</td>
 </tr>
 <tr>
 <td></td>
@@ -2051,9 +2115,9 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 </tr>
 <tr>
 <td>longitude_centre</td>
-<td>-0.591***</td>
+<td>-0.612***</td>
 <td></td>
-<td>-0.448***</td>
+<td>-0.468***</td>
 </tr>
 <tr>
 <td></td>
@@ -2089,7 +2153,7 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 <td>petranger</td>
 <td></td>
 <td>0.043***</td>
-<td>0.086***</td>
+<td>0.082***</td>
 </tr>
 <tr>
 <td></td>
@@ -2101,7 +2165,7 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 <td>pchom</td>
 <td></td>
 <td>-0.027***</td>
-<td>-0.032***</td>
+<td>-0.031***</td>
 </tr>
 <tr>
 <td></td>
@@ -2113,7 +2177,7 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 <td>prixbien</td>
 <td></td>
 <td>0.047***</td>
-<td>0.045***</td>
+<td>0.046***</td>
 </tr>
 <tr>
 <td></td>
@@ -2123,9 +2187,9 @@ modelsummary(list("Historical Controls" = m_educ_hist,
 </tr>
 <tr>
 <td>N</td>
-<td>138490</td>
+<td>138326</td>
 <td>159812</td>
-<td>136117</td>
+<td>135953</td>
 </tr>
 <tr>
 <td>R^2</td>
@@ -2161,7 +2225,7 @@ m_hist <- lm(data = d_FN_controls |>
                filter(category == "Original") |>
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 +
            altitude_moyenne + latitude_centre + longitude_centre)
 
@@ -2175,7 +2239,7 @@ m_all <- lm(data = d_FN_controls |>
               filter(category == "Original") |>
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
             altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + 
@@ -2186,7 +2250,7 @@ m_all_sup <- lm(data = d_FN_controls |>
                   filter(category == "Original") |>
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
             altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + 
@@ -2197,7 +2261,7 @@ m_all_educ <- lm(data = d_FN_controls |>
                    filter(category == "Original") |>
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 +
             altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + 
@@ -2210,7 +2274,7 @@ m_educ_hist <- lm(data = d_FN_controls |>
                     filter(category == "Original") |>
            mutate(year = as.character(year)),
          psup ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 +
             altitude_moyenne + latitude_centre + longitude_centre)
 
@@ -2224,7 +2288,7 @@ m_educ_all <- lm(data = d_FN_controls |>
                    filter(category == "Original") |>
            mutate(year = as.character(year)),
          psup ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
             altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + 
@@ -2301,38 +2365,38 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>(Intercept)</td>
 <td>7.814***</td>
-<td>70.739***</td>
+<td>71.336***</td>
 <td>15.970***</td>
-<td>58.722***</td>
-<td>52.455***</td>
-<td>52.455***</td>
-<td>-108.623***</td>
+<td>59.483***</td>
+<td>53.820***</td>
+<td>53.834***</td>
+<td>-103.455***</td>
 <td>3.230</td>
-<td>-57.957**</td>
+<td>-52.438*</td>
 </tr>
 <tr>
 <td></td>
 <td>(1.870)</td>
-<td>(14.798)</td>
+<td>(14.831)</td>
 <td>(1.627)</td>
-<td>(14.486)</td>
-<td>(14.214)</td>
-<td>(14.216)</td>
-<td>(22.733)</td>
+<td>(14.516)</td>
+<td>(14.245)</td>
+<td>(14.244)</td>
+<td>(22.850)</td>
 <td>(2.568)</td>
-<td>(21.355)</td>
+<td>(21.434)</td>
 </tr>
 <tr>
 <td>share_protestant</td>
 <td>-0.013***</td>
-<td>-0.012***</td>
 <td>-0.013***</td>
+<td>-0.013***</td>
+<td>-0.011***</td>
 <td>-0.010***</td>
 <td>-0.010***</td>
-<td>-0.010***</td>
-<td>0.009</td>
+<td>0.009+</td>
 <td>0.013**</td>
-<td>0.005</td>
+<td>0.006</td>
 </tr>
 <tr>
 <td></td>
@@ -2349,50 +2413,50 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>letter</td>
 <td></td>
-<td>0.192</td>
+<td>0.179</td>
 <td></td>
-<td>-0.061</td>
-<td>-0.219</td>
-<td>-0.221</td>
-<td>-2.318***</td>
+<td>-0.082</td>
+<td>-0.235</td>
+<td>-0.237</td>
+<td>-2.295***</td>
 <td></td>
-<td>-1.464***</td>
+<td>-1.416***</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td>(0.195)</td>
+<td>(0.196)</td>
 <td></td>
-<td>(0.194)</td>
-<td>(0.190)</td>
+<td>(0.195)</td>
+<td>(0.191)</td>
 <td>(0.191)</td>
 <td>(0.273)</td>
 <td></td>
-<td>(0.254)</td>
+<td>(0.255)</td>
 </tr>
 <tr>
 <td>brigade</td>
 <td></td>
-<td>-1.993***</td>
+<td>-1.984***</td>
 <td></td>
-<td>-1.755***</td>
-<td>-1.658***</td>
-<td>-1.658***</td>
-<td>1.317***</td>
+<td>-1.738***</td>
+<td>-1.645***</td>
+<td>-1.645***</td>
+<td>1.288***</td>
 <td></td>
-<td>0.902**</td>
+<td>0.861**</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
+<td>(0.227)</td>
+<td></td>
 <td>(0.226)</td>
+<td>(0.220)</td>
+<td>(0.220)</td>
+<td>(0.331)</td>
 <td></td>
-<td>(0.225)</td>
-<td>(0.218)</td>
-<td>(0.218)</td>
-<td>(0.329)</td>
-<td></td>
-<td>(0.283)</td>
+<td>(0.284)</td>
 </tr>
 <tr>
 <td>dist_cassini</td>
@@ -2421,14 +2485,14 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>HubDist</td>
 <td></td>
-<td>-0.023***</td>
+<td>-0.025***</td>
 <td></td>
-<td>-0.034***</td>
-<td>-0.039***</td>
-<td>-0.039***</td>
-<td>-0.084***</td>
+<td>-0.037***</td>
+<td>-0.042***</td>
+<td>-0.043***</td>
+<td>-0.085***</td>
 <td></td>
-<td>-0.049***</td>
+<td>-0.047***</td>
 </tr>
 <tr>
 <td></td>
@@ -2445,26 +2509,50 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>revratio1790</td>
 <td></td>
-<td>-1.972***</td>
+<td>-2.020***</td>
 <td></td>
-<td>-0.701*</td>
-<td>-0.265</td>
-<td>-0.263</td>
-<td>8.468***</td>
+<td>-0.770*</td>
+<td>-0.326</td>
+<td>-0.323</td>
+<td>8.492***</td>
 <td></td>
-<td>4.071***</td>
+<td>4.144***</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td>(0.242)</td>
+<td>(0.246)</td>
 <td></td>
-<td>(0.335)</td>
-<td>(0.311)</td>
+<td>(0.336)</td>
 <td>(0.312)</td>
-<td>(0.410)</td>
+<td>(0.313)</td>
+<td>(0.416)</td>
 <td></td>
-<td>(0.624)</td>
+<td>(0.626)</td>
+</tr>
+<tr>
+<td>heg_value</td>
+<td></td>
+<td>-0.008</td>
+<td></td>
+<td>-0.013</td>
+<td>-0.015+</td>
+<td>-0.015+</td>
+<td>-0.027+</td>
+<td></td>
+<td>-0.021</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.010)</td>
+<td></td>
+<td>(0.009)</td>
+<td>(0.009)</td>
+<td>(0.009)</td>
+<td>(0.016)</td>
+<td></td>
+<td>(0.014)</td>
 </tr>
 <tr>
 <td>total_protests</td>
@@ -2474,9 +2562,9 @@ modelsummary(list("Dep FEs" = m_dep,
 <td>-0.038**</td>
 <td>-0.021</td>
 <td>-0.021</td>
-<td>0.379***</td>
+<td>0.380***</td>
 <td></td>
-<td>0.156***</td>
+<td>0.157***</td>
 </tr>
 <tr>
 <td></td>
@@ -2493,14 +2581,14 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>pconjsign1686</td>
 <td></td>
-<td>-0.043***</td>
+<td>-0.044***</td>
 <td></td>
 <td>-0.029***</td>
 <td>-0.026***</td>
 <td>-0.026***</td>
 <td>0.060***</td>
 <td></td>
-<td>0.029***</td>
+<td>0.030***</td>
 </tr>
 <tr>
 <td></td>
@@ -2520,11 +2608,11 @@ modelsummary(list("Dep FEs" = m_dep,
 <td>-0.021***</td>
 <td></td>
 <td>-0.023***</td>
-<td>-0.022***</td>
-<td>-0.022***</td>
-<td>0.000</td>
+<td>-0.023***</td>
+<td>-0.023***</td>
+<td>0.001</td>
 <td></td>
-<td>0.006</td>
+<td>0.008</td>
 </tr>
 <tr>
 <td></td>
@@ -2544,7 +2632,7 @@ modelsummary(list("Dep FEs" = m_dep,
 <td>-0.009***</td>
 <td></td>
 <td>-0.009***</td>
-<td>-0.009***</td>
+<td>-0.008***</td>
 <td>-0.008***</td>
 <td>0.004***</td>
 <td></td>
@@ -2565,14 +2653,14 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>latitude_centre</td>
 <td></td>
-<td>-1.177***</td>
+<td>-1.172***</td>
 <td></td>
-<td>-0.730*</td>
-<td>-0.587+</td>
-<td>-0.587+</td>
-<td>2.848***</td>
+<td>-0.715*</td>
+<td>-0.579+</td>
+<td>-0.579+</td>
+<td>2.806***</td>
 <td></td>
-<td>1.317**</td>
+<td>1.253**</td>
 </tr>
 <tr>
 <td></td>
@@ -2589,26 +2677,26 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>longitude_centre</td>
 <td></td>
-<td>0.428*</td>
+<td>0.426+</td>
 <td></td>
 <td>0.242</td>
-<td>0.239</td>
-<td>0.239</td>
-<td>-0.636+</td>
+<td>0.228</td>
+<td>0.227</td>
+<td>-0.724*</td>
 <td></td>
-<td>-0.022</td>
+<td>-0.130</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
+<td>(0.220)</td>
+<td></td>
 <td>(0.217)</td>
+<td>(0.214)</td>
+<td>(0.214)</td>
+<td>(0.368)</td>
 <td></td>
-<td>(0.215)</td>
-<td>(0.212)</td>
-<td>(0.212)</td>
-<td>(0.363)</td>
-<td></td>
-<td>(0.343)</td>
+<td>(0.348)</td>
 </tr>
 <tr>
 <td>revmoy</td>
@@ -2663,12 +2751,12 @@ modelsummary(list("Dep FEs" = m_dep,
 <td></td>
 <td></td>
 <td>-0.135***</td>
-<td>-0.103***</td>
-<td>-0.090***</td>
-<td>-0.090***</td>
+<td>-0.105***</td>
+<td>-0.092***</td>
+<td>-0.092***</td>
 <td></td>
 <td>0.262***</td>
-<td>0.123*</td>
+<td>0.121*</td>
 </tr>
 <tr>
 <td></td>
@@ -2687,7 +2775,7 @@ modelsummary(list("Dep FEs" = m_dep,
 <td></td>
 <td></td>
 <td>-0.054***</td>
-<td>-0.035**</td>
+<td>-0.036**</td>
 <td>-0.045***</td>
 <td>-0.045***</td>
 <td></td>
@@ -2781,14 +2869,14 @@ modelsummary(list("Dep FEs" = m_dep,
 <tr>
 <td>N</td>
 <td>13873</td>
-<td>10938</td>
+<td>10918</td>
 <td>12404</td>
-<td>10803</td>
-<td>10802</td>
-<td>10802</td>
-<td>10930</td>
+<td>10783</td>
+<td>10782</td>
+<td>10782</td>
+<td>10910</td>
 <td>12403</td>
-<td>10802</td>
+<td>10782</td>
 </tr>
 <tr>
 <td>R^2</td>
@@ -2867,7 +2955,7 @@ results <- d_FN_controls |>
         model <-
           lm_robust(
             pvoixRN ~ share_protestant + dep + letter + brigade +
-              dist_cassini + HubDist + revratio1790 +
+              dist_cassini + HubDist + revratio1790 + heg_value +
               total_protests + pconjsign1686 + pserment1791 +
               altitude_moyenne + latitude_centre + longitude_centre +
               revmoy + pop +
@@ -2889,7 +2977,7 @@ results <- d_FN_controls |>
       group_modify(~ {
         model <- lm_robust(
           pvoixRN ~ share_protestant + dep + letter + brigade +
-            dist_cassini + HubDist + revratio1790 +
+            dist_cassini + HubDist + revratio1790 + heg_value +
             total_protests + pconjsign1686 + pserment1791 +
             altitude_moyenne + latitude_centre + longitude_centre +
             revmoy + pop +
@@ -2929,7 +3017,1153 @@ ggplot(results, aes(x = as.numeric(Year), y = estimate, colour = group, shape = 
   theme(legend.position = "bottom", legend.box = "vertical")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
+
+``` r
+m_dep <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ log(share_protestant + 1) + year + dep)
+
+m_hist <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ log(share_protestant + 1) + year + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre)
+
+m_cont <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ log(share_protestant + 1) + year + dep + revmoy + pop + petranger + 
+           pchom + prixbien)
+
+m_all <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ log(share_protestant + 1) + year + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien)
+
+m_all_sup <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ log(share_protestant + 1) + year + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + psup)
+
+m_all_educ <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         pvoixRN ~ log(share_protestant + 1) + year + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + psup + pbac)
+
+
+
+m_educ_hist <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         psup ~ log(share_protestant + 1) + year + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre)
+
+m_educ_cont <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         psup ~ log(share_protestant + 1) + year + dep + revmoy + pop + petranger + 
+           pchom + prixbien)
+
+m_educ_all <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         psup ~ log(share_protestant + 1) + year + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien)
+
+modelsummary(list("Dep FEs" = m_dep, 
+                  "Historical Controls" = m_hist, 
+                  "Contemp. Controls" = m_cont, 
+                  "Both Controls" = m_all, 
+                  "Both Sets + Higher Ed" = m_all_sup,
+                  "Both Sets + Higher Ed + High School" = m_all_educ), 
+             vcov = "robust", cluster = "codecommune",
+             stars = TRUE,
+             
+             coef_omit = "year|dep",
+             # coef_map = c(
+             #   "(Intercept)" = "Constant",
+             #   "share_protestant" = "Share of Protestants in 1839",
+             #   "revmoy" = "Average income",
+             #   "pop" = "Population", 
+             #   "petranger" = "Percentage of foreigners",
+             #   "psup" = "Percentage of people with higher education",
+             #   "pbac" = "Percentage of people with the bac",
+             #   "pconjsign1816" = "Literacy in 1816",
+             #   "pserment1791" = "Share of constitutional priests in 1791"
+             #   ),
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2),
+             # add_rows = tibble::tribble(
+             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
+             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+             # ),
+             #output = "table1.tex",
+             #output = "text"
+             )
+```
+
+<table style="width:97%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 7%" />
+<col style="width: 13%" />
+<col style="width: 12%" />
+<col style="width: 9%" />
+<col style="width: 14%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>Dep FEs</th>
+<th>Historical Controls</th>
+<th>Contemp. Controls</th>
+<th>Both Controls</th>
+<th>Both Sets + Higher Ed</th>
+<th>Both Sets + Higher Ed + High School</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(Intercept)</td>
+<td>7.753***</td>
+<td>-46.265***</td>
+<td>15.033***</td>
+<td>-36.724***</td>
+<td>-34.921***</td>
+<td>-34.921***</td>
+</tr>
+<tr>
+<td></td>
+<td>(2.030)</td>
+<td>(4.560)</td>
+<td>(1.682)</td>
+<td>(4.269)</td>
+<td>(4.215)</td>
+<td>(4.217)</td>
+</tr>
+<tr>
+<td>log(share_protestant + 1)</td>
+<td>-0.381***</td>
+<td>-0.361***</td>
+<td>-0.328***</td>
+<td>-0.320***</td>
+<td>-0.317***</td>
+<td>-0.317***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.030)</td>
+<td>(0.033)</td>
+<td>(0.031)</td>
+<td>(0.032)</td>
+<td>(0.032)</td>
+<td>(0.032)</td>
+</tr>
+<tr>
+<td>letter</td>
+<td></td>
+<td>-0.344***</td>
+<td></td>
+<td>-0.483***</td>
+<td>-0.585***</td>
+<td>-0.585***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.085)</td>
+<td></td>
+<td>(0.083)</td>
+<td>(0.083)</td>
+<td>(0.083)</td>
+</tr>
+<tr>
+<td>brigade</td>
+<td></td>
+<td>-1.271***</td>
+<td></td>
+<td>-1.161***</td>
+<td>-1.153***</td>
+<td>-1.153***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.110)</td>
+<td></td>
+<td>(0.107)</td>
+<td>(0.106)</td>
+<td>(0.106)</td>
+</tr>
+<tr>
+<td>dist_cassini</td>
+<td></td>
+<td>0.000***</td>
+<td></td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>HubDist</td>
+<td></td>
+<td>-0.013***</td>
+<td></td>
+<td>-0.019***</td>
+<td>-0.021***</td>
+<td>-0.021***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.001)</td>
+<td></td>
+<td>(0.001)</td>
+<td>(0.001)</td>
+<td>(0.001)</td>
+</tr>
+<tr>
+<td>revratio1790</td>
+<td></td>
+<td>-1.582***</td>
+<td></td>
+<td>-0.136+</td>
+<td>0.100</td>
+<td>0.100</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.068)</td>
+<td></td>
+<td>(0.082)</td>
+<td>(0.081)</td>
+<td>(0.081)</td>
+</tr>
+<tr>
+<td>heg_value</td>
+<td></td>
+<td>0.009***</td>
+<td></td>
+<td>0.001</td>
+<td>0.001</td>
+<td>0.001</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.002)</td>
+<td></td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+</tr>
+<tr>
+<td>total_protests</td>
+<td></td>
+<td>-0.047***</td>
+<td></td>
+<td>-0.005</td>
+<td>-0.003</td>
+<td>-0.003</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.011)</td>
+<td></td>
+<td>(0.009)</td>
+<td>(0.009)</td>
+<td>(0.009)</td>
+</tr>
+<tr>
+<td>pconjsign1686</td>
+<td></td>
+<td>-0.019***</td>
+<td></td>
+<td>-0.011***</td>
+<td>-0.010***</td>
+<td>-0.010***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.001)</td>
+<td></td>
+<td>(0.001)</td>
+<td>(0.001)</td>
+<td>(0.001)</td>
+</tr>
+<tr>
+<td>pserment1791</td>
+<td></td>
+<td>0.005***</td>
+<td></td>
+<td>0.002+</td>
+<td>0.001</td>
+<td>0.001</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.001)</td>
+<td></td>
+<td>(0.001)</td>
+<td>(0.001)</td>
+<td>(0.001)</td>
+</tr>
+<tr>
+<td>altitude_moyenne</td>
+<td></td>
+<td>-0.005***</td>
+<td></td>
+<td>-0.005***</td>
+<td>-0.005***</td>
+<td>-0.005***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>latitude_centre</td>
+<td></td>
+<td>1.121***</td>
+<td></td>
+<td>1.105***</td>
+<td>1.082***</td>
+<td>1.082***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.082)</td>
+<td></td>
+<td>(0.080)</td>
+<td>(0.080)</td>
+<td>(0.080)</td>
+</tr>
+<tr>
+<td>longitude_centre</td>
+<td></td>
+<td>1.108***</td>
+<td></td>
+<td>1.120***</td>
+<td>1.087***</td>
+<td>1.087***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.051)</td>
+<td></td>
+<td>(0.050)</td>
+<td>(0.050)</td>
+<td>(0.050)</td>
+</tr>
+<tr>
+<td>revmoy</td>
+<td></td>
+<td></td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>pop</td>
+<td></td>
+<td></td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>petranger</td>
+<td></td>
+<td></td>
+<td>-0.113***</td>
+<td>-0.126***</td>
+<td>-0.121***</td>
+<td>-0.121***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.006)</td>
+<td>(0.007)</td>
+<td>(0.007)</td>
+<td>(0.007)</td>
+</tr>
+<tr>
+<td>pchom</td>
+<td></td>
+<td></td>
+<td>0.001</td>
+<td>0.006+</td>
+<td>0.004</td>
+<td>0.004</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.003)</td>
+<td>(0.003)</td>
+<td>(0.003)</td>
+<td>(0.003)</td>
+</tr>
+<tr>
+<td>prixbien</td>
+<td></td>
+<td></td>
+<td>-0.007***</td>
+<td>-0.010***</td>
+<td>-0.007***</td>
+<td>-0.007***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>psup</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-0.072***</td>
+<td>-0.072***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.002)</td>
+<td>(0.004)</td>
+</tr>
+<tr>
+<td>pbac</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0.000</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.003)</td>
+</tr>
+<tr>
+<td>N</td>
+<td>184723</td>
+<td>138344</td>
+<td>159806</td>
+<td>135947</td>
+<td>135943</td>
+<td>135943</td>
+</tr>
+<tr>
+<td>R^2</td>
+<td>0.57</td>
+<td>0.59</td>
+<td>0.59</td>
+<td>0.61</td>
+<td>0.62</td>
+<td>0.62</td>
+</tr>
+<tr>
+<td>Adj. R^2</td>
+<td>0.57</td>
+<td>0.59</td>
+<td>0.59</td>
+<td>0.61</td>
+<td>0.62</td>
+<td>0.62</td>
+</tr>
+</tbody><tfoot>
+<tr>
+<td colspan="7"><ul>
+<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
+</ul></td>
+</tr>
+</tfoot>
+&#10;</table>
+
+``` r
+modelsummary(list("Historical Controls" = m_educ_hist, 
+                  "Contemp. Controls" = m_educ_cont, 
+                  "Both Controls" = m_educ_all ), 
+             vcov = "robust", cluster = "codecommune",
+             stars = TRUE,
+             
+             coef_omit = "year|dep",
+             # coef_map = c(
+             #   "(Intercept)" = "Constant",
+             #   "share_protestant" = "Share of Protestants in 1839",
+             #   "revmoy" = "Average income",
+             #   "pop" = "Population", 
+             #   "petranger" = "Percentage of foreigners",
+             #   "psup" = "Percentage of people with higher education",
+             #   "pbac" = "Percentage of people with the bac",
+             #   "pconjsign1816" = "Literacy in 1816",
+             #   "pserment1791" = "Share of constitutional priests in 1791"
+             #   ),
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2),
+             # add_rows = tibble::tribble(
+             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
+             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+             # ),
+             #output = "table1.tex",
+             #output = "text"
+             )
+```
+
+<table style="width:98%;">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 25%" />
+<col style="width: 22%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>Historical Controls</th>
+<th>Contemp. Controls</th>
+<th>Both Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(Intercept)</td>
+<td>46.888***</td>
+<td>7.859***</td>
+<td>24.652***</td>
+</tr>
+<tr>
+<td></td>
+<td>(6.692)</td>
+<td>(2.270)</td>
+<td>(6.289)</td>
+</tr>
+<tr>
+<td>log(share_protestant + 1)</td>
+<td>0.132*</td>
+<td>0.052</td>
+<td>0.047</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.055)</td>
+<td>(0.049)</td>
+<td>(0.054)</td>
+</tr>
+<tr>
+<td>letter</td>
+<td>-1.974***</td>
+<td></td>
+<td>-1.415***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.124)</td>
+<td></td>
+<td>(0.109)</td>
+</tr>
+<tr>
+<td>brigade</td>
+<td>0.271</td>
+<td></td>
+<td>0.122</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.168)</td>
+<td></td>
+<td>(0.137)</td>
+</tr>
+<tr>
+<td>dist_cassini</td>
+<td>0.000*</td>
+<td></td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.000)</td>
+<td></td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>HubDist</td>
+<td>-0.059***</td>
+<td></td>
+<td>-0.032***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.002)</td>
+<td></td>
+<td>(0.002)</td>
+</tr>
+<tr>
+<td>revratio1790</td>
+<td>7.650***</td>
+<td></td>
+<td>3.284***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.126)</td>
+<td></td>
+<td>(0.154)</td>
+</tr>
+<tr>
+<td>heg_value</td>
+<td>-0.026***</td>
+<td></td>
+<td>-0.011***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.003)</td>
+<td></td>
+<td>(0.003)</td>
+</tr>
+<tr>
+<td>total_protests</td>
+<td>0.194***</td>
+<td></td>
+<td>0.020+</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.024)</td>
+<td></td>
+<td>(0.011)</td>
+</tr>
+<tr>
+<td>pconjsign1686</td>
+<td>0.041***</td>
+<td></td>
+<td>0.022***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.002)</td>
+<td></td>
+<td>(0.002)</td>
+</tr>
+<tr>
+<td>pserment1791</td>
+<td>-0.035***</td>
+<td></td>
+<td>-0.017***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.002)</td>
+<td></td>
+<td>(0.002)</td>
+</tr>
+<tr>
+<td>altitude_moyenne</td>
+<td>0.000*</td>
+<td></td>
+<td>0.002***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.000)</td>
+<td></td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>latitude_centre</td>
+<td>-0.329*</td>
+<td></td>
+<td>-0.315*</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.129)</td>
+<td></td>
+<td>(0.123)</td>
+</tr>
+<tr>
+<td>longitude_centre</td>
+<td>-0.608***</td>
+<td></td>
+<td>-0.466***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.080)</td>
+<td></td>
+<td>(0.076)</td>
+</tr>
+<tr>
+<td>revmoy</td>
+<td></td>
+<td>0.001***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>pop</td>
+<td></td>
+<td>0.000***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>petranger</td>
+<td></td>
+<td>0.043***</td>
+<td>0.082***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.011)</td>
+<td>(0.013)</td>
+</tr>
+<tr>
+<td>pchom</td>
+<td></td>
+<td>-0.027***</td>
+<td>-0.031***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.008)</td>
+<td>(0.008)</td>
+</tr>
+<tr>
+<td>prixbien</td>
+<td></td>
+<td>0.047***</td>
+<td>0.046***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.001)</td>
+<td>(0.001)</td>
+</tr>
+<tr>
+<td>N</td>
+<td>138326</td>
+<td>159812</td>
+<td>135953</td>
+</tr>
+<tr>
+<td>R^2</td>
+<td>0.34</td>
+<td>0.41</td>
+<td>0.40</td>
+</tr>
+<tr>
+<td>Adj. R^2</td>
+<td>0.34</td>
+<td>0.41</td>
+<td>0.40</td>
+</tr>
+</tbody><tfoot>
+<tr>
+<td colspan="4"><ul>
+<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
+</ul></td>
+</tr>
+</tfoot>
+&#10;</table>
+
+## Heterogenous Effects
+
+``` r
+m_int_educ_hist <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         psup ~ share_protestant + pserment1791 + share_protestant*pserment1791 + 
+           year + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 +
+           altitude_moyenne + latitude_centre + longitude_centre)
+
+m_int_educ_all <- lm(data = d_FN_controls |> 
+           mutate(year = as.character(year)),
+         psup ~ share_protestant + pserment1791 + share_protestant*pserment1791 + 
+           year + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien)
+
+modelsummary(list("Historical Controls" = m_int_educ_hist, 
+                  "Both Controls" = m_int_educ_all ), 
+             vcov = "robust", cluster = "codecommune",
+             stars = TRUE,
+             
+             coef_omit = "year|dep",
+             # coef_map = c(
+             #   "(Intercept)" = "Constant",
+             #   "share_protestant" = "Share of Protestants in 1839",
+             #   "revmoy" = "Average income",
+             #   "pop" = "Population", 
+             #   "petranger" = "Percentage of foreigners",
+             #   "psup" = "Percentage of people with higher education",
+             #   "pbac" = "Percentage of people with the bac",
+             #   "pconjsign1816" = "Literacy in 1816",
+             #   "pserment1791" = "Share of constitutional priests in 1791"
+             #   ),
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2),
+             # add_rows = tibble::tribble(
+             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
+             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
+             # ),
+             #output = "table1.tex",
+             #output = "text"
+             )
+```
+
+<table style="width:99%;">
+<colgroup>
+<col style="width: 46%" />
+<col style="width: 30%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>Historical Controls</th>
+<th>Both Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(Intercept)</td>
+<td>47.446***</td>
+<td>24.720***</td>
+</tr>
+<tr>
+<td></td>
+<td>(6.679)</td>
+<td>(6.278)</td>
+</tr>
+<tr>
+<td>share_protestant</td>
+<td>-0.036***</td>
+<td>-0.038***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.008)</td>
+<td>(0.008)</td>
+</tr>
+<tr>
+<td>pserment1791</td>
+<td>-0.036***</td>
+<td>-0.018***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+</tr>
+<tr>
+<td>letter</td>
+<td>-1.956***</td>
+<td>-1.402***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.124)</td>
+<td>(0.109)</td>
+</tr>
+<tr>
+<td>brigade</td>
+<td>0.273</td>
+<td>0.120</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.168)</td>
+<td>(0.137)</td>
+</tr>
+<tr>
+<td>dist_cassini</td>
+<td>0.000*</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>HubDist</td>
+<td>-0.059***</td>
+<td>-0.032***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+</tr>
+<tr>
+<td>revratio1790</td>
+<td>7.644***</td>
+<td>3.282***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.126)</td>
+<td>(0.154)</td>
+</tr>
+<tr>
+<td>heg_value</td>
+<td>-0.026***</td>
+<td>-0.011***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.003)</td>
+<td>(0.003)</td>
+</tr>
+<tr>
+<td>total_protests</td>
+<td>0.194***</td>
+<td>0.020+</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.024)</td>
+<td>(0.011)</td>
+</tr>
+<tr>
+<td>pconjsign1686</td>
+<td>0.041***</td>
+<td>0.022***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+</tr>
+<tr>
+<td>altitude_moyenne</td>
+<td>0.000+</td>
+<td>0.002***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>latitude_centre</td>
+<td>-0.331*</td>
+<td>-0.310*</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.129)</td>
+<td>(0.123)</td>
+</tr>
+<tr>
+<td>longitude_centre</td>
+<td>-0.615***</td>
+<td>-0.473***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.080)</td>
+<td>(0.076)</td>
+</tr>
+<tr>
+<td>share_protestant × pserment1791</td>
+<td>0.001***</td>
+<td>0.001***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>revmoy</td>
+<td></td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>pop</td>
+<td></td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>petranger</td>
+<td></td>
+<td>0.083***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.013)</td>
+</tr>
+<tr>
+<td>pchom</td>
+<td></td>
+<td>-0.031***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.008)</td>
+</tr>
+<tr>
+<td>prixbien</td>
+<td></td>
+<td>0.046***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.001)</td>
+</tr>
+<tr>
+<td>N</td>
+<td>138326</td>
+<td>135953</td>
+</tr>
+<tr>
+<td>R^2</td>
+<td>0.34</td>
+<td>0.40</td>
+</tr>
+<tr>
+<td>Adj. R^2</td>
+<td>0.34</td>
+<td>0.40</td>
+</tr>
+</tbody><tfoot>
+<tr>
+<td colspan="3"><ul>
+<li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
+</ul></td>
+</tr>
+</tfoot>
+&#10;</table>
+
+``` r
+plot_slopes(m_int_educ_all, 
+            variables = "share_protestant", 
+            condition = "pserment1791", 
+            draw = FALSE) |>
+  ggplot(aes(x = pserment1791, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_ribbon(alpha = 0.2) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(
+    x = "Share of Constitutional Priests in 1791",
+    y = "Marginal Effect",
+    title = "Marginal Effect of Share of Protestants on Share of Higher Education",
+    subtitle = "With Both Historical and Contemporary Controls"
+  )
+```
+
+![](code_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
 
 ## Mediation Analysis
 
@@ -2942,7 +4176,7 @@ package
 m_all_educ <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien + psup + pbac)
@@ -2951,7 +4185,7 @@ m_educ_all <- lm(data = d_FN_controls |>
                    filter(!is.na(pvoixRN)) |>
            mutate(year = as.character(year)),
          psup ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 +
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien)
@@ -2974,14 +4208,14 @@ summary(club_med)
     ## Quasi-Bayesian Confidence Intervals
     ## 
     ##                   Estimate 95% CI Lower 95% CI Upper p-value    
-    ## ACME           -5.1142e-04  -1.1429e-03   2.7578e-05    0.08 .  
-    ## ADE            -2.3139e-02  -2.7248e-02  -1.9190e-02  <2e-16 ***
-    ## Total Effect   -2.3651e-02  -2.7888e-02  -1.9492e-02  <2e-16 ***
-    ## Prop. Mediated  1.9164e-02  -1.2970e-03   4.6399e-02    0.08 .  
+    ## ACME           -6.0289e-04  -1.2420e-03   5.4579e-05    0.08 .  
+    ## ADE            -2.3960e-02  -2.7710e-02  -1.9666e-02  <2e-16 ***
+    ## Total Effect   -2.4563e-02  -2.8285e-02  -2.0194e-02  <2e-16 ***
+    ## Prop. Mediated  2.4450e-02  -2.4201e-03   4.7932e-02    0.08 .  
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Sample Size Used: 136107 
+    ## Sample Size Used: 135943 
     ## 
     ## 
     ## Simulations: 100
@@ -3000,7 +4234,7 @@ the RN/FN since 1993 using the `sensemakr` package
 m_all_educ <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien + psup + pbac)
@@ -3019,7 +4253,7 @@ summary(sense_and_sensitivity)
     ## Sensitivity Analysis to Unobserved Confounding
     ## 
     ## Model Formula: pvoixRN ~ share_protestant + year + dep + letter + brigade + 
-    ##     dist_cassini + HubDist + revratio1790 + total_protests + 
+    ##     dist_cassini + HubDist + revratio1790 + heg_value + total_protests + 
     ##     pconjsign1686 + pserment1791 + altitude_moyenne + latitude_centre + 
     ##     longitude_centre + revmoy + pop + petranger + pchom + prixbien + 
     ##     psup + pbac
@@ -3029,35 +4263,35 @@ summary(sense_and_sensitivity)
     ## -- The null hypothesis deemed problematic is H0:tau = 0 
     ## 
     ## Unadjusted Estimates of 'share_protestant': 
-    ##   Coef. estimate: -0.0234 
+    ##   Coef. estimate: -0.0237 
     ##   Standard Error: 0.0023 
-    ##   t-value (H0:tau = 0): -10.0141 
+    ##   t-value (H0:tau = 0): -10.118 
     ## 
     ## Sensitivity Statistics:
-    ##   Partial R2 of treatment with outcome: 7e-04 
-    ##   Robustness Value, q = 1: 0.0268 
-    ##   Robustness Value, q = 1, alpha = 0.05: 0.0216 
+    ##   Partial R2 of treatment with outcome: 8e-04 
+    ##   Robustness Value, q = 1: 0.0271 
+    ##   Robustness Value, q = 1, alpha = 0.05: 0.0219 
     ## 
     ## Verbal interpretation of sensitivity statistics:
     ## 
-    ## -- Partial R2 of the treatment with the outcome: an extreme confounder (orthogonal to the covariates) that explains 100% of the residual variance of the outcome, would need to explain at least 0.07% of the residual variance of the treatment to fully account for the observed estimated effect.
+    ## -- Partial R2 of the treatment with the outcome: an extreme confounder (orthogonal to the covariates) that explains 100% of the residual variance of the outcome, would need to explain at least 0.08% of the residual variance of the treatment to fully account for the observed estimated effect.
     ## 
-    ## -- Robustness Value, q = 1: unobserved confounders (orthogonal to the covariates) that explain more than 2.68% of the residual variance of both the treatment and the outcome are strong enough to bring the point estimate to 0 (a bias of 100% of the original estimate). Conversely, unobserved confounders that do not explain more than 2.68% of the residual variance of both the treatment and the outcome are not strong enough to bring the point estimate to 0.
+    ## -- Robustness Value, q = 1: unobserved confounders (orthogonal to the covariates) that explain more than 2.71% of the residual variance of both the treatment and the outcome are strong enough to bring the point estimate to 0 (a bias of 100% of the original estimate). Conversely, unobserved confounders that do not explain more than 2.71% of the residual variance of both the treatment and the outcome are not strong enough to bring the point estimate to 0.
     ## 
-    ## -- Robustness Value, q = 1, alpha = 0.05: unobserved confounders (orthogonal to the covariates) that explain more than 2.16% of the residual variance of both the treatment and the outcome are strong enough to bring the estimate to a range where it is no longer 'statistically different' from 0 (a bias of 100% of the original estimate), at the significance level of alpha = 0.05. Conversely, unobserved confounders that do not explain more than 2.16% of the residual variance of both the treatment and the outcome are not strong enough to bring the estimate to a range where it is no longer 'statistically different' from 0, at the significance level of alpha = 0.05.
+    ## -- Robustness Value, q = 1, alpha = 0.05: unobserved confounders (orthogonal to the covariates) that explain more than 2.19% of the residual variance of both the treatment and the outcome are strong enough to bring the estimate to a range where it is no longer 'statistically different' from 0 (a bias of 100% of the original estimate), at the significance level of alpha = 0.05. Conversely, unobserved confounders that do not explain more than 2.19% of the residual variance of both the treatment and the outcome are not strong enough to bring the estimate to a range where it is no longer 'statistically different' from 0, at the significance level of alpha = 0.05.
     ## 
     ## Bounds on omitted variable bias:
     ## 
     ## --The table below shows the maximum strength of unobserved confounders with association with the treatment and the outcome bounded by a multiple of the observed explanatory power of the chosen benchmark covariate(s).
     ## 
     ##  Bound Label R2dz.x R2yz.dx        Treatment Adjusted Estimate Adjusted Se
-    ##    2x revmoy 0.0005  0.0168 share_protestant           -0.0210      0.0023
-    ##   10x revmoy 0.0023  0.0839 share_protestant           -0.0115      0.0022
-    ##   20x revmoy 0.0045  0.1678 share_protestant            0.0005      0.0021
+    ##    2x revmoy 0.0005  0.0169 share_protestant           -0.0212      0.0023
+    ##   10x revmoy 0.0025  0.0846 share_protestant           -0.0110      0.0022
+    ##   20x revmoy 0.0051  0.1691 share_protestant            0.0017      0.0021
     ##  Adjusted T Adjusted Lower CI Adjusted Upper CI
-    ##     -9.0695           -0.0256           -0.0165
-    ##     -5.1288           -0.0159           -0.0071
-    ##      0.2151           -0.0037            0.0046
+    ##     -9.1121           -0.0257           -0.0166
+    ##     -4.9140           -0.0154           -0.0066
+    ##      0.7841           -0.0025            0.0059
 
 An unobserved confounder would have to explain at least 20 times more of
 the residual variance in the outcome and in the treatment than average
@@ -3069,7 +4303,7 @@ vote share of the RN/FN since 1993.
 plot(sense_and_sensitivity)
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 ## Weighting
 
@@ -3087,7 +4321,7 @@ d_hist <- d_FN_controls |>
   ) |>
   dplyr::select(
     pvoixRN, share_protestant,
-    letter, brigade, dist_cassini, HubDist, revratio1790,
+    letter, brigade, dist_cassini, HubDist, revratio1790, heg_value,
     total_protests, pconjsign1686, pserment1791,
     altitude_moyenne, latitude_centre, longitude_centre
   ) |>
@@ -3101,7 +4335,7 @@ d_full <- d_FN_controls |>
   ) |>
   dplyr::select(
     pvoixRN, share_protestant,
-    letter, brigade, dist_cassini, HubDist, revratio1790,
+    letter, brigade, dist_cassini, HubDist, revratio1790, heg_value,
     total_protests, pconjsign1686, pserment1791,
     altitude_moyenne, latitude_centre, longitude_centre,
     revmoy, pop, petranger, pchom, prixbien
@@ -3110,11 +4344,11 @@ d_full <- d_FN_controls |>
 
 
 f_hist <- share_protestant ~ letter + brigade + dist_cassini + HubDist +
-  revratio1790 + total_protests + pconjsign1686 + pserment1791 +
+  revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
   altitude_moyenne + latitude_centre + longitude_centre
 
 f_full <- share_protestant ~ letter + brigade + dist_cassini + HubDist +
-  revratio1790 + total_protests + pconjsign1686 + pserment1791 +
+  revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
   altitude_moyenne + latitude_centre + longitude_centre +
   revmoy + pop + petranger + pchom + prixbien
 
@@ -3144,23 +4378,23 @@ summary(w_hist)
     ## - Weight ranges:
     ## 
     ##     Min                                  Max
-    ## all   0 |---------------------------| 78.086
+    ## all   0 |---------------------------| 87.259
     ## 
     ## - Units with the 5 most extreme weights:
-    ##                                       
-    ##        6487  14393 16610  20896  20424
-    ##  all 28.459 32.235 35.64 41.665 78.086
+    ##                                        
+    ##        6643  16585   6475  20870  20398
+    ##  all 20.938 29.384 41.092 49.337 87.259
     ## 
     ## - Weight statistics:
     ## 
     ##     Coef of Var   MAD Entropy # Zeros
-    ## all       0.772 0.098   0.069      13
+    ## all       0.824 0.102   0.071      25
     ## 
     ## - Effective Sample Sizes:
     ## 
-    ##               Total
-    ## Unweighted 23764.  
-    ## Weighted   14886.38
+    ##              Total
+    ## Unweighted 23734. 
+    ## Weighted   14137.3
 
 ``` r
 summary(w_full)
@@ -3171,23 +4405,23 @@ summary(w_full)
     ## - Weight ranges:
     ## 
     ##     Min                                   Max
-    ## all   0 |---------------------------| 122.792
+    ## all   0 |---------------------------| 161.871
     ## 
     ## - Units with the 5 most extreme weights:
-    ##                                        
-    ##       16384  20505  14178 20145    6366
-    ##  all 36.285 40.641 69.608 73.62 122.792
+    ##                                          
+    ##       14153  16359  20479   20119    6354
+    ##  all 28.924 34.059 49.232 100.681 161.871
     ## 
     ## - Weight statistics:
     ## 
     ##     Coef of Var   MAD Entropy # Zeros
-    ## all       1.219 0.147    0.12     101
+    ## all       1.429 0.172   0.144     203
     ## 
     ## - Effective Sample Sizes:
     ## 
     ##               Total
-    ## Unweighted 23459.  
-    ## Weighted    9435.72
+    ## Unweighted 23429.  
+    ## Weighted    7700.29
 
 ``` r
 # Balance check
@@ -3219,23 +4453,24 @@ bal_hist
     ## total_protests   Contin.        0 Balanced, <0.1
     ## pconjsign1686    Contin.        0 Balanced, <0.1
     ## pserment1791     Contin.        0 Balanced, <0.1
+    ## heg_value        Contin.        0 Balanced, <0.1
     ## altitude_moyenne Contin.        0 Balanced, <0.1
     ## latitude_centre  Contin.        0 Balanced, <0.1
     ## longitude_centre Contin.        0 Balanced, <0.1
     ## 
     ## Balance tally for treatment correlations
     ##                    count
-    ## Balanced, <0.1        11
+    ## Balanced, <0.1        12
     ## Not Balanced, >0.1     0
     ## 
     ## Variable with the greatest treatment correlation
-    ##          Variable Corr.Adj    R.Threshold
-    ##  longitude_centre        0 Balanced, <0.1
+    ##      Variable Corr.Adj    R.Threshold
+    ##  pserment1791        0 Balanced, <0.1
     ## 
     ## Effective sample sizes
-    ##               Total
-    ## Unadjusted 23764.  
-    ## Adjusted   14886.38
+    ##              Total
+    ## Unadjusted 23734. 
+    ## Adjusted   14137.3
 
 ``` r
 bal_full
@@ -3251,6 +4486,7 @@ bal_full
     ## total_protests   Contin.        0 Balanced, <0.1
     ## pconjsign1686    Contin.        0 Balanced, <0.1
     ## pserment1791     Contin.        0 Balanced, <0.1
+    ## heg_value        Contin.        0 Balanced, <0.1
     ## altitude_moyenne Contin.        0 Balanced, <0.1
     ## latitude_centre  Contin.        0 Balanced, <0.1
     ## longitude_centre Contin.        0 Balanced, <0.1
@@ -3262,17 +4498,17 @@ bal_full
     ## 
     ## Balance tally for treatment correlations
     ##                    count
-    ## Balanced, <0.1        16
+    ## Balanced, <0.1        17
     ## Not Balanced, >0.1     0
     ## 
     ## Variable with the greatest treatment correlation
-    ##          Variable Corr.Adj    R.Threshold
-    ##  altitude_moyenne        0 Balanced, <0.1
+    ##      Variable Corr.Adj    R.Threshold
+    ##  pserment1791        0 Balanced, <0.1
     ## 
     ## Effective sample sizes
     ##               Total
-    ## Unadjusted 23459.  
-    ## Adjusted    9435.72
+    ## Unadjusted 23429.  
+    ## Adjusted    7700.29
 
 ``` r
 love.plot(
@@ -3284,7 +4520,7 @@ love.plot(
 )
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
 
 ``` r
 love.plot(
@@ -3296,7 +4532,7 @@ love.plot(
 )
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-31-2.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-34-2.png)<!-- -->
 
 ``` r
 # Linear outcome models
@@ -3368,73 +4604,73 @@ modelsummary(
 <tbody>
 <tr>
 <td>(Intercept)</td>
-<td>24.694***</td>
-<td>24.632***</td>
-<td>24.756***</td>
-<td>24.732***</td>
+<td>24.705***</td>
+<td>24.630***</td>
+<td>24.776***</td>
+<td>24.754***</td>
 </tr>
 <tr>
 <td></td>
+<td>(0.065)</td>
 <td>(0.066)</td>
-<td>(0.066)</td>
-<td>(0.067)</td>
+<td>(0.068)</td>
 <td>(0.067)</td>
 </tr>
 <tr>
 <td>share_protestant</td>
-<td>-0.071***</td>
+<td>-0.078***</td>
 <td></td>
-<td>-0.022**</td>
+<td>-0.018***</td>
 <td></td>
 </tr>
 <tr>
 <td></td>
-<td>(0.005)</td>
+<td>(0.006)</td>
 <td></td>
-<td>(0.007)</td>
+<td>(0.005)</td>
 <td></td>
 </tr>
 <tr>
 <td>splines = ns(share_protestant, knots = 1)1</td>
 <td></td>
-<td>0.389</td>
+<td>1.175</td>
 <td></td>
-<td>0.617</td>
+<td>0.722</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td>(1.000)</td>
+<td>(1.015)</td>
 <td></td>
-<td>(0.891)</td>
+<td>(1.005)</td>
 </tr>
 <tr>
 <td>splines = ns(share_protestant, knots = 1)2</td>
 <td></td>
-<td>-15.854***</td>
+<td>-18.465***</td>
 <td></td>
-<td>-5.817***</td>
+<td>-5.211***</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td>(1.184)</td>
+<td>(0.788)</td>
 <td></td>
-<td>(1.110)</td>
+<td>(1.086)</td>
 </tr>
 <tr>
 <td>Num.Obs.</td>
-<td>23764</td>
-<td>23764</td>
-<td>23459</td>
-<td>23459</td>
+<td>23734</td>
+<td>23734</td>
+<td>23429</td>
+<td>23429</td>
 </tr>
 <tr>
 <td>F</td>
-<td>171.406</td>
-<td>138.376</td>
-<td>9.235</td>
-<td>13.806</td>
+<td>192.027</td>
+<td>464.633</td>
+<td>12.026</td>
+<td>15.215</td>
 </tr>
 </tbody><tfoot>
 <tr>
@@ -3490,7 +4726,7 @@ ggplot(me_plot, aes(x = share_protestant, y = estimate, colour = spec, fill = sp
   theme_minimal()
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
 
 ## Effect of Share of Protestants on RPR/UMP/LR Vote Share
 
@@ -3498,7 +4734,7 @@ ggplot(me_plot, aes(x = share_protestant, y = estimate, colour = spec, fill = sp
 m1 <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          pvoixLR ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien)
@@ -3506,7 +4742,7 @@ m1 <- lm(data = d_FN_controls |>
 m2 <- lm(data = d_FN_controls |> 
            mutate(year = as.character(year)),
          pvoixLR ~ share_protestant + year + dep + letter + brigade + 
-           dist_cassini + HubDist + revratio1790 +
+           dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien + psup + pbac)
@@ -3564,18 +4800,18 @@ modelsummary(list(m1, m2
 <tbody>
 <tr>
 <td>(Intercept)</td>
-<td>-62.395***</td>
-<td>-62.353***</td>
+<td>-69.830***</td>
+<td>-69.758***</td>
 </tr>
 <tr>
 <td></td>
-<td>(10.049)</td>
-<td>(10.051)</td>
+<td>(10.040)</td>
+<td>(10.043)</td>
 </tr>
 <tr>
 <td>share_protestant</td>
-<td>-0.016**</td>
-<td>-0.016***</td>
+<td>-0.017***</td>
+<td>-0.017***</td>
 </tr>
 <tr>
 <td></td>
@@ -3584,23 +4820,23 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>letter</td>
-<td>-0.258</td>
-<td>-0.263</td>
+<td>-0.216</td>
+<td>-0.221</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.224)</td>
+<td>(0.225)</td>
 <td>(0.225)</td>
 </tr>
 <tr>
 <td>brigade</td>
-<td>1.366***</td>
-<td>1.380***</td>
+<td>1.358***</td>
+<td>1.371***</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.292)</td>
-<td>(0.292)</td>
+<td>(0.293)</td>
+<td>(0.293)</td>
 </tr>
 <tr>
 <td>dist_cassini</td>
@@ -3614,8 +4850,8 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>HubDist</td>
-<td>0.037***</td>
-<td>0.036***</td>
+<td>0.043***</td>
+<td>0.042***</td>
 </tr>
 <tr>
 <td></td>
@@ -3624,8 +4860,8 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>revratio1790</td>
-<td>-1.242***</td>
-<td>-1.200***</td>
+<td>-1.223***</td>
+<td>-1.183***</td>
 </tr>
 <tr>
 <td></td>
@@ -3633,9 +4869,19 @@ modelsummary(list(m1, m2
 <td>(0.193)</td>
 </tr>
 <tr>
+<td>heg_value</td>
+<td>0.038***</td>
+<td>0.038***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.005)</td>
+<td>(0.005)</td>
+</tr>
+<tr>
 <td>total_protests</td>
-<td>0.005</td>
-<td>0.006</td>
+<td>0.008</td>
+<td>0.009</td>
 </tr>
 <tr>
 <td></td>
@@ -3644,8 +4890,8 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>pconjsign1686</td>
-<td>-0.011**</td>
-<td>-0.011**</td>
+<td>-0.012***</td>
+<td>-0.011***</td>
 </tr>
 <tr>
 <td></td>
@@ -3654,8 +4900,8 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>pserment1791</td>
-<td>-0.015***</td>
-<td>-0.015***</td>
+<td>-0.016***</td>
+<td>-0.016***</td>
 </tr>
 <tr>
 <td></td>
@@ -3664,8 +4910,8 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>altitude_moyenne</td>
-<td>0.000+</td>
-<td>0.000+</td>
+<td>0.001*</td>
+<td>0.001*</td>
 </tr>
 <tr>
 <td></td>
@@ -3674,18 +4920,18 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>latitude_centre</td>
-<td>1.718***</td>
-<td>1.718***</td>
+<td>1.785***</td>
+<td>1.785***</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.199)</td>
-<td>(0.199)</td>
+<td>(0.198)</td>
+<td>(0.198)</td>
 </tr>
 <tr>
 <td>longitude_centre</td>
-<td>0.581***</td>
-<td>0.580***</td>
+<td>0.601***</td>
+<td>0.600***</td>
 </tr>
 <tr>
 <td></td>
@@ -3714,8 +4960,8 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>petranger</td>
-<td>-0.072***</td>
-<td>-0.071***</td>
+<td>-0.060***</td>
+<td>-0.059***</td>
 </tr>
 <tr>
 <td></td>
@@ -3724,8 +4970,8 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>pchom</td>
-<td>-0.026***</td>
 <td>-0.027***</td>
+<td>-0.028***</td>
 </tr>
 <tr>
 <td></td>
@@ -3755,7 +5001,7 @@ modelsummary(list(m1, m2
 <tr>
 <td>pbac</td>
 <td></td>
-<td>0.018**</td>
+<td>0.017**</td>
 </tr>
 <tr>
 <td></td>
@@ -3764,8 +5010,8 @@ modelsummary(list(m1, m2
 </tr>
 <tr>
 <td>N</td>
-<td>136111</td>
-<td>136107</td>
+<td>135947</td>
+<td>135943</td>
 </tr>
 <tr>
 <td>R^2</td>
@@ -3827,7 +5073,7 @@ ggplot() +
   theme(legend.position = "bottom") 
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
 
 Compare to Siegfried’s map:
 
@@ -3870,44 +5116,13 @@ ggplot() +
   theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
 
 We can now regress FN vote share now on the share of Protestants in
 1839:
 
 ``` r
-d_FN_rdd <- bind_rows(
-  d2022 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixRN) |>
-    mutate(year = 2022),
-  d2017 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
-    mutate(year = 2017),
-  d2012 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
-    mutate(year = 2012),
-  d2007 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
-    mutate(year = 2007),
-  d2002 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
-    mutate(year = 2002),
-  d1997 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
-    mutate(year = 1997),
-  d1993 |> 
-    dplyr::select(dep, nomdep, codecommune, nomcommune, pvoixFN) |>
-    mutate(year = 1993)
-) |>
-  mutate(pvoixRN = case_when(
-    year == 2022 ~ 100*pvoixRN,
-    .default = 100*pvoixFN
-  )) |>
-  mutate(code_insee = as.numeric(codecommune)) |>
-  right_join(d_map) |>
-  mutate(Year = as.character(year)) |>
-  left_join(d_controls, by = c("dep", "nomdep", "codecommune", 
-                                                "nomcommune", "Year")) |>
+d_FN_rdd <- d_FN_controls |>
   filter(dep %in% c("07", "26", "38", "05", "43"))
 ```
 
@@ -3916,16 +5131,28 @@ m1 <- lm(data = d_FN_rdd,
          pvoixRN ~ share_protestant + Year)
 
 m3 <- lm(data = d_FN_rdd,
-         pvoixRN ~ share_protestant + Year + revmoy + pop + petranger)
+         pvoixRN ~ share_protestant + Year + 
+           letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien)
 
 m4 <- lm(data = d_FN_rdd,
-         pvoixRN ~ share_protestant + Year + revmoy + pop + petranger + psup)
+         pvoixRN ~ share_protestant + Year + 
+           letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + psup)
 
 m5 <- lm(data = d_FN_rdd,
-         pvoixRN ~ share_protestant + Year + revmoy + pop + petranger + psup + pbac)
-
-m6 <- lm(data = d_FN_rdd,
-         pvoixRN ~ share_protestant + Year + revmoy + pop + petranger + psup + pbac + pconjsign1816)
+         pvoixRN ~ share_protestant + Year + 
+           letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + psup + pbac)
 
 # m7 <- lm(data = d_FN_controls |> 
 #            filter(nomdep == "ARDECHE") |>
@@ -3933,57 +5160,65 @@ m6 <- lm(data = d_FN_rdd,
 #          pvoixRN ~ share_protestant + year + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
 
 m7 <- lm(data = d_FN_rdd,
-         psup ~ share_protestant + Year + revmoy + pop + petranger)
+         psup ~ share_protestant + Year + 
+           letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien)
 
 m8 <- lm(data = d_FN_rdd,
-         psup ~ share_protestant + Year + revmoy + pop + petranger + pconjsign1816)
+         psup ~ share_protestant + Year + 
+           letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + pconjsign1816)
 
 
-modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
+modelsummary(dvnames(list(m1, m3, m4, m5, m7, m8
                   )), 
              vcov = "robust", 
              stars = TRUE,
              
              coef_omit = "year",
-             coef_map = c(
-               "(Intercept)" = "Constant",
-               "share_protestant" = "Share of Protestants in 1839",
-               "revmoy" = "Average income",
-               "pop" = "Population",
-               "petranger" = "Percentage of foreigners",
-               "psup" = "Percentage of people with higher education",
-               "pbac" = "Percentage of people with the bac",
-               "pconjsign1816" = "Literacy in 1816"#,
-               #"pserment1791" = "Share of constitutional priests in 1791"
-               ),
+             # coef_map = c(
+             #   "(Intercept)" = "Constant",
+             #   "share_protestant" = "Share of Protestants in 1839",
+             #   "revmoy" = "Average income",
+             #   "pop" = "Population",
+             #   "petranger" = "Percentage of foreigners",
+             #   "psup" = "Percentage of people with higher education",
+             #   "pbac" = "Percentage of people with the bac",
+             #   "pconjsign1816" = "Literacy in 1816"#,
+             #   #"pserment1791" = "Share of constitutional priests in 1791"
+             #   ),
              gof_map = tibble::tribble(~raw, ~clean, ~fmt,
                                        "nobs", "N", 0,
                                        "r.squared", "R^2", 2,
                                        "adj.r.squared", "Adj. R^2", 2),
-             add_rows = tibble::tribble(
-               ~term, ~m1, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8,
-               "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
-             ),
-             #output = "table1.tex",
+             # add_rows = tibble::tribble(
+             #   ~term, ~m1, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8,
+             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
+             # ),
+             # #output = "table1.tex",
              #output = "text"
              )
 ```
 
-<table style="width:96%;">
+<table style="width:95%;">
 <colgroup>
-<col style="width: 32%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
-<col style="width: 9%" />
-<col style="width: 10%" />
-<col style="width: 8%" />
-<col style="width: 8%" />
+<col style="width: 18%" />
+<col style="width: 11%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
 </colgroup>
 <thead>
 <tr>
 <th></th>
-<th>pvoixRN</th>
 <th>pvoixRN</th>
 <th>pvoixRN</th>
 <th>pvoixRN</th>
@@ -3994,74 +5229,193 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 </thead>
 <tbody>
 <tr>
-<td>Constant</td>
+<td>(Intercept)</td>
 <td>11.712***</td>
-<td>10.408***</td>
-<td>10.189***</td>
-<td>10.474***</td>
-<td>10.588***</td>
-<td>-0.035***</td>
-<td>-0.035***</td>
+<td>-149.348***</td>
+<td>-141.446***</td>
+<td>-139.629***</td>
+<td>107.208***</td>
+<td>102.121***</td>
 </tr>
 <tr>
 <td></td>
 <td>(0.244)</td>
-<td>(0.346)</td>
-<td>(0.352)</td>
-<td>(0.367)</td>
-<td>(0.366)</td>
-<td>(0.006)</td>
-<td>(0.006)</td>
+<td>(17.168)</td>
+<td>(17.220)</td>
+<td>(17.242)</td>
+<td>(30.900)</td>
+<td>(30.794)</td>
 </tr>
 <tr>
-<td>Share of Protestants in 1839</td>
+<td>share_protestant</td>
 <td>-0.066***</td>
-<td>-0.060***</td>
-<td>-0.057***</td>
-<td>-0.056***</td>
-<td>-0.057***</td>
-<td>0.000***</td>
-<td>0.000***</td>
+<td>-0.052***</td>
+<td>-0.050***</td>
+<td>-0.050***</td>
+<td>0.031**</td>
+<td>0.030**</td>
 </tr>
 <tr>
 <td></td>
 <td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.003)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
+<td>(0.004)</td>
+<td>(0.004)</td>
+<td>(0.004)</td>
+<td>(0.010)</td>
+<td>(0.010)</td>
 </tr>
 <tr>
-<td>Average income</td>
+<td>Year1997</td>
+<td>3.626***</td>
+<td>4.385***</td>
+<td>4.541***</td>
+<td>4.563***</td>
+<td>2.134***</td>
+<td>2.102***</td>
+</tr>
+<tr>
 <td></td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
-<td>0.000***</td>
+<td>(0.356)</td>
+<td>(0.326)</td>
+<td>(0.324)</td>
+<td>(0.324)</td>
+<td>(0.356)</td>
+<td>(0.358)</td>
+</tr>
+<tr>
+<td>Year2002</td>
+<td>-0.747**</td>
+<td>0.865**</td>
+<td>1.139***</td>
+<td>1.197***</td>
+<td>3.740***</td>
+<td>3.684***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.278)</td>
+<td>(0.272)</td>
+<td>(0.272)</td>
+<td>(0.273)</td>
+<td>(0.399)</td>
+<td>(0.399)</td>
+</tr>
+<tr>
+<td>Year2007</td>
+<td>-7.473***</td>
+<td>-5.710***</td>
+<td>-5.476***</td>
+<td>-5.378***</td>
+<td>3.261***</td>
+<td>3.125***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.250)</td>
+<td>(0.316)</td>
+<td>(0.317)</td>
+<td>(0.321)</td>
+<td>(0.605)</td>
+<td>(0.604)</td>
+</tr>
+<tr>
+<td>Year2012</td>
+<td>2.831***</td>
+<td>4.845***</td>
+<td>5.311***</td>
+<td>5.446***</td>
+<td>6.427***</td>
+<td>6.247***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.290)</td>
+<td>(0.343)</td>
+<td>(0.347)</td>
+<td>(0.353)</td>
+<td>(0.650)</td>
+<td>(0.645)</td>
+</tr>
+<tr>
+<td>Year2017</td>
+<td>1.711***</td>
+<td>3.801***</td>
+<td>4.495***</td>
+<td>4.645***</td>
+<td>9.496***</td>
+<td>9.319***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.299)</td>
+<td>(0.349)</td>
+<td>(0.358)</td>
+<td>(0.365)</td>
+<td>(0.718)</td>
+<td>(0.717)</td>
+</tr>
+<tr>
+<td>Year2022</td>
+<td>6.793***</td>
+<td>8.635***</td>
+<td>9.569***</td>
+<td>9.744***</td>
+<td>12.648***</td>
+<td>12.496***</td>
+</tr>
+<tr>
+<td></td>
+<td>(0.312)</td>
+<td>(0.386)</td>
+<td>(0.398)</td>
+<td>(0.405)</td>
+<td>(0.836)</td>
+<td>(0.834)</td>
+</tr>
+<tr>
+<td>letter</td>
+<td></td>
+<td>1.154*</td>
+<td>1.171*</td>
+<td>1.149*</td>
+<td>-0.458</td>
+<td>0.403</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
+<td>(0.550)</td>
+<td>(0.536)</td>
+<td>(0.535)</td>
+<td>(0.675)</td>
+<td>(0.659)</td>
 </tr>
 <tr>
-<td>Population</td>
+<td>brigade</td>
 <td></td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000*</td>
-<td>0.000*</td>
+<td>-1.845***</td>
+<td>-1.974***</td>
+<td>-1.971***</td>
+<td>-2.034**</td>
+<td>-1.912**</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.491)</td>
+<td>(0.479)</td>
+<td>(0.477)</td>
+<td>(0.635)</td>
+<td>(0.653)</td>
+</tr>
+<tr>
+<td>dist_cassini</td>
+<td></td>
 <td>0.000+</td>
+<td>0.000+</td>
+<td>0.000+</td>
+<td>0.000</td>
+<td>0.000</td>
 </tr>
 <tr>
 <td></td>
@@ -4071,131 +5425,343 @@ modelsummary(dvnames(list(m1, m3, m4, m5, m6, m7, m8
 <td>(0.000)</td>
 <td>(0.000)</td>
 <td>(0.000)</td>
-<td>(0.000)</td>
 </tr>
 <tr>
-<td>Percentage of foreigners</td>
+<td>HubDist</td>
 <td></td>
-<td>-4.653</td>
-<td>-1.772</td>
-<td>-1.285</td>
-<td>1.418</td>
-<td>0.474***</td>
-<td>0.445***</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td>(2.957)</td>
-<td>(3.092)</td>
-<td>(3.085)</td>
-<td>(3.097)</td>
-<td>(0.065)</td>
-<td>(0.067)</td>
-</tr>
-<tr>
-<td>Percentage of people with higher education</td>
-<td></td>
-<td></td>
-<td>-6.212***</td>
-<td>-3.376*</td>
-<td>-2.931*</td>
-<td></td>
-<td></td>
+<td>-0.006</td>
+<td>-0.009</td>
+<td>-0.010</td>
+<td>-0.046***</td>
+<td>-0.035**</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td></td>
-<td>(0.849)</td>
-<td>(1.445)</td>
-<td>(1.442)</td>
-<td></td>
-<td></td>
+<td>(0.006)</td>
+<td>(0.006)</td>
+<td>(0.006)</td>
+<td>(0.011)</td>
+<td>(0.011)</td>
 </tr>
 <tr>
-<td>Percentage of people with the bac</td>
+<td>revratio1790</td>
 <td></td>
-<td></td>
-<td></td>
-<td>-3.129**</td>
-<td>-3.329**</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>(1.190)</td>
-<td>(1.192)</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Literacy in 1816</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>-2.487***</td>
-<td></td>
-<td>0.018*</td>
+<td>0.104</td>
+<td>0.383</td>
+<td>0.394</td>
+<td>3.646***</td>
+<td>3.298***</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
+<td>(0.350)</td>
+<td>(0.351)</td>
+<td>(0.351)</td>
+<td>(0.780)</td>
+<td>(0.802)</td>
+</tr>
+<tr>
+<td>heg_value</td>
+<td></td>
+<td>0.005</td>
+<td>0.002</td>
+<td>0.002</td>
+<td>-0.024</td>
+<td>-0.049+</td>
+</tr>
+<tr>
 <td></td>
 <td></td>
+<td>(0.013)</td>
+<td>(0.013)</td>
+<td>(0.013)</td>
+<td>(0.026)</td>
+<td>(0.027)</td>
+</tr>
+<tr>
+<td>total_protests</td>
 <td></td>
-<td>(0.419)</td>
+<td>-0.108</td>
+<td>-0.131+</td>
+<td>-0.136+</td>
+<td>-0.297**</td>
+<td>-0.302**</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.075)</td>
+<td>(0.074)</td>
+<td>(0.074)</td>
+<td>(0.104)</td>
+<td>(0.105)</td>
+</tr>
+<tr>
+<td>pconjsign1686</td>
+<td></td>
+<td>0.002</td>
+<td>-0.001</td>
+<td>-0.001</td>
+<td></td>
+<td>-0.107**</td>
+</tr>
+<tr>
+<td></td>
 <td></td>
 <td>(0.008)</td>
+<td>(0.007)</td>
+<td>(0.007)</td>
+<td></td>
+<td>(0.040)</td>
+</tr>
+<tr>
+<td>pserment1791</td>
+<td></td>
+<td>-0.063***</td>
+<td>-0.061***</td>
+<td>-0.061***</td>
+<td>0.024*</td>
+<td>0.030**</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.005)</td>
+<td>(0.005)</td>
+<td>(0.005)</td>
+<td>(0.010)</td>
+<td>(0.010)</td>
+</tr>
+<tr>
+<td>altitude_moyenne</td>
+<td></td>
+<td>-0.007***</td>
+<td>-0.007***</td>
+<td>-0.007***</td>
+<td>0.005***</td>
+<td>0.005***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.001)</td>
+<td>(0.001)</td>
+</tr>
+<tr>
+<td>latitude_centre</td>
+<td></td>
+<td>3.368***</td>
+<td>3.176***</td>
+<td>3.138***</td>
+<td>-2.601***</td>
+<td>-2.477***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.389)</td>
+<td>(0.390)</td>
+<td>(0.391)</td>
+<td>(0.705)</td>
+<td>(0.702)</td>
+</tr>
+<tr>
+<td>longitude_centre</td>
+<td></td>
+<td>4.014***</td>
+<td>4.124***</td>
+<td>4.148***</td>
+<td>1.328**</td>
+<td>1.567***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.236)</td>
+<td>(0.235)</td>
+<td>(0.234)</td>
+<td>(0.466)</td>
+<td>(0.475)</td>
+</tr>
+<tr>
+<td>revmoy</td>
+<td></td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.000***</td>
+<td>0.001***</td>
+<td>0.001***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>pop</td>
+<td></td>
+<td>0.000*</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000***</td>
+<td>0.000***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>petranger</td>
+<td></td>
+<td>-0.089*</td>
+<td>-0.070+</td>
+<td>-0.070+</td>
+<td>0.278**</td>
+<td>0.264**</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.036)</td>
+<td>(0.039)</td>
+<td>(0.039)</td>
+<td>(0.094)</td>
+<td>(0.097)</td>
+</tr>
+<tr>
+<td>pchom</td>
+<td></td>
+<td>-0.008</td>
+<td>-0.017</td>
+<td>-0.018</td>
+<td>-0.121***</td>
+<td>-0.137***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.010)</td>
+<td>(0.011)</td>
+<td>(0.011)</td>
+<td>(0.032)</td>
+<td>(0.031)</td>
+</tr>
+<tr>
+<td>prixbien</td>
+<td></td>
+<td>0.002</td>
+<td>0.006**</td>
+<td>0.006**</td>
+<td>0.050***</td>
+<td>0.051***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+<td>(0.002)</td>
+<td>(0.005)</td>
+<td>(0.005)</td>
+</tr>
+<tr>
+<td>psup</td>
+<td></td>
+<td></td>
+<td>-0.074***</td>
+<td>-0.057***</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.009)</td>
+<td>(0.014)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>pbac</td>
+<td></td>
+<td></td>
+<td></td>
+<td>-0.020+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.012)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>pconjsign1816</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0.043+</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.022)</td>
 </tr>
 <tr>
 <td>N</td>
 <td>9350</td>
-<td>7929</td>
-<td>7926</td>
-<td>7926</td>
-<td>7908</td>
-<td>7927</td>
-<td>7909</td>
+<td>6396</td>
+<td>6393</td>
+<td>6393</td>
+<td>6412</td>
+<td>6394</td>
 </tr>
 <tr>
 <td>R^2</td>
 <td>0.36</td>
-<td>0.37</td>
-<td>0.38</td>
-<td>0.38</td>
-<td>0.39</td>
-<td>0.37</td>
-<td>0.37</td>
+<td>0.55</td>
+<td>0.56</td>
+<td>0.56</td>
+<td>0.42</td>
+<td>0.42</td>
 </tr>
 <tr>
 <td>Adj. R^2</td>
 <td>0.36</td>
-<td>0.37</td>
-<td>0.38</td>
-<td>0.38</td>
-<td>0.38</td>
-<td>0.36</td>
-<td>0.37</td>
-</tr>
-<tr>
-<td>Year FE</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Yes</td>
+<td>0.55</td>
+<td>0.56</td>
+<td>0.56</td>
+<td>0.42</td>
+<td>0.42</td>
 </tr>
 </tbody><tfoot>
 <tr>
-<td colspan="8"><ul>
+<td colspan="7"><ul>
 <li>p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</li>
 </ul></td>
 </tr>
@@ -4224,7 +5790,7 @@ ggplot() +
   theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
 
 # RDD
 
@@ -4305,12 +5871,14 @@ cowplot::plot_grid(
 )
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-41-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
 
 ``` r
 fuzzy_rdd <- rdrobust(y = d_rdd$pvoixRN, 
                       x = d_rdd$distrunning, 
-                      fuzzy = d_rdd$share_protestant_og, 
+                      fuzzy = d_rdd$share_protestant,
+                      kernel = "uniform",
+                      p = 2,
                       c = 0)
 
 summary(fuzzy_rdd)
@@ -4318,19 +5886,19 @@ summary(fuzzy_rdd)
 
     ## Fuzzy RD estimates using local polynomial regression.
     ## 
-    ## Number of Obs.                 1691
+    ## Number of Obs.                 1670
     ## BW type                       mserd
-    ## Kernel                   Triangular
+    ## Kernel                      Uniform
     ## VCE method                       NN
     ## 
-    ## Number of Obs.                 1362          329
-    ## Eff. Number of Obs.             154          199
-    ## Order est. (p)                    1            1
-    ## Order bias  (q)                   2            2
-    ## BW est. (h)                   8.472        8.472
-    ## BW bias (b)                  14.789       14.789
-    ## rho (h/b)                     0.573        0.573
-    ## Unique Obs.                    1141          175
+    ## Number of Obs.                 1359          311
+    ## Eff. Number of Obs.             190          213
+    ## Order est. (p)                    2            2
+    ## Order bias  (q)                   3            3
+    ## BW est. (h)                  10.213       10.213
+    ## BW bias (b)                  16.476       16.476
+    ## rho (h/b)                     0.620        0.620
+    ## Unique Obs.                    1139          164
     ## 
     ## First-stage estimates.
     ## 
@@ -4338,7 +5906,7 @@ summary(fuzzy_rdd)
     ##                    Point    Robust Inference
     ##                 Estimate         z     P>|z|      [ 95% C.I. ]       
     ## =====================================================================
-    ##      Rd Effect    12.316     4.077     0.000     [7.033 , 20.053]    
+    ##      Rd Effect    10.499     3.457     0.001     [4.887 , 17.683]    
     ## =====================================================================
     ## 
     ## Treatment effect estimates.
@@ -4347,18 +5915,19 @@ summary(fuzzy_rdd)
     ##                    Point    Robust Inference
     ##                 Estimate         z     P>|z|      [ 95% C.I. ]       
     ## ---------------------------------------------------------------------
-    ##      RD Effect     0.044     0.383     0.702    [-0.169 , 0.251]     
+    ##      RD Effect     0.045     0.210     0.834    [-0.242 , 0.300]     
     ## =====================================================================
 
 ``` r
 rdplot(y = d_rdd$pvoixRN, 
-                      x = d_rdd$distrunning,  
-                      c = 0)
+       x = d_rdd$distrunning,  
+       c = 0,
+       kernel = "uni")
 ```
 
     ## [1] "Mass points detected in the running variable."
 
-![](code_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-45-1.png)<!-- -->
 
 ``` r
 fuzzy_rdd$bws["h",1] == fuzzy_rdd$bws["h",2]
@@ -4379,34 +5948,57 @@ iv1 <- ivreg(pvoixRN ~ share_protestant | treated ,
            filter(d_rdd$distrunning < 10)
         )
 
-iv2 <- ivreg(pvoixRN ~ share_protestant + pop + revmoy + petranger | treated + pop + revmoy + petranger, 
+iv2 <- ivreg(pvoixRN ~ share_protestant + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien | 
+      treated + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien, 
               data = d_rdd |>
            filter(d_rdd$distrunning < 10)
 )
 
-iv3 <- ivreg(pvoixRN ~ share_protestant + pop + revmoy + petranger + psup | pop + revmoy + petranger + psup + treated , 
+iv3 <- ivreg(pvoixRN ~ share_protestant + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien + psup | 
+      treated + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien + psup, 
               data = d_rdd |>
            filter(d_rdd$distrunning < 10)
 )
 
-iv4 <- ivreg(psup ~ share_protestant + pop + revmoy | pop + revmoy + treated , 
+iv4 <- ivreg(psup ~ share_protestant + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien | 
+      treated + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien, 
               data = d_rdd |>
            filter(d_rdd$distrunning < 10)
 )
 
 modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
-        stars = TRUE
+        stars = TRUE,
+        vcov = "robust",
+        cluster = "codecommune"
         )
 ```
 
 <table style="width:96%;">
 <colgroup>
-<col style="width: 21%" />
-<col style="width: 21%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
 <col style="width: 13%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
 <col style="width: 13%" />
-<col style="width: 13%" />
-<col style="width: 12%" />
 </colgroup>
 <thead>
 <tr>
@@ -4423,17 +6015,17 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 <td>(Intercept)</td>
 <td>2.427***</td>
 <td>18.661***</td>
-<td>16.200***</td>
-<td>16.360***</td>
-<td>0.095***</td>
+<td>-171.207**</td>
+<td>-172.850**</td>
+<td>-15.569</td>
 </tr>
 <tr>
 <td></td>
-<td>(0.385)</td>
+<td>(0.302)</td>
 <td>(0.279)</td>
-<td>(0.961)</td>
-<td>(0.973)</td>
-<td>(0.021)</td>
+<td>(61.560)</td>
+<td>(61.038)</td>
+<td>(143.409)</td>
 </tr>
 <tr>
 <td>treated1</td>
@@ -4445,7 +6037,7 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 </tr>
 <tr>
 <td></td>
-<td>(1.056)</td>
+<td>(1.873)</td>
 <td></td>
 <td></td>
 <td></td>
@@ -4455,41 +6047,233 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 <td>share_protestant</td>
 <td></td>
 <td>-0.040</td>
-<td>-0.095+</td>
-<td>-0.084</td>
-<td>0.004***</td>
+<td>-0.268*</td>
+<td>-0.261*</td>
+<td>0.332</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
-<td>(0.045)</td>
-<td>(0.051)</td>
-<td>(0.052)</td>
+<td>(0.043)</td>
+<td>(0.110)</td>
+<td>(0.112)</td>
+<td>(0.283)</td>
+</tr>
+<tr>
+<td>letter</td>
+<td></td>
+<td></td>
+<td>-1.698</td>
+<td>-1.453</td>
+<td>5.114</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(2.091)</td>
+<td>(2.057)</td>
+<td>(3.960)</td>
+</tr>
+<tr>
+<td>brigade</td>
+<td></td>
+<td></td>
+<td>-2.247</td>
+<td>-2.344</td>
+<td>-3.816</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(1.690)</td>
+<td>(1.704)</td>
+<td>(3.880)</td>
+</tr>
+<tr>
+<td>dist_cassini</td>
+<td></td>
+<td></td>
+<td>0.000</td>
+<td>0.000</td>
+<td>0.000</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>HubDist</td>
+<td></td>
+<td></td>
+<td>-0.031</td>
+<td>-0.027</td>
+<td>0.097</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.032)</td>
+<td>(0.032)</td>
+<td>(0.075)</td>
+</tr>
+<tr>
+<td>revratio1790</td>
+<td></td>
+<td></td>
+<td>-2.118+</td>
+<td>-2.064</td>
+<td>0.632</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(1.271)</td>
+<td>(1.263)</td>
+<td>(2.944)</td>
+</tr>
+<tr>
+<td>total_protests</td>
+<td></td>
+<td></td>
+<td>0.106</td>
+<td>0.085</td>
+<td>-0.111</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.241)</td>
+<td>(0.244)</td>
+<td>(0.421)</td>
+</tr>
+<tr>
+<td>pconjsign1686</td>
+<td></td>
+<td></td>
+<td>0.031</td>
+<td>0.020</td>
+<td>-0.159*</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.029)</td>
+<td>(0.029)</td>
+<td>(0.070)</td>
+</tr>
+<tr>
+<td>pserment1791</td>
+<td></td>
+<td></td>
+<td>-0.107***</td>
+<td>-0.104***</td>
+<td>0.112+</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.024)</td>
+<td>(0.024)</td>
+<td>(0.059)</td>
+</tr>
+<tr>
+<td>heg_value</td>
+<td></td>
+<td></td>
+<td>-0.073</td>
+<td>-0.078</td>
+<td>-0.016</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.061)</td>
+<td>(0.062)</td>
+<td>(0.142)</td>
+</tr>
+<tr>
+<td>altitude_moyenne</td>
+<td></td>
+<td></td>
+<td>-0.011***</td>
+<td>-0.011***</td>
+<td>0.005*</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
 <td>(0.001)</td>
+<td>(0.001)</td>
+<td>(0.002)</td>
 </tr>
 <tr>
-<td>pop</td>
+<td>latitude_centre</td>
 <td></td>
 <td></td>
-<td>0.000</td>
-<td>0.000</td>
-<td>0.000</td>
+<td>3.991**</td>
+<td>4.032**</td>
+<td>0.346</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
 <td></td>
-<td>(0.000)</td>
-<td>(0.000)</td>
-<td>(0.000)</td>
+<td>(1.371)</td>
+<td>(1.360)</td>
+<td>(3.202)</td>
+</tr>
+<tr>
+<td>longitude_centre</td>
+<td></td>
+<td></td>
+<td>7.978***</td>
+<td>8.009***</td>
+<td>-1.313</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(1.187)</td>
+<td>(1.204)</td>
+<td>(2.785)</td>
 </tr>
 <tr>
 <td>revmoy</td>
 <td></td>
 <td></td>
 <td>0.000**</td>
-<td>0.000***</td>
-<td>0.000***</td>
+<td>0.000*</td>
+<td>0.001***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+<td>(0.000)</td>
+</tr>
+<tr>
+<td>pop</td>
+<td></td>
+<td></td>
+<td>0.000**</td>
+<td>0.000**</td>
+<td>0.000</td>
 </tr>
 <tr>
 <td></td>
@@ -4503,24 +6287,56 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 <td>petranger</td>
 <td></td>
 <td></td>
-<td>-3.778</td>
-<td>-2.136</td>
-<td></td>
+<td>-0.021</td>
+<td>0.022</td>
+<td>0.882**</td>
 </tr>
 <tr>
 <td></td>
 <td></td>
 <td></td>
-<td>(7.570)</td>
-<td>(7.653)</td>
+<td>(0.153)</td>
+<td>(0.164)</td>
+<td>(0.289)</td>
+</tr>
+<tr>
+<td>pchom</td>
 <td></td>
+<td></td>
+<td>-0.054+</td>
+<td>-0.057+</td>
+<td>-0.107</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.029)</td>
+<td>(0.034)</td>
+<td>(0.097)</td>
+</tr>
+<tr>
+<td>prixbien</td>
+<td></td>
+<td></td>
+<td>-0.006</td>
+<td>-0.002</td>
+<td>0.067***</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>(0.007)</td>
+<td>(0.007)</td>
+<td>(0.015)</td>
 </tr>
 <tr>
 <td>psup</td>
 <td></td>
 <td></td>
 <td></td>
-<td>-2.345+</td>
+<td>-0.049**</td>
 <td></td>
 </tr>
 <tr>
@@ -4528,48 +6344,48 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 <td></td>
 <td></td>
 <td></td>
-<td>(1.394)</td>
+<td>(0.017)</td>
 <td></td>
 </tr>
 <tr>
 <td>Num.Obs.</td>
 <td>1569</td>
 <td>1569</td>
-<td>1257</td>
-<td>1254</td>
-<td>1254</td>
+<td>1007</td>
+<td>1004</td>
+<td>1004</td>
 </tr>
 <tr>
 <td>R2</td>
 <td>0.096</td>
 <td>0.007</td>
-<td>0.007</td>
-<td>0.013</td>
-<td>-0.019</td>
+<td>0.273</td>
+<td>0.288</td>
+<td>0.119</td>
 </tr>
 <tr>
 <td>R2 Adj.</td>
 <td>0.095</td>
 <td>0.006</td>
-<td>0.004</td>
-<td>0.009</td>
-<td>-0.021</td>
+<td>0.260</td>
+<td>0.274</td>
+<td>0.103</td>
 </tr>
 <tr>
 <td>AIC</td>
 <td>12779.6</td>
 <td>11037.2</td>
-<td>8818.6</td>
-<td>8793.9</td>
-<td>-805.6</td>
+<td>6800.2</td>
+<td>6762.3</td>
+<td>8460.5</td>
 </tr>
 <tr>
 <td>BIC</td>
 <td>12795.7</td>
 <td>11053.2</td>
-<td>8849.4</td>
-<td>8829.8</td>
-<td>-779.9</td>
+<td>6898.4</td>
+<td>6865.5</td>
+<td>8558.7</td>
 </tr>
 <tr>
 <td>Log.Lik.</td>
@@ -4581,7 +6397,7 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 </tr>
 <tr>
 <td>F</td>
-<td>166.271</td>
+<td>52.877</td>
 <td></td>
 <td></td>
 <td></td>
@@ -4591,9 +6407,17 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 <td>RMSE</td>
 <td>14.18</td>
 <td>8.14</td>
-<td>8.04</td>
-<td>8.02</td>
-<td>0.17</td>
+<td>6.94</td>
+<td>6.87</td>
+<td>16.03</td>
+</tr>
+<tr>
+<td>Std.Errors</td>
+<td>HC3</td>
+<td>HC3</td>
+<td>HC3</td>
+<td>HC3</td>
+<td>HC3</td>
 </tr>
 </tbody><tfoot>
 <tr>
@@ -4607,21 +6431,12 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 ``` r
 bounds <- c(5, 10, 15, 20, 25, 30)
 
-tidy_robust <- function(model, conf.level = 0.95) {
+tidy_robust <- function(model) {
   
-  vc <- vcovHC(model, type = "HC1")
-  ct <- coeftest(model, vcov. = vc)
-  
-  out <- broom::tidy(ct)
-  
-  alpha <- 1 - conf.level
-  crit <- qnorm(1 - alpha / 2)
-  
-  out |>
-    mutate(
-      conf.low = estimate - crit * std.error,
-      conf.high = estimate + crit * std.error
-    )
+  avg_slopes(model) |>
+    filter(term == "share_protestant" | term == "treated") |>
+    as.data.frame() |>
+    dplyr::select(term, estimate, conf.low, conf.high)
 }
 
 estimate_models_robust <- function(bound) {
@@ -4642,20 +6457,38 @@ estimate_models_robust <- function(bound) {
     ),
     
     iv2 = ivreg(
-      pvoixRN ~ share_protestant + pop + revmoy + petranger |
-        treated + pop + revmoy + petranger,
+      pvoixRN ~ share_protestant + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien |
+        treated + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien,
       data = df_b
     ),
     
     iv3 = ivreg(
-      pvoixRN ~ share_protestant + pop + revmoy + petranger + psup |
-        pop + revmoy + petranger + psup + treated,
+      pvoixRN ~ share_protestant + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien + psup |
+        treated + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien + psup,
       data = df_b
     ),
     
     iv4 = ivreg(
-      psup ~ share_protestant + pop + revmoy |
-        pop + revmoy + treated,
+      psup ~ share_protestant + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien |
+        treated + letter + brigade + dist_cassini + HubDist +
+    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
+    altitude_moyenne + latitude_centre + longitude_centre +
+    revmoy + pop + petranger + pchom + prixbien,
       data = df_b
     )
   )
@@ -4679,9 +6512,6 @@ estimate_models_robust <- function(bound) {
       specification,
       term,
       estimate,
-      std.error,
-      statistic,
-      p.value,
       conf.low,
       conf.high,
       n
@@ -4693,7 +6523,6 @@ marginal_effects_robust <- map_dfr(bounds, estimate_models_robust)
 
 ``` r
 marginal_effects_robust |>
-  filter(specification != "iv1") |>
   mutate(
     facet = case_when(
       specification == "firststage" ~ "First Stage",
@@ -4721,7 +6550,7 @@ marginal_effects_robust |>
   )
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-46-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
 
 <div id="refs" class="references csl-bib-body hanging-indent"
 entry-spacing="0">
@@ -4748,6 +6577,16 @@ Gay, Victor. 2025. “The Jean Nicolas Database. The French Rebellion,
 1661-1789.” *Data & Corpus. La Revue Des Données En SHS* Les articles de
 données en... (Articles de données): 15892.
 <https://doi.org/10.46298/dc.15892>.
+
+</div>
+
+<div id="ref-muller-creponRightPeoplingStateNationalism2025"
+class="csl-entry">
+
+Müller-Crepon, Carl, Guy Schvitz, and Lars-Erik Cederman. 2025.
+“‘Right-Peopling’ the State: Nationalism, Historical Legacies, and
+Ethnic Cleansing in Europe, 1886-2020.” *Journal of Conflict Resolution*
+69 (2-3): 211–41. <https://doi.org/10.1177/00220027241227897>.
 
 </div>
 
