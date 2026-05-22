@@ -32,6 +32,7 @@ library(splines)
 library(terra)
 library(hegdata)
 library(raster)
+library(DirectEffects)
 
 theme_set(theme_bw())
 
@@ -1230,70 +1231,69 @@ m_educ_all <- lm(data = d_FN_controls |>
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien)
 
-modelsummary(list("Dep FEs" = m_dep, 
-                  "Historical Controls" = m_hist, 
-                  "Contemp. Controls" = m_cont, 
-                  "Both Controls" = m_all, 
-                  "Both Sets + Higher Ed" = m_all_sup,
-                  "Both Sets + Higher Ed + High School" = m_all_educ), 
-             vcov = "robust", cluster = "codecommune",
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             # coef_map = c(
-             #   "(Intercept)" = "Constant",
-             #   "share_protestant" = "Share of Protestants in 1839",
-             #   "revmoy" = "Average income",
-             #   "pop" = "Population", 
-             #   "petranger" = "Percentage of foreigners",
-             #   "psup" = "Percentage of people with higher education",
-             #   "pbac" = "Percentage of people with the bac",
-             #   "pconjsign1816" = "Literacy in 1816",
-             #   "pserment1791" = "Share of constitutional priests in 1791"
-             #   ),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             # add_rows = tibble::tribble(
-             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             # ),
-             #output = "table1.tex",
-             #output = "text"
-             )
+modelsummary(
+  list(
+    "Dep FEs" = m_dep,
+    "Historical Controls" = m_hist,
+    "Contemp. Controls" = m_cont,
+    "Both Controls" = m_all,
+    "Both Sets + Higher Ed" = m_all_sup,
+    "Both Sets + Higher Ed + High School" = m_all_educ
+  ),
+  vcov = "robust",
+  cluster = "codecommune",
+  stars = TRUE,
+  
+  coef_omit = "year|dep",
+  # coef_map = c(
+  #   "(Intercept)" = "Constant",
+  #   "share_protestant" = "Share of Protestants in 1839",
+  #   "psup" = "Percentage of people with higher education",
+  #   "pbac" = "Percentage of people with the bac"
+  # ),
+  gof_map = tibble::tribble(
+    ~ raw,
+    ~ clean,
+    ~ fmt,
+    "nobs",
+    "N",
+    0,
+    "r.squared",
+    "R^2",
+    2,
+    "adj.r.squared",
+    "Adj. R^2",
+    2
+  ),
+)
 
-modelsummary(list("Historical Controls" = m_educ_hist, 
-                  "Contemp. Controls" = m_educ_cont, 
-                  "Both Controls" = m_educ_all ), 
-             vcov = "robust", cluster = "codecommune",
-             stars = TRUE,
-             
-             coef_omit = "year|dep",
-             # coef_map = c(
-             #   "(Intercept)" = "Constant",
-             #   "share_protestant" = "Share of Protestants in 1839",
-             #   "revmoy" = "Average income",
-             #   "pop" = "Population", 
-             #   "petranger" = "Percentage of foreigners",
-             #   "psup" = "Percentage of people with higher education",
-             #   "pbac" = "Percentage of people with the bac",
-             #   "pconjsign1816" = "Literacy in 1816",
-             #   "pserment1791" = "Share of constitutional priests in 1791"
-             #   ),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             # add_rows = tibble::tribble(
-             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             # ),
-             #output = "table1.tex",
-             #output = "text"
-             )
+modelsummary(
+  list(
+    "Historical Controls" = m_educ_hist,
+    "Contemp. Controls" = m_educ_cont,
+    "Both Controls" = m_educ_all
+  ),
+  vcov = "robust",
+  cluster = "codecommune",
+  stars = TRUE,
+  
+  coef_omit = "year|dep",
+  
+  gof_map = tibble::tribble(
+    ~ raw,
+    ~ clean,
+    ~ fmt,
+    "nobs",
+    "N",
+    0,
+    "r.squared",
+    "R^2",
+    2,
+    "adj.r.squared",
+    "Adj. R^2",
+    2
+  )
+)
 
 
 ```
@@ -1381,42 +1381,25 @@ m_educ_all <- lm(data = d_FN_controls |>
            petranger + pchom + 
            prixbien)
 
-modelsummary(list("Dep FEs" = m_dep, 
-                  "Historical Controls" = m_hist, 
-                  "Contemp. Controls" = m_cont, 
-                  "Both Controls" = m_all, 
-                  "Higher Ed" = m_all_sup,
-                  "High School" = m_all_educ, 
-                  
-                  "Historical Controls" = m_educ_hist, 
-                  "Contemp. Controls" = m_educ_cont, 
-                  "Both Controls" = m_educ_all), 
+modelsummary(list(m_dep, m_hist, m_cont, m_all, m_all_sup, m_all_educ), 
+             vcov = "robust", cluster = "codecommune",
+             stars = TRUE,
+             coef_omit = "year|dep",
+             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
+                                       "nobs", "N", 0,
+                                       "r.squared", "R^2", 2,
+                                       "adj.r.squared", "Adj. R^2", 2)
+             )
+
+modelsummary(list(m_educ_hist, m_educ_cont, m_educ_all), 
              vcov = "robust", cluster = "codecommune",
              stars = TRUE,
              
              coef_omit = "year|dep",
-             # coef_map = c(
-             #   "(Intercept)" = "Constant",
-             #   "share_protestant" = "Share of Protestants in 1839",
-             #   "revmoy" = "Average income",
-             #   "pop" = "Population", 
-             #   "petranger" = "Percentage of foreigners",
-             #   "psup" = "Percentage of people with higher education",
-             #   "pbac" = "Percentage of people with the bac",
-             #   "pconjsign1816" = "Literacy in 1816",
-             #   "pserment1791" = "Share of constitutional priests in 1791"
-             #   ),
              gof_map = tibble::tribble(~raw, ~clean, ~fmt,
                                        "nobs", "N", 0,
                                        "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             # add_rows = tibble::tribble(
-             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             # ),
-             #output = "table1.tex",
-             #output = "text"
+                                       "adj.r.squared", "Adj. R^2", 2)
              )
 
 ```
@@ -1524,7 +1507,7 @@ ggplot(results, aes(x = as.numeric(Year), y = estimate, colour = group, shape = 
     x = "Year",
     y = "Coefficient of Share of Protestants",
     title = "Coefficient of Share of Protestants (Separate Regressions per Year)",
-    subtitle = "Department FEs and robust standard errors"
+    subtitle = "Department FEs and Robust Standard Errors"
   ) +
   theme(legend.position = "bottom", legend.box = "vertical")
 
@@ -1594,71 +1577,28 @@ m_educ_all <- lm(data = d_FN_controls |>
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien)
 
-modelsummary(list("Dep FEs" = m_dep, 
-                  "Historical Controls" = m_hist, 
-                  "Contemp. Controls" = m_cont, 
-                  "Both Controls" = m_all, 
-                  "Both Sets + Higher Ed" = m_all_sup,
-                  "Both Sets + Higher Ed + High School" = m_all_educ), 
+modelsummary(list(m_dep, 
+                  m_hist, m_cont, m_all, m_all_sup, m_all_educ), 
              vcov = "robust", cluster = "codecommune",
              stars = TRUE,
              
              coef_omit = "year|dep",
-             # coef_map = c(
-             #   "(Intercept)" = "Constant",
-             #   "share_protestant" = "Share of Protestants in 1839",
-             #   "revmoy" = "Average income",
-             #   "pop" = "Population", 
-             #   "petranger" = "Percentage of foreigners",
-             #   "psup" = "Percentage of people with higher education",
-             #   "pbac" = "Percentage of people with the bac",
-             #   "pconjsign1816" = "Literacy in 1816",
-             #   "pserment1791" = "Share of constitutional priests in 1791"
-             #   ),
              gof_map = tibble::tribble(~raw, ~clean, ~fmt,
                                        "nobs", "N", 0,
                                        "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             # add_rows = tibble::tribble(
-             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             # ),
-             #output = "table1.tex",
-             #output = "text"
+                                       "adj.r.squared", "Adj. R^2", 2)
              )
 
-modelsummary(list("Historical Controls" = m_educ_hist, 
-                  "Contemp. Controls" = m_educ_cont, 
-                  "Both Controls" = m_educ_all ), 
+modelsummary(list(m_educ_hist, m_educ_cont, m_educ_all ), 
              vcov = "robust", cluster = "codecommune",
              stars = TRUE,
              
              coef_omit = "year|dep",
-             # coef_map = c(
-             #   "(Intercept)" = "Constant",
-             #   "share_protestant" = "Share of Protestants in 1839",
-             #   "revmoy" = "Average income",
-             #   "pop" = "Population", 
-             #   "petranger" = "Percentage of foreigners",
-             #   "psup" = "Percentage of people with higher education",
-             #   "pbac" = "Percentage of people with the bac",
-             #   "pconjsign1816" = "Literacy in 1816",
-             #   "pserment1791" = "Share of constitutional priests in 1791"
-             #   ),
              gof_map = tibble::tribble(~raw, ~clean, ~fmt,
                                        "nobs", "N", 0,
                                        "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             # add_rows = tibble::tribble(
-             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             # ),
-             #output = "table1.tex",
-             #output = "text"
+                                       "adj.r.squared", "Adj. R^2", 2)
              )
-
 
 ```
 
@@ -1689,28 +1629,10 @@ modelsummary(list("Historical Controls" = m_int_educ_hist,
              stars = TRUE,
              
              coef_omit = "year|dep",
-             # coef_map = c(
-             #   "(Intercept)" = "Constant",
-             #   "share_protestant" = "Share of Protestants in 1839",
-             #   "revmoy" = "Average income",
-             #   "pop" = "Population", 
-             #   "petranger" = "Percentage of foreigners",
-             #   "psup" = "Percentage of people with higher education",
-             #   "pbac" = "Percentage of people with the bac",
-             #   "pconjsign1816" = "Literacy in 1816",
-             #   "pserment1791" = "Share of constitutional priests in 1791"
-             #   ),
              gof_map = tibble::tribble(~raw, ~clean, ~fmt,
                                        "nobs", "N", 0,
                                        "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             # add_rows = tibble::tribble(
-             #   ~term, ~m1, ~m2, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8, ~m9, ~m10,
-             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             #   "Department FE", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",
-             # ),
-             #output = "table1.tex",
-             #output = "text"
+                                       "adj.r.squared", "Adj. R^2", 2)
              )
 
 
@@ -1732,6 +1654,132 @@ plot_slopes(m_int_educ_all,
 
 ```
 
+## Sequential g-estimation
+
+```{r}
+d_seq <- d_FN_controls |>
+  filter(year == 2022) |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+
+m <- lm(data = d_seq,
+         pvoixRN ~ share_protestant + altitude_moyenne + latitude_centre + longitude_centre,
+         se_type = "stata", clusters = codecommune)
+
+m_hist <- lm(data = d_seq,
+         pvoixRN ~ share_protestant + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre,
+          se_type = "stata", clusters = codecommune)
+
+m_cont <- lm(data = d_seq,
+         pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + 
+           pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all_sup <- lm(data = d_seq,
+         pvoixRN ~ share_protestant + dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + psup,
+          se_type = "stata", clusters = codecommune)
+
+direct <- sequential_g(pvoixRN ~ share_protestant + 
+                                  dep + letter + brigade + 
+                         dist_cassini + HubDist + revratio1790 + heg_value +
+                         total_protests + pconjsign1686 + pserment1791 +
+                         altitude_moyenne + latitude_centre + longitude_centre |
+                         revmoy + pop + petranger +  pchom + prixbien |
+                         psup_centered, 
+                       data = d_seq)
+
+direct_all <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien |
+                                  psup_centered, 
+                       data = d_seq)
+
+direct_cont <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  revmoy + pop + petranger +  pchom + prixbien |
+                                  psup_centered, 
+                       data = d_seq)
+
+direct_hist <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791|
+                                  psup_centered, 
+                       data = d_seq)
+
+tibble(
+  "Model" = c("Geographical Controls (OLS)", "Historical Controls (OLS)", 
+              "Contemporary Controls (OLS)", "Both Sets of Controls (OLS)", 
+              "Historical Controls (Seq G-Est)", "Contemporary Controls (Seq G-Est)", 
+              "Both Sets of Controls (Seq G-Est)"),
+  "order" = c(seq(1, 7)),
+  "coef" = c(coef(m)["share_protestant"],
+                      coef(m_hist)["share_protestant"], 
+                      coef(m_cont)["share_protestant"],
+                      coef(m_all_sup)["share_protestant"],
+                      coef(direct_hist)["share_protestant"], 
+                      coef(direct_cont)["share_protestant"],
+                      coef(direct_all)["share_protestant"]),
+  "conf.lower" = c(confint(m, "share_protestant")[1],
+                     confint(m_hist, "share_protestant")[1], 
+                     confint(m_cont, "share_protestant")[1],
+                     confint(m_all_sup, "share_protestant")[1],
+                     confint(direct_hist, "share_protestant")[1],
+                     confint(direct_cont, "share_protestant")[1],
+                     confint(direct_all, "share_protestant")[1]),
+  "conf.upper" = c(confint(m, "share_protestant")[2],
+                     confint(m_hist, "share_protestant")[2], 
+                     confint(m_cont, "share_protestant")[2],
+                     confint(m_all_sup, "share_protestant")[2],
+                     confint(direct_hist, "share_protestant")[2],
+                     confint(direct_cont, "share_protestant")[2],
+                     confint(direct_all, "share_protestant")[2])
+) |>
+  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), y = coef, ymin = conf.lower, ymax = conf.upper)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  coord_flip() +
+  labs(
+    x = "",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants (Sequential g-estimation vs OLS)",
+    subtitle = "Department FEs and Robust Standard Errors"
+  )
+
+plot(cdesens(direct_hist, var = "share_protestant"))
+plot(cdesens(direct_cont, var = "share_protestant"))
+plot(cdesens(direct_all, var = "share_protestant"))
+
+## Benchmarking the effect by going from min to max:
+
+prot <- (max(d_seq$share_protestant, na.rm = T) - min(d_seq$share_protestant, na.rm = T))*coef(direct_all)["share_protestant"]
+
+unemp <- (max(d_seq$pchom, na.rm = T) - min(d_seq$pchom, na.rm = T))*coef(m_all_sup)["pchom"]
+
+edsup <- (max(d_seq$psup, na.rm = T) - min(d_seq$psup, na.rm = T))*coef(m_all_sup)["psup"]
+
+tibble(
+  "Variable" = c("Share of Protestants in 1839", "Unemployment Rate", "Share of Higher Education"),
+  "Effect" = c(prot, unemp, edsup)
+)
+
+sd(d_seq$pvoixRN, na.rm = TRUE)
+```
 
 ## Mediation Analysis
 
@@ -1756,13 +1804,15 @@ m_educ_all <- lm(data = d_FN_controls |>
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien)
 
+set.seed(1839)
+
 club_med <- mediate(
   model.m = m_educ_all,
   model.y = m_all_educ,
   treat = "share_protestant",
   mediator = "psup",
   robustSE = TRUE,
-  sims = 100
+  sims = 500
 )
 
 summary(club_med)
@@ -1899,7 +1949,10 @@ love.plot(
   abs = TRUE,
   thresholds = c(cor = 0.1),
   var.order = "unadjusted"
-)
+) +
+  labs(title = "Covariate Balance (Historical covariates)") +
+  scale_colour_manual(values = c("#7a0177", "#3B7A01")) +
+    theme(legend.position = "bottom")
 
 love.plot(
   w_full,
@@ -1907,7 +1960,11 @@ love.plot(
   abs = TRUE,
   thresholds = c(cor = 0.1),
   var.order = "unadjusted"
-)
+) +
+  labs(title = "Covariate Balance (All covariates)") +
+  
+  scale_colour_manual(values = c("#7a0177", "#3B7A01")) +
+    theme(legend.position = "bottom")
 ```
 
 
@@ -2007,7 +2064,13 @@ ggplot(me_plot, aes(x = share_protestant, y = estimate, colour = spec, fill = sp
     y = "Marginal effect on RN Vote Share",
     title = "Dose-response marginal effects after entropy-balancing"
   ) +
-  theme_minimal()
+  scale_colour_manual(values = c("#7a0177", "#3B7A01"),
+                      name = "Covariates",
+                      labels = c("All", "Historical")) +
+  scale_fill_manual(values = c("#7a0177", "#3B7A01"),
+                    name = "Covariates",
+                      labels = c("All", "Historical")) +
+  theme(legend.position = "bottom")
 
 ```
 
@@ -2060,7 +2123,7 @@ modelsummary(list(m1, m2
              #   "Department FE", "Yes", "Yes"
              # ),
              #output = "table1.tex",
-             #output = "text"
+             output = "latex"
              )
 
 ```
@@ -2148,112 +2211,82 @@ ggplot() +
 ```
 
 
-We can now regress FN vote share now on the share of Protestants in 1839:
-
-```{r}
-d_FN_rdd <- d_FN_controls |>
-  filter(dep %in% c("07", "26", "38", "05", "43"))
-
-```
-
+We can now regress FN vote share now on the share of Protestants in 1839. Given some gaps in coverage in the Cagé-Piketty data, we use the original data from the French Ministry of Interior [available here](https://www.data.gouv.fr/datasets/elections-legislatives-des-12-et-19-juin-2022-resultats-du-1er-tour).
 
 ```{r}
 
-m1 <- lm(data = d_FN_rdd,
-         pvoixRN ~ share_protestant + Year)
+d2022_orig <- readxl::read_xlsx("resultats-par-niveau-subcom-t1-france-entiere.xlsx") |>
+  filter(`Code du département` %in% c("07", "26", "38", "05", "43")) |>
+  mutate(
+    `Code de la commune` = paste(`Code du département`, `Code de la commune`, sep = "")
+  ) |>
+  rename(
+    codedep = `Code du département`,
+    codecommune = `Code de la commune`,
+    nomcommune = `Libellé de la commune`,
+    nomdep = `Libellé du département`
+  )
 
-m3 <- lm(data = d_FN_rdd,
-         pvoixRN ~ share_protestant + Year + 
-           letter + brigade + 
-           dist_cassini + HubDist + revratio1790 + heg_value +
-           total_protests + pconjsign1686 + pserment1791 + 
-           altitude_moyenne + latitude_centre + longitude_centre +
-           revmoy + pop + petranger + pchom + prixbien)
+d2022_orig_filt <- d2022_orig[,1:117]
 
-m4 <- lm(data = d_FN_rdd,
-         pvoixRN ~ share_protestant + Year + 
-           letter + brigade + 
-           dist_cassini + HubDist + revratio1790 + heg_value +
-           total_protests + pconjsign1686 + pserment1791 + 
-           altitude_moyenne + latitude_centre + longitude_centre +
-           revmoy + pop + petranger + pchom + prixbien + psup)
+c_names <- colnames(d2022_orig_filt[,c(1:21, 22:29)])
 
-m5 <- lm(data = d_FN_rdd,
-         pvoixRN ~ share_protestant + Year + 
-           letter + brigade + 
-           dist_cassini + HubDist + revratio1790 + heg_value +
-           total_protests + pconjsign1686 + pserment1791 + 
-           altitude_moyenne + latitude_centre + longitude_centre +
-           revmoy + pop + petranger + pchom + prixbien + psup + pbac)
+d_all_cands <- c()
 
-# m7 <- lm(data = d_FN_controls |> 
-#            filter(nomdep == "ARDECHE") |>
-#            mutate(year = as.character(year)),
-#          pvoixRN ~ share_protestant + year + revmoy + pop + psup + pbac + pconjsign1816 + pserment1791)
+for (i in 1:12) {
+  
+  d_each_cand <- d2022_orig_filt[,c(1:21, 21 + (i-1)*8 + 1:8)]
+  
+  colnames(d_each_cand) <- c_names
+  
+  assign(paste("cand", i, sep = ""), d_each_cand)
+  
+  d_all_cands <- bind_rows(d_all_cands, d_each_cand)
+  
+}
 
-m7 <- lm(data = d_FN_rdd,
-         psup ~ share_protestant + Year + 
-           letter + brigade + 
-           dist_cassini + HubDist + revratio1790 + heg_value +
-           total_protests + pserment1791 + 
-           altitude_moyenne + latitude_centre + longitude_centre +
-           revmoy + pop + petranger + pchom + prixbien)
+d2022_RN <- d_all_cands |> 
+  filter(Nuance == "RN") |>
+  rename(codecirco = `Code de la circonscription`,
+         nomcirco = `Libellé de la circonscription`,
+         registered_voters = Inscrits,
+         votes_cast = Votants,
+         votes_valid = Exprimés,
+         votes_RN = Voix,
+         pvoixRN = `% Voix/Exp`) |>
+  mutate(
+    code_insee = as.numeric(codecommune)
+  ) |>
+  dplyr::select(codedep, code_insee, codecirco, nomcirco, 
+                registered_voters, votes_cast, votes_valid, votes_RN, pvoixRN) |>
+  full_join(d_map |>
+              filter(dep  %in% c("07", "26", "38", "05", "43")), 
+            by = c("code_insee"))
 
-m8 <- lm(data = d_FN_rdd,
-         psup ~ share_protestant + Year + 
-           letter + brigade + 
-           dist_cassini + HubDist + revratio1790 + heg_value +
-           total_protests + pconjsign1686 + pserment1791 + 
-           altitude_moyenne + latitude_centre + longitude_centre +
-           revmoy + pop + petranger + pchom + prixbien + pconjsign1816)
-
-
-modelsummary(dvnames(list(m1, m3, m4, m5, m7, m8
-                  )), 
-             vcov = "robust", 
-             stars = TRUE,
-             
-             coef_omit = "year",
-             # coef_map = c(
-             #   "(Intercept)" = "Constant",
-             #   "share_protestant" = "Share of Protestants in 1839",
-             #   "revmoy" = "Average income",
-             #   "pop" = "Population",
-             #   "petranger" = "Percentage of foreigners",
-             #   "psup" = "Percentage of people with higher education",
-             #   "pbac" = "Percentage of people with the bac",
-             #   "pconjsign1816" = "Literacy in 1816"#,
-             #   #"pserment1791" = "Share of constitutional priests in 1791"
-             #   ),
-             gof_map = tibble::tribble(~raw, ~clean, ~fmt,
-                                       "nobs", "N", 0,
-                                       "r.squared", "R^2", 2,
-                                       "adj.r.squared", "Adj. R^2", 2),
-             # add_rows = tibble::tribble(
-             #   ~term, ~m1, ~m3, ~m4, ~m5, ~m6, ~m7, ~m8,
-             #   "Year FE", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"
-             # ),
-             # #output = "table1.tex",
-             #output = "text"
-             )
 
 ```
 
 ```{r, fig.width=12, fig.height = 14}
 
-polygon3 <- d_FN_rdd |>
+ptest <- d_map |>
+  filter(INSEE_DEP %in% c("07", "26", "38", "05", "43")) |>
+  rename(codecommune = code_insee) |>
+  full_join(d2022 |>
+              mutate(codecommune = as.numeric(codecommune))) |>
+   st_as_sf()
+
+polygon3 <- d2022_RN |>
   st_as_sf()
   
 
 ggplot() +
-    geom_sf(data = polygon3 |> filter(Year == "2022"), aes(fill = pvoixRN), colour = NA) +
+    geom_sf(data = ptest, aes(fill = pvoixRN), colour = NA) +
     geom_sf(data = poly2_clip_dissolved, colour = "black", fill = NA) +
   scale_fill_gradient(
     low = "skyblue1",
     high = "tan4",
     na.value = "lightgrey"
   ) +
-  facet_wrap(~Year) +
   labs(
     title = "FN/RN Vote Share in Ardeche",
     subtitle = "Overlaid with Historical Borders of the Dioceses of \nValence and Die",
@@ -2267,14 +2300,16 @@ ggplot() +
 
 ```{r}
 
-d_rdd <- d_FN_rdd |> 
+#d_rdd <- d2022_RN
+
+d_rdd <- d_FN_controls |>
   filter(Year == "2022")
 
 d_rdd$treated <- assign_treated(d_rdd |> 
                                   st_as_sf(), 
                                 poly2_clip_dissolved |> 
                                   st_as_sf(), 
-                                id = "codecommune")
+                                id = "code_insee")
 
 d_rdd$treated[d_rdd$NOM %in% c("Le Pouzin", "Cruas", "Rochemaure")] <- 0
 
@@ -2306,7 +2341,7 @@ The logic would be something like what follows graphically, although here all ob
 
 cowplot::plot_grid(
   ggplot(data = d_rdd |>
-           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning)), 
+           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning, na.rm = TRUE)), 
          aes(x = distrunning, y = share_protestant, 
              colour = treated, fill = treated)) + 
     geom_point() + 
@@ -2316,19 +2351,19 @@ cowplot::plot_grid(
          y = "Share Protestant", 
          title = "RD Plot for Share Protestant in 1839") +
     theme(legend.position = "none"),
+  # ggplot(data = d_rdd |>
+  #          filter(d_rdd$dist2cutoff < max(d_rdd$distrunning)),
+  #        aes(x = distrunning, y = psup,
+  #            colour = treated, fill = treated)) +
+  #   geom_point() +
+  #   geom_smooth(method = "lm", alpha = 0.2) +
+  #   geom_vline(xintercept = 0, col = "black") +
+  #   labs(x = "Distance to the Border of the Diocese",
+  #        y = "Share of Higher Ed",
+  #        title = "RD Plot for Share of Higher Education in 2022") +
+  #   theme(legend.position = "bottom"),
   ggplot(data = d_rdd |>
-           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning)), 
-         aes(x = distrunning, y = psup, 
-             colour = treated, fill = treated)) + 
-    geom_point() + 
-    geom_smooth(method = "lm", alpha = 0.2) +
-    geom_vline(xintercept = 0, col = "black") +
-    labs(x = "Distance to the Border of the Diocese", 
-         y = "Share of Higher Ed", 
-         title = "RD Plot for Share of Higher Education in 2022") +
-    theme(legend.position = "bottom"),
-  ggplot(data = d_rdd |>
-           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning)), 
+           filter(d_rdd$dist2cutoff < max(d_rdd$distrunning, na.rm = TRUE)), 
          aes(x = distrunning, y = pvoixRN, 
              colour = treated, fill = treated)) + 
     geom_point() + 
@@ -2349,8 +2384,7 @@ cowplot::plot_grid(
 fuzzy_rdd <- rdrobust(y = d_rdd$pvoixRN, 
                       x = d_rdd$distrunning, 
                       fuzzy = d_rdd$share_protestant,
-                      kernel = "uniform",
-                      p = 2,
+                      kernel = "uniform",,
                       c = 0)
 
 summary(fuzzy_rdd)
@@ -2374,51 +2408,42 @@ Even a fuzzy RDD might not be justifiable in this context given the imprecision 
 ```{r}
 
 firststage <- lm(share_protestant ~ treated, data = d_rdd |>
-           filter(d_rdd$distrunning < 10)
+           filter(d_rdd$distrunning < 8.4)
 )
 
 iv1 <- ivreg(pvoixRN ~ share_protestant | treated , 
               data = d_rdd |>
-           filter(d_rdd$distrunning < 10)
+           filter(d_rdd$distrunning < 8.4)
         )
 
-iv2 <- ivreg(pvoixRN ~ share_protestant + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien | 
-      treated + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien, 
+iv2 <- ivreg(pvoixRN ~ share_protestant +
+    revmoy + pop + petranger + pchom + prixbien |
+      treated +
+    revmoy + pop + petranger + pchom + prixbien,
               data = d_rdd |>
            filter(d_rdd$distrunning < 10)
 )
 
-iv3 <- ivreg(pvoixRN ~ share_protestant + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien + psup | 
-      treated + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien + psup, 
+iv3 <- ivreg(pvoixRN ~ share_protestant + 
+    revmoy + pop + petranger + pchom + prixbien + psup |
+      treated + 
+    revmoy + pop + petranger + pchom + prixbien + psup,
               data = d_rdd |>
            filter(d_rdd$distrunning < 10)
 )
 
-iv4 <- ivreg(psup ~ share_protestant + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien | 
-      treated + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien, 
+iv4 <- ivreg(psup ~ share_protestant + 
+    revmoy + pop + petranger + pchom + prixbien |
+      treated + 
+    revmoy + pop + petranger + pchom + prixbien,
               data = d_rdd |>
            filter(d_rdd$distrunning < 10)
 )
 
-modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
+modelsummary(list("First Stage" = firststage, 
+                  "IV (No Controls)" = iv1,
+                  "IV (Controls)" = iv2, 
+                  "IV (Controls + Educ)" = iv3),
         stars = TRUE,
         vcov = "robust",
         cluster = "codecommune"
@@ -2427,7 +2452,7 @@ modelsummary(dvnames(list(firststage, iv1, iv2, iv3, iv4)),
 ```
 
 ```{r}
-bounds <- c(5, 10, 15, 20, 25, 30)
+bounds <- c(5, 10, 15, 20, 25, 30, 35)
 
 tidy_robust <- function(model) {
   
@@ -2455,38 +2480,37 @@ estimate_models_robust <- function(bound) {
     ),
     
     iv2 = ivreg(
-      pvoixRN ~ share_protestant + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien |
+      pvoixRN ~ share_protestant +
+    letter + brigade + dist_cassini + HubDist +
+      revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+      altitude_moyenne + latitude_centre + longitude_centre |
         treated + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien,
+      revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+      altitude_moyenne + latitude_centre + longitude_centre,
       data = df_b
     ),
     
     iv3 = ivreg(
-      pvoixRN ~ share_protestant + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien + psup |
-        treated + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien + psup,
+      pvoixRN ~ share_protestant + 
+    letter + brigade + dist_cassini + HubDist +
+      revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+      altitude_moyenne + latitude_centre + longitude_centre + psup |
+        treated + letter + 
+    letter + brigade + dist_cassini + HubDist +
+      revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+      altitude_moyenne + latitude_centre + longitude_centre + psup,
       data = df_b
     ),
     
     iv4 = ivreg(
-      psup ~ share_protestant + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien |
-        treated + letter + brigade + dist_cassini + HubDist +
-    revratio1790 + total_protests + pconjsign1686 + pserment1791 +
-    altitude_moyenne + latitude_centre + longitude_centre +
-    revmoy + pop + petranger + pchom + prixbien,
+      psup ~ share_protestant + 
+    letter + brigade + dist_cassini + HubDist +
+      revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+      altitude_moyenne + latitude_centre + longitude_centre |
+        treated + 
+    letter + brigade + dist_cassini + HubDist +
+      revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+      altitude_moyenne + latitude_centre + longitude_centre,
       data = df_b
     )
   )
@@ -2551,6 +2575,54 @@ marginal_effects_robust |>
 
 ```
 
+```{r}
+
+rdd_match <- matchit(
+    treated ~ letter + brigade + dist_cassini + HubDist +
+      revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+      altitude_moyenne + latitude_centre + longitude_centre,
+    data = d_rdd |>
+      filter(distrunning < 20) |>
+      dplyr::select(pvoixRN, treated, letter, brigade, dist_cassini, HubDist,
+    revratio1790, total_protests, pconjsign1686, pserment1791, heg_value,
+  altitude_moyenne, latitude_centre, longitude_centre) |>
+    na.omit()#,
+    #method = "ebal"
+)
+
+rdd_bal <- bal.tab(
+    rdd_match,
+    stats = "mean.diffs",
+    abs = TRUE,
+    thresholds = c(cor = 0.1)
+)
+
+love.plot(
+    rdd_match,
+    abs = TRUE,
+    thresholds = c(cor = 0.1),
+    var.order = "unadjusted"
+) +
+    labs(title = "Covariate Balance") +
+    scale_colour_manual(values = c("#7a0177", "#3B7A01")) +
+    theme(legend.position = "bottom")
+```
+
+
+```{r}
+
+fit <- lm(pvoixRN ~ treated * (letter + brigade + dist_cassini + HubDist +
+      revratio1790 + total_protests + pconjsign1686 + pserment1791 + heg_value +
+      altitude_moyenne + latitude_centre + longitude_centre),
+          data = match_data(rdd_match),
+          weights = weights)
+
+avg_comparisons(fit,
+                variables = "treated",
+                vcov = ~subclass,
+                newdata = subset(treated == 1))
+
+```
 
 
 
