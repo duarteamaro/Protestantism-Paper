@@ -1,7 +1,7 @@
 Protestantism Code
 ================
 Duarte Amaro
-2026-05-22
+2026-05-25
 
 # Cleaning the hand-transcribed data
 
@@ -4257,47 +4257,58 @@ plot_slopes(m_int_educ_all,
 
 ## Sequential g-estimation
 
+### Baseline models
+
 ``` r
 d_seq <- d_FN_controls |>
-  filter(year == 2022) |>
+  #filter(year == 2022) |>
   mutate(
     psup_centered = psup - mean(psup, na.rm = TRUE),
   )
 
-m <- lm(data = d_seq,
-         pvoixRN ~ share_protestant + altitude_moyenne + latitude_centre + longitude_centre,
+m <- lm_robust(data = d_seq,
+         pvoixRN ~ share_protestant + dep + Year + altitude_moyenne + 
+           latitude_centre + longitude_centre,
          se_type = "stata", clusters = codecommune)
 
-m_hist <- lm(data = d_seq,
-         pvoixRN ~ share_protestant + dep + letter + brigade + 
+m_hist <- lm_robust(data = d_seq,
+         pvoixRN ~ share_protestant + dep + Year + letter + brigade + 
            dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 +
            altitude_moyenne + latitude_centre + longitude_centre,
           se_type = "stata", clusters = codecommune)
 
-m_cont <- lm(data = d_seq,
-         pvoixRN ~ share_protestant + dep + revmoy + pop + petranger + 
+m_cont <- lm_robust(data = d_seq,
+         pvoixRN ~ share_protestant + dep + Year + revmoy + pop + petranger + 
            pchom + prixbien,
           se_type = "stata", clusters = codecommune)
 
-m_all_sup <- lm(data = d_seq,
-         pvoixRN ~ share_protestant + dep + letter + brigade + 
+m_all <- lm_robust(data = d_seq,
+         pvoixRN ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all_sup <- lm_robust(data = d_seq,
+         pvoixRN ~ share_protestant + dep + Year + letter + brigade + 
            dist_cassini + HubDist + revratio1790 + heg_value +
            total_protests + pconjsign1686 + pserment1791 + 
            altitude_moyenne + latitude_centre + longitude_centre +
            revmoy + pop + petranger + pchom + prixbien + psup,
           se_type = "stata", clusters = codecommune)
 
-direct <- sequential_g(pvoixRN ~ share_protestant + 
-                                  dep + letter + brigade + 
-                         dist_cassini + HubDist + revratio1790 + heg_value +
-                         total_protests + pconjsign1686 + pserment1791 +
-                         altitude_moyenne + latitude_centre + longitude_centre |
-                         revmoy + pop + petranger +  pchom + prixbien |
-                         psup_centered, 
+direct_all <- sequential_g(pvoixRN ~ share_protestant + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
                        data = d_seq)
 
-direct_all <- sequential_g(pvoixRN ~ share_protestant + 
+direct_all_sup <- sequential_g(pvoixRN ~ share_protestant + dep + Year + 
                                   altitude_moyenne + latitude_centre +
                                   longitude_centre |
                                   letter + brigade + dist_cassini + 
@@ -4307,109 +4318,1812 @@ direct_all <- sequential_g(pvoixRN ~ share_protestant +
                                   psup_centered, 
                        data = d_seq)
 
-direct_cont <- sequential_g(pvoixRN ~ share_protestant + 
+direct_cont <- sequential_g(pvoixRN ~ share_protestant + dep + Year +
                                   altitude_moyenne + latitude_centre +
                                   longitude_centre |
-                                  revmoy + pop + petranger +  pchom + prixbien |
-                                  psup_centered, 
+                                  revmoy + pop + petranger +  pchom + prixbien, 
                        data = d_seq)
 
-direct_hist <- sequential_g(pvoixRN ~ share_protestant + 
+direct_hist <- sequential_g(pvoixRN ~ share_protestant + dep + Year +
                                   altitude_moyenne + latitude_centre +
                                   longitude_centre |
                                   letter + brigade + dist_cassini + 
                                   HubDist + revratio1790 + heg_value +
-                                  total_protests + pconjsign1686 + pserment1791|
-                                  psup_centered, 
+                                  total_protests + pconjsign1686 + pserment1791, 
                        data = d_seq)
 
-tibble(
+results_1 <- tibble(
   "Model" = c("Geographical Controls (OLS)", "Historical Controls (OLS)", 
-              "Contemporary Controls (OLS)", "Both Sets of Controls (OLS)", 
+              "Contemporary Controls (OLS)", "All Controls (OLS)", 
+              "All Controls + Education (OLS)",
               "Historical Controls (Seq G-Est)", "Contemporary Controls (Seq G-Est)", 
-              "Both Sets of Controls (Seq G-Est)"),
-  "order" = c(seq(1, 7)),
+              "All Controls (Seq G-Est)", "All Controls + Education (Seq G-Est)"),
+  "controls" = c("Geography", "Historical", "Contemporary", "All", "All + Educ",
+                 "Historical", "Contemporary", "All", "All + Educ"),
+  "group" = c(rep("OLS", 5), rep("Seq G-Est", 4)),
+  "order" = c(seq(1, 9)),
   "coef" = c(coef(m)["share_protestant"],
                       coef(m_hist)["share_protestant"], 
                       coef(m_cont)["share_protestant"],
+                      coef(m_all)["share_protestant"],
                       coef(m_all_sup)["share_protestant"],
                       coef(direct_hist)["share_protestant"], 
                       coef(direct_cont)["share_protestant"],
-                      coef(direct_all)["share_protestant"]),
+                      coef(direct_all)["share_protestant"],
+             coef(direct_all_sup)["share_protestant"]),
   "conf.lower" = c(confint(m, "share_protestant")[1],
                      confint(m_hist, "share_protestant")[1], 
                      confint(m_cont, "share_protestant")[1],
+                      confint(m_all, "share_protestant")[1],
                      confint(m_all_sup, "share_protestant")[1],
                      confint(direct_hist, "share_protestant")[1],
                      confint(direct_cont, "share_protestant")[1],
-                     confint(direct_all, "share_protestant")[1]),
+                     confint(direct_all, "share_protestant")[1],
+                     confint(direct_all_sup, "share_protestant")[1]),
   "conf.upper" = c(confint(m, "share_protestant")[2],
                      confint(m_hist, "share_protestant")[2], 
                      confint(m_cont, "share_protestant")[2],
+                      confint(m_all, "share_protestant")[2],
                      confint(m_all_sup, "share_protestant")[2],
                      confint(direct_hist, "share_protestant")[2],
                      confint(direct_cont, "share_protestant")[2],
-                     confint(direct_all, "share_protestant")[2])
-) |>
-  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), y = coef, ymin = conf.lower, ymax = conf.upper)) +
+                     confint(direct_all, "share_protestant")[2],
+                     confint(direct_all_sup, "share_protestant")[2])
+)
+
+
+results_1$controls <- factor(results_1$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All", "All + Educ"))
+
+results_1 |>
+  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), 
+             y = coef, ymin = conf.lower, ymax = conf.upper,
+             colour = group, shape = controls)) +
   geom_pointrange() +
   geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
   coord_flip() +
+  theme(legend.position = "bottom", legend.box = "vertical") +
   labs(
     x = "",
     y = "Coefficient of Share of Protestants",
     title = "Coefficient of Share of Protestants (Sequential g-estimation vs OLS)",
-    subtitle = "Department FEs and Robust Standard Errors"
+    subtitle = "Department and Year FEs. Robust Standard Errors clustered at the Commune (in OLS)"
   )
 ```
 
 ![](code_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
 
 ``` r
-plot(cdesens(direct_hist, var = "share_protestant"))
+# plot(cdesens(direct_hist, var = "share_protestant"))
+# plot(cdesens(direct_cont, var = "share_protestant"))
+# plot(cdesens(direct_all, var = "share_protestant"))
+# 
+# ## Benchmarking the effect by going from min to max:
+# 
+# prot <- (max(d_seq$share_protestant, na.rm = T) - min(d_seq$share_protestant, na.rm = T))*coef(direct_all)["share_protestant"]
+# 
+# unemp <- (max(d_seq$pchom, na.rm = T) - min(d_seq$pchom, na.rm = T))*coef(m_all_sup)["pchom"]
+# 
+# edsup <- (max(d_seq$psup, na.rm = T) - min(d_seq$psup, na.rm = T))*coef(m_all_sup)["psup"]
+# 
+# tibble(
+#   "Variable" = c("Share of Protestants in 1839", "Unemployment Rate", "Share of Higher Education"),
+#   "Effect" = c(prot, unemp, edsup)
+# )
+# 
+# sd(d_seq$pvoixRN, na.rm = TRUE)
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-30-2.png)<!-- -->
+### Baseline per year
 
 ``` r
-plot(cdesens(direct_cont, var = "share_protestant"))
+results_2 <- d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre + dep |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien |
+                                  psup_centered, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "All + Educ") |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre + dep |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "All")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre + dep |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "Historical")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre + dep |
+                            revmoy + pop + petranger +  pchom + prixbien, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "Contemporary")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            altitude_moyenne + latitude_centre + longitude_centre + dep,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Geography")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Historical")
+  ) |>
+    bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            dep + revmoy + pop + petranger + 
+           pchom + prixbien +
+            altitude_moyenne + latitude_centre + longitude_centre,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Contemporary")
+  ) |>
+    bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre +
+              revmoy + pop + petranger + 
+           pchom + prixbien,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "All")
+  ) |>
+      bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre +
+              revmoy + pop + petranger + 
+           pchom + prixbien + psup,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "All + Educ")
+  )
+  # bind_rows(
+  #   d_FN_controls |>
+  #     group_by(Year) |>
+  #     group_modify(~ {
+  #       model <-
+  #         lm_robust(
+  #           pvoixRN ~ share_protestant + dep + letter + brigade +
+  #             dist_cassini + HubDist + revratio1790 + heg_value +
+  #             total_protests + pconjsign1686 + pserment1791 +
+  #             altitude_moyenne + latitude_centre + longitude_centre +
+  #             revmoy + pop +
+  #             petranger + pchom +
+  #             prixbien + psup + pbac,
+  #           data = .x,
+  #           se_type = "HC1",
+  #         )
+  #       
+  #       tidy(model, conf.int = TRUE) |>
+  #         filter(term == "share_protestant")
+  #     }) |>
+  #     ungroup() |>
+  #     mutate(group = "2", controls = "With Educ")
+  # ) |>
+  # bind_rows(
+  #   d_FN_controls |>
+  #     group_by(Year) |>
+  #     group_modify(~ {
+  #       model <- lm_robust(
+  #         pvoixRN ~ share_protestant + dep + letter + brigade +
+  #           dist_cassini + HubDist + revratio1790 + heg_value +
+  #           total_protests + pconjsign1686 + pserment1791 +
+  #           altitude_moyenne + latitude_centre + longitude_centre +
+  #           revmoy + pop +
+  #           petranger + pchom +
+  #           prixbien,
+  #         data = .x,
+  #         se_type = "HC1"
+  #       ) 
+  #       
+  #       tidy(model, conf.int = TRUE) |>
+  #         filter(term == "share_protestant")
+  #     }) |>
+  #     ungroup() |>
+  #     mutate(group = "2", controls = "No Educ")
+  # )
+
+results_2$controls <- factor(results_2$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All", "All + Educ"))
+
+results_2 |>
+ggplot(aes(x = as.numeric(Year), y = estimate, colour = group, shape = controls)) +
+  geom_point(position = position_dodge(3)) +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high), 
+                width = 0.2,
+                position = position_dodge(3)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  labs(
+    x = "Year",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants (Separate Regressions per Year)",
+    subtitle = "Department FEs and Robust Standard Errors"
+  ) +
+  theme(legend.position = "bottom", legend.box = "vertical")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-30-3.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 ``` r
-plot(cdesens(direct_all, var = "share_protestant"))
+results_2 <- d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre | dep +
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien |
+                                  psup_centered, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "All + Educ") |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre | dep +
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "All")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre | dep +
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "Historical")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(pvoixRN ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre | dep +
+                            revmoy + pop + petranger +  pchom + prixbien, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "Contemporary")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            altitude_moyenne + latitude_centre + longitude_centre + dep,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Geography")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Historical")
+  ) |>
+    bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            dep + revmoy + pop + petranger + 
+           pchom + prixbien +
+            altitude_moyenne + latitude_centre + longitude_centre,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Contemporary")
+  ) |>
+    bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre +
+              revmoy + pop + petranger + 
+           pchom + prixbien,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "All")
+  ) |>
+      bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          pvoixRN ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre +
+              revmoy + pop + petranger + 
+           pchom + prixbien + psup,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "All + Educ")
+  )
+  # bind_rows(
+  #   d_FN_controls |>
+  #     group_by(Year) |>
+  #     group_modify(~ {
+  #       model <-
+  #         lm_robust(
+  #           pvoixRN ~ share_protestant + dep + letter + brigade +
+  #             dist_cassini + HubDist + revratio1790 + heg_value +
+  #             total_protests + pconjsign1686 + pserment1791 +
+  #             altitude_moyenne + latitude_centre + longitude_centre +
+  #             revmoy + pop +
+  #             petranger + pchom +
+  #             prixbien + psup + pbac,
+  #           data = .x,
+  #           se_type = "HC1",
+  #         )
+  #       
+  #       tidy(model, conf.int = TRUE) |>
+  #         filter(term == "share_protestant")
+  #     }) |>
+  #     ungroup() |>
+  #     mutate(group = "2", controls = "With Educ")
+  # ) |>
+  # bind_rows(
+  #   d_FN_controls |>
+  #     group_by(Year) |>
+  #     group_modify(~ {
+  #       model <- lm_robust(
+  #         pvoixRN ~ share_protestant + dep + letter + brigade +
+  #           dist_cassini + HubDist + revratio1790 + heg_value +
+  #           total_protests + pconjsign1686 + pserment1791 +
+  #           altitude_moyenne + latitude_centre + longitude_centre +
+  #           revmoy + pop +
+  #           petranger + pchom +
+  #           prixbien,
+  #         data = .x,
+  #         se_type = "HC1"
+  #       ) 
+  #       
+  #       tidy(model, conf.int = TRUE) |>
+  #         filter(term == "share_protestant")
+  #     }) |>
+  #     ungroup() |>
+  #     mutate(group = "2", controls = "No Educ")
+  # )
+
+results_2$controls <- factor(results_2$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All", "All + Educ"))
+
+results_2 |>
+ggplot(aes(x = as.numeric(Year), y = estimate, colour = group, shape = controls)) +
+  geom_point(position = position_dodge(3)) +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high), 
+                width = 0.2,
+                position = position_dodge(3)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  labs(
+    x = "Year",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants (Separate Regressions per Year)",
+    subtitle = "Department FEs and Robust Standard Errors"
+  ) +
+  theme(legend.position = "bottom", legend.box = "vertical")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-30-4.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+
+### Log Share of Protestants
 
 ``` r
-## Benchmarking the effect by going from min to max:
+m <- lm_robust(data = d_seq,
+         pvoixRN ~ log(share_protestant + 1) + dep + Year + altitude_moyenne + 
+           latitude_centre + longitude_centre,
+         se_type = "stata", clusters = codecommune)
 
-prot <- (max(d_seq$share_protestant, na.rm = T) - min(d_seq$share_protestant, na.rm = T))*coef(direct_all)["share_protestant"]
+m_hist <- lm_robust(data = d_seq,
+         pvoixRN ~ log(share_protestant + 1) + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre,
+          se_type = "stata", clusters = codecommune)
 
-unemp <- (max(d_seq$pchom, na.rm = T) - min(d_seq$pchom, na.rm = T))*coef(m_all_sup)["pchom"]
+m_cont <- lm_robust(data = d_seq,
+         pvoixRN ~ log(share_protestant + 1) + dep + Year + revmoy + pop + petranger + 
+           pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
 
-edsup <- (max(d_seq$psup, na.rm = T) - min(d_seq$psup, na.rm = T))*coef(m_all_sup)["psup"]
+m_all <- lm_robust(data = d_seq,
+         pvoixRN ~ log(share_protestant + 1) + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
 
-tibble(
-  "Variable" = c("Share of Protestants in 1839", "Unemployment Rate", "Share of Higher Education"),
-  "Effect" = c(prot, unemp, edsup)
+m_all_sup <- lm_robust(data = d_seq,
+         pvoixRN ~ log(share_protestant + 1) + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + psup,
+          se_type = "stata", clusters = codecommune)
+
+direct_all <- sequential_g(pvoixRN ~ log(share_protestant + 1) + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_all_sup <- sequential_g(pvoixRN ~ log(share_protestant + 1) + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien |
+                                  psup_centered, 
+                       data = d_seq)
+
+direct_cont <- sequential_g(pvoixRN ~ log(share_protestant + 1) + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_hist <- sequential_g(pvoixRN ~ log(share_protestant + 1) + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+                       data = d_seq)
+
+results_1_log <- tibble(
+  "Model" = c("Geographical Controls (OLS)", "Historical Controls (OLS)", 
+              "Contemporary Controls (OLS)", "All Controls (OLS)", 
+              "All Controls + Education (OLS)",
+              "Historical Controls (Seq G-Est)", "Contemporary Controls (Seq G-Est)", 
+              "All Controls (Seq G-Est)", "All Controls + Education (Seq G-Est)"),
+  "controls" = c("Geography", "Historical", "Contemporary", "All", "All + Educ",
+                 "Historical", "Contemporary", "All", "All + Educ"),
+  "group" = c(rep("OLS", 5), rep("Seq G-Est", 4)),
+  "order" = c(seq(1, 9)),
+  "coef" = c(coef(m)["log(share_protestant + 1)"],
+                      coef(m_hist)["log(share_protestant + 1)"], 
+                      coef(m_cont)["log(share_protestant + 1)"],
+                      coef(m_all)["log(share_protestant + 1)"],
+                      coef(m_all_sup)["log(share_protestant + 1)"],
+                      coef(direct_hist)["log(share_protestant + 1)"], 
+                      coef(direct_cont)["log(share_protestant + 1)"],
+                      coef(direct_all)["log(share_protestant + 1)"],
+             coef(direct_all_sup)["log(share_protestant + 1)"]),
+  "conf.lower" = c(confint(m, "log(share_protestant + 1)")[1],
+                     confint(m_hist, "log(share_protestant + 1)")[1], 
+                     confint(m_cont, "log(share_protestant + 1)")[1],
+                      confint(m_all, "log(share_protestant + 1)")[1],
+                     confint(m_all_sup, "log(share_protestant + 1)")[1],
+                     confint(direct_hist, "log(share_protestant + 1)")[1],
+                     confint(direct_cont, "log(share_protestant + 1)")[1],
+                     confint(direct_all, "log(share_protestant + 1)")[1],
+                     confint(direct_all_sup, "log(share_protestant + 1)")[1]),
+  "conf.upper" = c(confint(m, "log(share_protestant + 1)")[2],
+                     confint(m_hist, "log(share_protestant + 1)")[2], 
+                     confint(m_cont, "log(share_protestant + 1)")[2],
+                      confint(m_all, "log(share_protestant + 1)")[2],
+                     confint(m_all_sup, "log(share_protestant + 1)")[2],
+                     confint(direct_hist, "log(share_protestant + 1)")[2],
+                     confint(direct_cont, "log(share_protestant + 1)")[2],
+                     confint(direct_all, "log(share_protestant + 1)")[2],
+                     confint(direct_all_sup, "log(share_protestant + 1)")[2])
 )
+
+
+results_1_log$controls <- factor(results_1_log$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All", "All + Educ"))
+
+results_1_log |>
+  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), 
+             y = coef, ymin = conf.lower, ymax = conf.upper,
+             colour = group, shape = controls)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  coord_flip() +
+  theme(legend.position = "bottom", legend.box = "vertical") +
+  labs(
+    x = "",
+    y = "Coefficient of Log Share of Protestants",
+    title = "Coefficient of Log Share of Protestants (Sequential g-estimation vs OLS)",
+    subtitle = "Department and Year FEs. Robust Standard Errors clustered at the Commune (in OLS)"
+  )
 ```
 
-    ## # A tibble: 3 × 2
-    ##   Variable                     Effect
-    ##   <chr>                         <dbl>
-    ## 1 Share of Protestants in 1839  -3.36
-    ## 2 Unemployment Rate             -5.03
-    ## 3 Share of Higher Education     -6.05
+![](code_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+
+### Only Original Communes
 
 ``` r
-sd(d_seq$pvoixRN, na.rm = TRUE)
+d_seq2 <- d_FN_controls |>
+  filter(category == "Original") |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+
+m <- lm_robust(data = d_seq2,
+         pvoixRN ~ share_protestant + dep + Year + altitude_moyenne + 
+           latitude_centre + longitude_centre,
+         se_type = "stata", clusters = codecommune)
+
+m_hist <- lm_robust(data = d_seq2,
+         pvoixRN ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre,
+          se_type = "stata", clusters = codecommune)
+
+m_cont <- lm_robust(data = d_seq2,
+         pvoixRN ~ share_protestant + dep + Year + revmoy + pop + petranger + 
+           pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all <- lm_robust(data = d_seq2,
+         pvoixRN ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all_sup <- lm_robust(data = d_seq2,
+         pvoixRN ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + psup,
+          se_type = "stata", clusters = codecommune)
+
+direct_all <- sequential_g(pvoixRN ~ share_protestant + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq2)
+
+direct_all_sup <- sequential_g(pvoixRN ~ share_protestant + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien |
+                                  psup_centered, 
+                       data = d_seq2)
+
+direct_cont <- sequential_g(pvoixRN ~ share_protestant + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq2)
+
+direct_hist <- sequential_g(pvoixRN ~ share_protestant + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+                       data = d_seq2)
+
+results_1_orig <- tibble(
+  "Model" = c("Geographical Controls (OLS)", "Historical Controls (OLS)", 
+              "Contemporary Controls (OLS)", "All Controls (OLS)", 
+              "All Controls + Education (OLS)",
+              "Historical Controls (Seq G-Est)", "Contemporary Controls (Seq G-Est)", 
+              "All Controls (Seq G-Est)", "All Controls + Education (Seq G-Est)"),
+  "controls" = c("Geography", "Historical", "Contemporary", "All", "All + Educ",
+                 "Historical", "Contemporary", "All", "All + Educ"),
+  "group" = c(rep("OLS", 5), rep("Seq G-Est", 4)),
+  "order" = c(seq(1, 9)),
+  "coef" = c(coef(m)["share_protestant"],
+                      coef(m_hist)["share_protestant"], 
+                      coef(m_cont)["share_protestant"],
+                      coef(m_all)["share_protestant"],
+                      coef(m_all_sup)["share_protestant"],
+                      coef(direct_hist)["share_protestant"], 
+                      coef(direct_cont)["share_protestant"],
+                      coef(direct_all)["share_protestant"],
+             coef(direct_all_sup)["share_protestant"]),
+  "conf.lower" = c(confint(m, "share_protestant")[1],
+                     confint(m_hist, "share_protestant")[1], 
+                     confint(m_cont, "share_protestant")[1],
+                      confint(m_all, "share_protestant")[1],
+                     confint(m_all_sup, "share_protestant")[1],
+                     confint(direct_hist, "share_protestant")[1],
+                     confint(direct_cont, "share_protestant")[1],
+                     confint(direct_all, "share_protestant")[1],
+                     confint(direct_all_sup, "share_protestant")[1]),
+  "conf.upper" = c(confint(m, "share_protestant")[2],
+                     confint(m_hist, "share_protestant")[2], 
+                     confint(m_cont, "share_protestant")[2],
+                      confint(m_all, "share_protestant")[2],
+                     confint(m_all_sup, "share_protestant")[2],
+                     confint(direct_hist, "share_protestant")[2],
+                     confint(direct_cont, "share_protestant")[2],
+                     confint(direct_all, "share_protestant")[2],
+                     confint(direct_all_sup, "share_protestant")[2])
+)
+
+
+results_1_orig$controls <- factor(results_1_orig$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All", "All + Educ"))
+
+results_1_orig |>
+  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), 
+             y = coef, ymin = conf.lower, ymax = conf.upper,
+             colour = group, shape = controls)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  coord_flip() +
+  theme(legend.position = "bottom", legend.box = "vertical") +
+  labs(
+    x = "",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants (Explicitly Mentioned Communes)",
+    subtitle = "Department and Year FEs. Robust Standard Errors clustered at the Commune (in OLS)"
+  )
 ```
 
-    ## [1] 10.17277
+![](code_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+
+### Edcucation as the DV
+
+``` r
+d_seq <- d_FN_controls |>
+  #filter(year == 2022) |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+
+m <- lm_robust(data = d_seq,
+         psup ~ share_protestant + dep + Year + altitude_moyenne + 
+           latitude_centre + longitude_centre,
+         se_type = "stata", clusters = codecommune)
+
+m_hist <- lm_robust(data = d_seq,
+         psup ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre,
+          se_type = "stata", clusters = codecommune)
+
+m_cont <- lm_robust(data = d_seq,
+         psup ~ share_protestant + dep + Year + revmoy + pop + petranger + 
+           pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all <- lm_robust(data = d_seq,
+         psup ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+direct_all <- sequential_g(psup ~ share_protestant + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_cont <- sequential_g(psup ~ share_protestant + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_hist <- sequential_g(psup ~ share_protestant + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+                       data = d_seq)
+
+results_3 <- tibble(
+  "Model" = c("Geographical Controls (OLS)", "Historical Controls (OLS)", 
+              "Contemporary Controls (OLS)", "All Controls (OLS)", 
+              "Historical Controls (Seq G-Est)", 
+              "Contemporary Controls (Seq G-Est)", 
+              "All Controls (Seq G-Est)"),
+  "controls" = c("Geography", "Historical", "Contemporary", "All", 
+                 "Historical", "Contemporary", "All"),
+  "group" = c(rep("OLS", 4), rep("Seq G-Est", 3)),
+  "order" = c(seq(1, 7)),
+  "coef" = c(coef(m)["share_protestant"],
+                      coef(m_hist)["share_protestant"], 
+                      coef(m_cont)["share_protestant"],
+                      coef(m_all)["share_protestant"],
+                      coef(direct_hist)["share_protestant"], 
+                      coef(direct_cont)["share_protestant"],
+                      coef(direct_all)["share_protestant"]),
+  "conf.lower" = c(confint(m, "share_protestant")[1],
+                     confint(m_hist, "share_protestant")[1], 
+                     confint(m_cont, "share_protestant")[1],
+                      confint(m_all, "share_protestant")[1],
+                     confint(direct_hist, "share_protestant")[1],
+                     confint(direct_cont, "share_protestant")[1],
+                     confint(direct_all, "share_protestant")[1]),
+  "conf.upper" = c(confint(m, "share_protestant")[2],
+                     confint(m_hist, "share_protestant")[2], 
+                     confint(m_cont, "share_protestant")[2],
+                      confint(m_all, "share_protestant")[2],
+                     confint(direct_hist, "share_protestant")[2],
+                     confint(direct_cont, "share_protestant")[2],
+                     confint(direct_all, "share_protestant")[2])
+)
+
+
+results_3$controls <- factor(results_3$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All"))
+
+results_3 |>
+  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), 
+             y = coef, ymin = conf.lower, ymax = conf.upper,
+             colour = group, shape = controls)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  coord_flip() +
+  theme(legend.position = "bottom", legend.box = "vertical") +
+  labs(
+    x = "",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants on Share of Higher Education",
+    subtitle = "Department and Year FEs. Robust Standard Errors clustered at the Commune (in OLS)"
+  )
+```
+
+![](code_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+
+#### Using Log Share of Protestants
+
+``` r
+d_seq <- d_FN_controls |>
+  #filter(year == 2022) |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+
+m <- lm_robust(data = d_seq,
+         psup ~ log(share_protestant + 1) + dep + Year + altitude_moyenne + 
+           latitude_centre + longitude_centre,
+         se_type = "stata", clusters = codecommune)
+
+m_hist <- lm_robust(data = d_seq,
+         psup ~ log(share_protestant + 1) + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre,
+          se_type = "stata", clusters = codecommune)
+
+m_cont <- lm_robust(data = d_seq,
+         psup ~ log(share_protestant + 1) + dep + Year + revmoy + pop + petranger + 
+           pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all <- lm_robust(data = d_seq,
+         psup ~ log(share_protestant + 1) + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+direct_all <- sequential_g(psup ~ log(share_protestant + 1) + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_cont <- sequential_g(psup ~ log(share_protestant + 1) + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_hist <- sequential_g(psup ~ log(share_protestant + 1) + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+                       data = d_seq)
+
+results_3 <- tibble(
+  "Model" = c("Geographical Controls (OLS)", "Historical Controls (OLS)", 
+              "Contemporary Controls (OLS)", "All Controls (OLS)", 
+              "Historical Controls (Seq G-Est)", 
+              "Contemporary Controls (Seq G-Est)", 
+              "All Controls (Seq G-Est)"),
+  "controls" = c("Geography", "Historical", "Contemporary", "All", 
+                 "Historical", "Contemporary", "All"),
+  "group" = c(rep("OLS", 4), rep("Seq G-Est", 3)),
+  "order" = c(seq(1, 7)),
+  "coef" = c(coef(m)["log(share_protestant + 1)"],
+                      coef(m_hist)["log(share_protestant + 1)"], 
+                      coef(m_cont)["log(share_protestant + 1)"],
+                      coef(m_all)["log(share_protestant + 1)"],
+                      coef(direct_hist)["log(share_protestant + 1)"], 
+                      coef(direct_cont)["log(share_protestant + 1)"],
+                      coef(direct_all)["log(share_protestant + 1)"]),
+  "conf.lower" = c(confint(m, "log(share_protestant + 1)")[1],
+                     confint(m_hist, "log(share_protestant + 1)")[1], 
+                     confint(m_cont, "log(share_protestant + 1)")[1],
+                      confint(m_all, "log(share_protestant + 1)")[1],
+                     confint(direct_hist, "log(share_protestant + 1)")[1],
+                     confint(direct_cont, "log(share_protestant + 1)")[1],
+                     confint(direct_all, "log(share_protestant + 1)")[1]),
+  "conf.upper" = c(confint(m, "log(share_protestant + 1)")[2],
+                     confint(m_hist, "log(share_protestant + 1)")[2], 
+                     confint(m_cont, "log(share_protestant + 1)")[2],
+                      confint(m_all, "log(share_protestant + 1)")[2],
+                     confint(direct_hist, "log(share_protestant + 1)")[2],
+                     confint(direct_cont, "log(share_protestant + 1)")[2],
+                     confint(direct_all, "log(share_protestant + 1)")[2])
+)
+
+
+results_3$controls <- factor(results_3$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All"))
+
+results_3 |>
+  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), 
+             y = coef, ymin = conf.lower, ymax = conf.upper,
+             colour = group, shape = controls)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  coord_flip() +
+  theme(legend.position = "bottom", legend.box = "vertical") +
+  labs(
+    x = "",
+    y = "Coefficient of Log Share of Protestants",
+    title = "Coefficient of Log Share of Protestants on Share of Higher Education",
+    subtitle = "Department and Year FEs. Robust Standard Errors clustered at the Commune (in OLS)"
+  )
+```
+
+![](code_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+
+#### Using Explicitly Named Communes
+
+``` r
+d_seq <- d_FN_controls |>
+  filter(category == "Original") |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+
+m <- lm_robust(data = d_seq,
+         psup ~ share_protestant + dep + Year + altitude_moyenne + 
+           latitude_centre + longitude_centre,
+         se_type = "stata", clusters = codecommune)
+
+m_hist <- lm_robust(data = d_seq,
+         psup ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre,
+          se_type = "stata", clusters = codecommune)
+
+m_cont <- lm_robust(data = d_seq,
+         psup ~ share_protestant + dep + Year + revmoy + pop + petranger + 
+           pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all <- lm_robust(data = d_seq,
+         psup ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+direct_all <- sequential_g(psup ~ share_protestant + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_cont <- sequential_g(psup ~ share_protestant + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_hist <- sequential_g(psup ~ share_protestant + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+                       data = d_seq)
+
+results_3 <- tibble(
+  "Model" = c("Geographical Controls (OLS)", "Historical Controls (OLS)", 
+              "Contemporary Controls (OLS)", "All Controls (OLS)", 
+              "Historical Controls (Seq G-Est)", 
+              "Contemporary Controls (Seq G-Est)", 
+              "All Controls (Seq G-Est)"),
+  "controls" = c("Geography", "Historical", "Contemporary", "All", 
+                 "Historical", "Contemporary", "All"),
+  "group" = c(rep("OLS", 4), rep("Seq G-Est", 3)),
+  "order" = c(seq(1, 7)),
+  "coef" = c(coef(m)["share_protestant"],
+                      coef(m_hist)["share_protestant"], 
+                      coef(m_cont)["share_protestant"],
+                      coef(m_all)["share_protestant"],
+                      coef(direct_hist)["share_protestant"], 
+                      coef(direct_cont)["share_protestant"],
+                      coef(direct_all)["share_protestant"]),
+  "conf.lower" = c(confint(m, "share_protestant")[1],
+                     confint(m_hist, "share_protestant")[1], 
+                     confint(m_cont, "share_protestant")[1],
+                      confint(m_all, "share_protestant")[1],
+                     confint(direct_hist, "share_protestant")[1],
+                     confint(direct_cont, "share_protestant")[1],
+                     confint(direct_all, "share_protestant")[1]),
+  "conf.upper" = c(confint(m, "share_protestant")[2],
+                     confint(m_hist, "share_protestant")[2], 
+                     confint(m_cont, "share_protestant")[2],
+                      confint(m_all, "share_protestant")[2],
+                     confint(direct_hist, "share_protestant")[2],
+                     confint(direct_cont, "share_protestant")[2],
+                     confint(direct_all, "share_protestant")[2])
+)
+
+
+results_3$controls <- factor(results_3$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All"))
+
+results_3 |>
+  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), 
+             y = coef, ymin = conf.lower, ymax = conf.upper,
+             colour = group, shape = controls)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  coord_flip() +
+  theme(legend.position = "bottom", legend.box = "vertical") +
+  labs(
+    x = "",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants on Share of Higher Education \n(Explicitly Mentioned Communes)",
+    subtitle = "Department and Year FEs. Robust Standard Errors clustered at the Commune (in OLS)"
+  )
+```
+
+![](code_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+
+``` r
+results_3 <- d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(psup ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre + dep |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "All") |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(psup ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre + dep |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "Historical")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(psup ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre + dep |
+                            revmoy + pop + petranger +  pchom + prixbien, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "Contemporary")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          psup ~ share_protestant + 
+            altitude_moyenne + latitude_centre + longitude_centre + dep,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Geography")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          psup ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Historical")
+  ) |>
+    bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          psup ~ share_protestant + 
+            dep + revmoy + pop + petranger + 
+           pchom + prixbien +
+            altitude_moyenne + latitude_centre + longitude_centre,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Contemporary")
+  ) |>
+    bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          psup ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre +
+              revmoy + pop + petranger + 
+           pchom + prixbien,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "All")
+  ) 
+
+results_3$controls <- factor(results_3$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All", "All + Educ"))
+
+results_3 |>
+ggplot(aes(x = as.numeric(Year), y = estimate, colour = group, shape = controls)) +
+  geom_point(position = position_dodge(3)) +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high), 
+                width = 0.2,
+                position = position_dodge(3)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  labs(
+    x = "Year",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants (Separate Regressions per Year)",
+    subtitle = "Department FEs and Robust Standard Errors"
+  ) +
+  theme(legend.position = "bottom", legend.box = "vertical")
+```
+
+![](code_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+
+``` r
+results_3 <- d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(psup ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre | dep +
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "All") |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(psup ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre | dep +
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "Historical")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+  group_by(Year) |>
+  group_modify(~ {
+    model <- sequential_g(psup ~ share_protestant + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre | dep +
+                            revmoy + pop + petranger +  pchom + prixbien, 
+      data = .x |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+    )
+    
+    tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2]
+    )
+  }) |>
+  ungroup() |>
+  mutate(group = "Seq G-Est", controls = "Contemporary")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          psup ~ share_protestant + 
+            altitude_moyenne + latitude_centre + longitude_centre + dep,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Geography")
+  ) |>
+  bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          psup ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Historical")
+  ) |>
+    bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          psup ~ share_protestant + 
+            dep + revmoy + pop + petranger + 
+           pchom + prixbien +
+            altitude_moyenne + latitude_centre + longitude_centre,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "Contemporary")
+  ) |>
+    bind_rows(
+    d_FN_controls |>
+      group_by(Year) |>
+      group_modify(~ {
+        model <- lm_robust(
+          psup ~ share_protestant + 
+            dep + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+            altitude_moyenne + latitude_centre + longitude_centre +
+              revmoy + pop + petranger + 
+           pchom + prixbien,
+        se_type = "stata", clusters = codecommune,
+          data = .x
+        )
+        
+        tibble(
+      estimate = coef(model)["share_protestant"],
+      conf.low = confint(model, "share_protestant")[1],
+      conf.high = confint(model, "share_protestant")[2])
+      }) |>
+      ungroup() |>
+      mutate(group = "OLS", controls = "All")
+  ) 
+
+results_3$controls <- factor(results_3$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All", "All + Educ"))
+
+results_3 |>
+ggplot(aes(x = as.numeric(Year), y = estimate, colour = group, shape = controls)) +
+  geom_point(position = position_dodge(3)) +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high), 
+                width = 0.2,
+                position = position_dodge(3)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  labs(
+    x = "Year",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants (Separate Regressions per Year)",
+    subtitle = "Department FEs and Robust Standard Errors"
+  ) +
+  theme(legend.position = "bottom", legend.box = "vertical")
+```
+
+![](code_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+
+### Mainstream Right Vote share as DV
+
+``` r
+d_seq <- d_FN_controls |>
+  #filter(year == 2022) |>
+  mutate(
+    psup_centered = psup - mean(psup, na.rm = TRUE),
+  )
+
+m <- lm_robust(data = d_seq,
+         pvoixLR ~ share_protestant + dep + Year + altitude_moyenne + 
+           latitude_centre + longitude_centre,
+         se_type = "stata", clusters = codecommune)
+
+m_hist <- lm_robust(data = d_seq,
+         pvoixLR ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 +
+           altitude_moyenne + latitude_centre + longitude_centre,
+          se_type = "stata", clusters = codecommune)
+
+m_cont <- lm_robust(data = d_seq,
+         pvoixLR ~ share_protestant + dep + Year + revmoy + pop + petranger + 
+           pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all <- lm_robust(data = d_seq,
+         pvoixLR ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien,
+          se_type = "stata", clusters = codecommune)
+
+m_all_sup <- lm_robust(data = d_seq,
+         pvoixLR ~ share_protestant + dep + Year + letter + brigade + 
+           dist_cassini + HubDist + revratio1790 + heg_value +
+           total_protests + pconjsign1686 + pserment1791 + 
+           altitude_moyenne + latitude_centre + longitude_centre +
+           revmoy + pop + petranger + pchom + prixbien + psup,
+          se_type = "stata", clusters = codecommune)
+
+direct_all <- sequential_g(pvoixLR ~ share_protestant + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_all_sup <- sequential_g(pvoixLR ~ share_protestant + dep + Year + 
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791 +
+                                  revmoy + pop + petranger +  pchom + prixbien |
+                                  psup_centered, 
+                       data = d_seq)
+
+direct_cont <- sequential_g(pvoixLR ~ share_protestant + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  revmoy + pop + petranger +  pchom + prixbien, 
+                       data = d_seq)
+
+direct_hist <- sequential_g(pvoixLR ~ share_protestant + dep + Year +
+                                  altitude_moyenne + latitude_centre +
+                                  longitude_centre |
+                                  letter + brigade + dist_cassini + 
+                                  HubDist + revratio1790 + heg_value +
+                                  total_protests + pconjsign1686 + pserment1791, 
+                       data = d_seq)
+
+results_4 <- tibble(
+  "Model" = c("Geographical Controls (OLS)", "Historical Controls (OLS)", 
+              "Contemporary Controls (OLS)", "All Controls (OLS)", 
+              "All Controls + Education (OLS)",
+              "Historical Controls (Seq G-Est)", "Contemporary Controls (Seq G-Est)", 
+              "All Controls (Seq G-Est)", "All Controls + Education (Seq G-Est)"),
+  "controls" = c("Geography", "Historical", "Contemporary", "All", "All + Educ",
+                 "Historical", "Contemporary", "All", "All + Educ"),
+  "group" = c(rep("OLS", 5), rep("Seq G-Est", 4)),
+  "order" = c(seq(1, 9)),
+  "coef" = c(coef(m)["share_protestant"],
+                      coef(m_hist)["share_protestant"], 
+                      coef(m_cont)["share_protestant"],
+                      coef(m_all)["share_protestant"],
+                      coef(m_all_sup)["share_protestant"],
+                      coef(direct_hist)["share_protestant"], 
+                      coef(direct_cont)["share_protestant"],
+                      coef(direct_all)["share_protestant"],
+             coef(direct_all_sup)["share_protestant"]),
+  "conf.lower" = c(confint(m, "share_protestant")[1],
+                     confint(m_hist, "share_protestant")[1], 
+                     confint(m_cont, "share_protestant")[1],
+                      confint(m_all, "share_protestant")[1],
+                     confint(m_all_sup, "share_protestant")[1],
+                     confint(direct_hist, "share_protestant")[1],
+                     confint(direct_cont, "share_protestant")[1],
+                     confint(direct_all, "share_protestant")[1],
+                     confint(direct_all_sup, "share_protestant")[1]),
+  "conf.upper" = c(confint(m, "share_protestant")[2],
+                     confint(m_hist, "share_protestant")[2], 
+                     confint(m_cont, "share_protestant")[2],
+                      confint(m_all, "share_protestant")[2],
+                     confint(m_all_sup, "share_protestant")[2],
+                     confint(direct_hist, "share_protestant")[2],
+                     confint(direct_cont, "share_protestant")[2],
+                     confint(direct_all, "share_protestant")[2],
+                     confint(direct_all_sup, "share_protestant")[2])
+)
+
+
+results_4$controls <- factor(results_1$controls, levels = c("Geography", "Historical", 
+                                  "Contemporary", "All", "All + Educ"))
+
+results_4 |>
+  ggplot(aes(x = reorder(Model, order, decreasing = TRUE), 
+             y = coef, ymin = conf.lower, ymax = conf.upper,
+             colour = group, shape = controls)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_colour_manual(values = c("OLS" = "#7a0177", "Seq G-Est" = "#3B7A01"),
+                      labels = c("OLS" = "OLS",
+                                 "Seq G-Est" = "Sequential G-Estimation"),
+                      name = "") +
+  scale_shape_discrete(name = "") +
+  coord_flip() +
+  theme(legend.position = "bottom", legend.box = "vertical") +
+  labs(
+    x = "",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants on Mainstream Right Vote Share",
+    subtitle = "Department and Year FEs. Robust Standard Errors clustered at the Commune (in OLS)"
+  )
+```
+
+![](code_files/figure-gfm/unnamed-chunk-41-1.png)<!-- -->
 
 ## Mediation Analysis
 
@@ -4551,7 +6265,7 @@ vote share of the RN/FN since 1993.
 plot(sense_and_sensitivity)
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
 
 ## Weighting
 
@@ -4766,12 +6480,22 @@ love.plot(
   thresholds = c(cor = 0.1),
   var.order = "unadjusted"
 ) +
+ scale_y_discrete(labels = c("Latitude", "Share of French Speakers",
+                             "Communal Income (1790)", "Longitude",
+                             "Mean altitude", 
+                             "Share of constitutional priests (1791)", 
+                             "Distance to postal relay station (1708)", 
+                             "Total protests (1661 - 1789)",
+                             "Presence of a maréchaussée brigade (1710)",
+                             "Distance to Cassini road",
+                             "Presence of a letter post (1710)",
+                             "Marriage literacy in 1686") ) +
   labs(title = "Covariate Balance (Historical covariates)") +
   scale_colour_manual(values = c("#7a0177", "#3B7A01")) +
     theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-46-1.png)<!-- -->
 
 ``` r
 love.plot(
@@ -4781,13 +6505,31 @@ love.plot(
   thresholds = c(cor = 0.1),
   var.order = "unadjusted"
 ) +
+   scale_y_discrete(labels = c("Latitude", 
+                               "Property prices",
+                               "Share of French Speakers",
+                             "Communal Income (1790)", 
+                             "Longitude",
+                             "Share of Non-French citizens",
+                             "Unemployment rate",
+                             "Mean income",
+                             "Mean altitude", 
+                             "Share of constitutional priests (1791)", 
+                             "Distance to postal relay station (1708)", 
+                             "Total protests (1661 - 1789)",
+                             "Presence of a maréchaussée brigade (1710)",
+                             "Presence of a letter post (1710)",
+                             "Distance to Cassini road",
+                             "Population",
+                             "Marriage literacy in 1686") ) +
+  labs(title = "Covariate Balance (Historical covariates)") +
   labs(title = "Covariate Balance (All covariates)") +
   
   scale_colour_manual(values = c("#7a0177", "#3B7A01")) +
     theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-35-2.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-46-2.png)<!-- -->
 
 ``` r
 # Linear outcome models
@@ -4937,6 +6679,35 @@ modelsummary(
 &#10;</table>
 
 ``` r
+tibble(
+  "Model" = c("Historical Controls",
+              "Extended Controls"),
+  controls = c("Historical", "All"),
+  "coef" = c(coef(m_hist_lin)["share_protestant"],
+             coef(m_full_lin)["share_protestant"]),
+  "conf.lower" = c(confint(m_hist_lin, "share_protestant")[1],
+                     confint(m_full_lin, "share_protestant")[1]),
+  "conf.upper" = c(confint(m_hist_lin, "share_protestant")[2],
+                     confint(m_full_lin, "share_protestant")[2])
+) |>
+  ggplot(aes(x = Model, 
+             y = coef, ymin = conf.lower, ymax = conf.upper, shape = controls)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_shape_manual(name = "", values = c(3, 17)) +
+  coord_flip() +
+  theme(legend.position = "bottom", legend.box = "vertical") +
+  labs(
+    x = "",
+    y = "Coefficient of Share of Protestants",
+    title = "Coefficient of Share of Protestants on RN Vote Share",
+    subtitle = "Entropy-Balancing Linear Models. 2022 only"
+  )
+```
+
+![](code_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
+
+``` r
 grid_hist <- seq(0, 100, 1)
 grid_full <- seq(0, 100, 1)
 
@@ -4987,7 +6758,7 @@ ggplot(me_plot, aes(x = share_protestant, y = estimate, colour = spec, fill = sp
   theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
 
 ## Effect of Share of Protestants on RPR/UMP/LR Vote Share
 
@@ -5334,7 +7105,7 @@ ggplot() +
   theme(legend.position = "bottom") 
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-51-1.png)<!-- -->
 
 Compare to Siegfried’s map:
 
@@ -5377,7 +7148,7 @@ ggplot() +
   theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-52-1.png)<!-- -->
 
 We can now regress FN vote share now on the share of Protestants in
 1839. Given some gaps in coverage in the Cagé-Piketty data, we use the
@@ -5462,7 +7233,7 @@ ggplot() +
   theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
 
 # RDD
 
@@ -5545,7 +7316,7 @@ cowplot::plot_grid(
 )
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-56-1.png)<!-- -->
 
 ``` r
 fuzzy_rdd <- rdrobust(y = d_rdd$pvoixRN, 
@@ -5600,7 +7371,7 @@ rdplot(y = d_rdd$pvoixRN,
 
     ## [1] "Mass points detected in the running variable."
 
-![](code_files/figure-gfm/unnamed-chunk-45-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-57-1.png)<!-- -->
 
 ``` r
 fuzzy_rdd$bws["h",1] == fuzzy_rdd$bws["h",2]
@@ -5992,7 +7763,7 @@ marginal_effects_robust |>
   )
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-61-1.png)<!-- -->
 
 ``` r
 rdd_match <- matchit(
@@ -6026,7 +7797,7 @@ love.plot(
     theme(legend.position = "bottom")
 ```
 
-![](code_files/figure-gfm/unnamed-chunk-50-1.png)<!-- -->
+![](code_files/figure-gfm/unnamed-chunk-62-1.png)<!-- -->
 
 ``` r
 fit <- lm(pvoixRN ~ treated * (letter + brigade + dist_cassini + HubDist +
