@@ -1,0 +1,25 @@
+\begin{table}
+\centering
+\caption{RN/FN vote share, historical and contemporary controls, adding proximity to a present-day EPUdF church}
+\centering
+\begin{tabular}[t]{lccccc}
+\toprule
+  & Baseline (no church) & + distance (km) & + log distance & + church in commune & + N churches <= 25 km\\
+\midrule
+Share of Protestants in 1839 & \num{-0.026}*** & \num{-0.028}*** & \num{-0.029}*** & \num{-0.026}*** & \num{-0.027}***\\
+ & (\num{0.003}) & (\num{0.003}) & (\num{0.003}) & (\num{0.003}) & (\num{0.003})\\
+Distance to nearest church (km) &  & \num{-0.031}*** &  &  & \\
+ &  & (\num{0.002}) &  &  & \\
+log(1 + distance to nearest church) &  &  & \num{-0.580}*** &  & \\
+ &  &  & (\num{0.048}) &  & \\
+Church in commune &  &  &  & \num{-0.392} & \\
+ &  &  &  & (\num{0.259}) & \\
+N churches within 25 km &  &  &  &  & \num{0.062}***\\
+ &  &  &  &  & (\num{0.016})\\
+\midrule
+N & \num{176904} & \num{176904} & \num{176904} & \num{176904} & \num{176904}\\
+R\textasciicircum{}2 & \num{0.587} & \num{0.589} & \num{0.588} & \num{0.587} & \num{0.588}\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\end{tabular}
+\end{table}

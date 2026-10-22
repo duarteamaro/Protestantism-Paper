@@ -1,0 +1,60 @@
+\begin{table}
+\centering
+\begin{talltblr}[         %% tabularray outer open
+entry=none,label=none,
+note{}={+ p \num{< 0.1}, * p \num{< 0.05}, ** p \num{< 0.01}, *** p \num{< 0.001}},
+]                     %% tabularray outer close
+{                     %% tabularray inner open
+colspec={Q[]Q[]Q[]Q[]Q[]Q[]Q[]},
+column{2-7}={}{halign=c,},
+column{1}={}{halign=l,},
+hline{42}={1-7}{solid, black, 0.05em},
+}                     %% tabularray inner close
+\toprule
+& Dep FEs & Historical Controls & Contemp. Controls & Both Controls & Both Sets + Higher Ed & Both Sets + Higher Ed + High School \\ \midrule %% TinyTableHeader
+(Intercept) & \num{25.068}*** & \num{-66.755}*** & \num{24.732}*** & \num{-62.395}*** & \num{-61.961}*** & \num{-62.353}*** \\
+& (\num{3.767}) & (\num{10.149}) & (\num{3.685}) & (\num{10.049}) & (\num{10.050}) & (\num{10.051}) \\
+share\_protestant & \num{-0.045}*** & \num{-0.017}*** & \num{-0.037}*** & \num{-0.016}** & \num{-0.016}** & \num{-0.016}*** \\
+& (\num{0.004}) & (\num{0.005}) & (\num{0.005}) & (\num{0.005}) & (\num{0.005}) & (\num{0.005}) \\
+letter &  & \num{-0.688}** &  & \num{-0.258} & \num{-0.286} & \num{-0.263} \\
+&  & (\num{0.223}) &  & (\num{0.224}) & (\num{0.224}) & (\num{0.225}) \\
+brigade &  & \num{0.713}* &  & \num{1.366}*** & \num{1.370}*** & \num{1.380}*** \\
+&  & (\num{0.287}) &  & (\num{0.292}) & (\num{0.292}) & (\num{0.292}) \\
+dist\_cassini &  & \num{0.000}*** &  & \num{0.000}*** & \num{0.000}*** & \num{0.000}*** \\
+&  & (\num{0.000}) &  & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) \\
+HubDist &  & \num{0.030}*** &  & \num{0.037}*** & \num{0.036}*** & \num{0.036}*** \\
+&  & (\num{0.003}) &  & (\num{0.003}) & (\num{0.003}) & (\num{0.003}) \\
+revratio1790 &  & \num{0.453}** &  & \num{-1.242}*** & \num{-1.173}*** & \num{-1.200}*** \\
+&  & (\num{0.170}) &  & (\num{0.192}) & (\num{0.193}) & (\num{0.193}) \\
+total\_protests &  & \num{-0.049}** &  & \num{0.005} & \num{0.006} & \num{0.006} \\
+&  & (\num{0.016}) &  & (\num{0.015}) & (\num{0.015}) & (\num{0.015}) \\
+pconjsign1686 &  & \num{-0.009}** &  & \num{-0.011}** & \num{-0.010}** & \num{-0.011}** \\
+&  & (\num{0.003}) &  & (\num{0.003}) & (\num{0.003}) & (\num{0.003}) \\
+pserment1791 &  & \num{-0.024}*** &  & \num{-0.015}*** & \num{-0.016}*** & \num{-0.015}*** \\
+&  & (\num{0.003}) &  & (\num{0.003}) & (\num{0.003}) & (\num{0.003}) \\
+altitude\_moyenne &  & \num{0.000} &  & \num{0.000}+ & \num{0.001}* & \num{0.000}+ \\
+&  & (\num{0.000}) &  & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) \\
+latitude\_centre &  & \num{1.902}*** &  & \num{1.718}*** & \num{1.713}*** & \num{1.718}*** \\
+&  & (\num{0.200}) &  & (\num{0.199}) & (\num{0.199}) & (\num{0.199}) \\
+longitude\_centre &  & \num{0.559}*** &  & \num{0.581}*** & \num{0.574}*** & \num{0.580}*** \\
+&  & (\num{0.127}) &  & (\num{0.126}) & (\num{0.126}) & (\num{0.126}) \\
+revmoy &  &  & \num{0.000}*** & \num{0.000}*** & \num{0.000}*** & \num{0.000}*** \\
+&  &  & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) \\
+pop &  &  & \num{-0.000}*** & \num{-0.000}*** & \num{-0.000}*** & \num{-0.000}*** \\
+&  &  & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) \\
+petranger &  &  & \num{-0.109}*** & \num{-0.072}*** & \num{-0.070}*** & \num{-0.071}*** \\
+&  &  & (\num{0.012}) & (\num{0.014}) & (\num{0.014}) & (\num{0.014}) \\
+pchom &  &  & \num{-0.027}*** & \num{-0.026}*** & \num{-0.027}*** & \num{-0.027}*** \\
+&  &  & (\num{0.006}) & (\num{0.007}) & (\num{0.007}) & (\num{0.007}) \\
+prixbien &  &  & \num{0.000} & \num{0.008}*** & \num{0.009}*** & \num{0.009}*** \\
+&  &  & (\num{0.001}) & (\num{0.001}) & (\num{0.001}) & (\num{0.001}) \\
+psup &  &  &  &  & \num{-0.020}*** & \num{-0.036}*** \\
+&  &  &  &  & (\num{0.004}) & (\num{0.006}) \\
+pbac &  &  &  &  &  & \num{0.018}** \\
+&  &  &  &  &  & (\num{0.005}) \\
+N & \num{184723} & \num{138508} & \num{159806} & \num{136111} & \num{136107} & \num{136107} \\
+R\textasciicircum{}2 & \num{0.44} & \num{0.44} & \num{0.44} & \num{0.45} & \num{0.45} & \num{0.45} \\
+Adj. R\textasciicircum{}2 & \num{0.44} & \num{0.44} & \num{0.44} & \num{0.45} & \num{0.45} & \num{0.45} \\
+\bottomrule
+\end{talltblr}
+\end{table}

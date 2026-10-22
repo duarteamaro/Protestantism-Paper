@@ -1,0 +1,65 @@
+\begin{table}
+\centering
+\begin{talltblr}[         %% tabularray outer open
+entry=none,label=none,
+note{}={+ p \num{< 0.1}, * p \num{< 0.05}, ** p \num{< 0.01}, *** p \num{< 0.001}},
+]                     %% tabularray outer close
+{                     %% tabularray inner open
+colspec={Q[]Q[]Q[]},
+column{2-3}={}{halign=c,},
+column{1}={}{halign=l,},
+hline{42}={1-3}{solid, black, 0.05em},
+}                     %% tabularray inner close
+\toprule
+& (1) & (2) \\ \midrule %% TinyTableHeader
+(Intercept) & \num{-62.395}*** & \num{-62.353}*** \\
+& (\num{10.049}) & (\num{10.051}) \\
+share\_protestant & \num{-0.016}** & \num{-0.016}*** \\
+& (\num{0.005}) & (\num{0.005}) \\
+letter & \num{-0.258} & \num{-0.263} \\
+& (\num{0.224}) & (\num{0.225}) \\
+brigade & \num{1.366}*** & \num{1.380}*** \\
+& (\num{0.292}) & (\num{0.292}) \\
+dist\_cassini & \num{0.000}*** & \num{0.000}*** \\
+& (\num{0.000}) & (\num{0.000}) \\
+HubDist & \num{0.037}*** & \num{0.036}*** \\
+& (\num{0.003}) & (\num{0.003}) \\
+revratio1790 & \num{-1.242}*** & \num{-1.200}*** \\
+& (\num{0.192}) & (\num{0.193}) \\
+total\_protests & \num{0.005} & \num{0.006} \\
+& (\num{0.015}) & (\num{0.015}) \\
+pconjsign1686 & \num{-0.011}** & \num{-0.011}** \\
+& (\num{0.003}) & (\num{0.003}) \\
+pserment1791 & \num{-0.015}*** & \num{-0.015}*** \\
+& (\num{0.003}) & (\num{0.003}) \\
+altitude\_moyenne & \num{0.000}+ & \num{0.000}+ \\
+& (\num{0.000}) & (\num{0.000}) \\
+latitude\_centre & \num{1.718}*** & \num{1.718}*** \\
+& (\num{0.199}) & (\num{0.199}) \\
+longitude\_centre & \num{0.581}*** & \num{0.580}*** \\
+& (\num{0.126}) & (\num{0.126}) \\
+revmoy & \num{0.000}*** & \num{0.000}*** \\
+& (\num{0.000}) & (\num{0.000}) \\
+pop & \num{-0.000}*** & \num{-0.000}*** \\
+& (\num{0.000}) & (\num{0.000}) \\
+petranger & \num{-0.072}*** & \num{-0.071}*** \\
+& (\num{0.014}) & (\num{0.014}) \\
+pchom & \num{-0.026}*** & \num{-0.027}*** \\
+& (\num{0.007}) & (\num{0.007}) \\
+prixbien & \num{0.008}*** & \num{0.009}*** \\
+& (\num{0.001}) & (\num{0.001}) \\
+psup &  & \num{-0.036}*** \\
+&  & (\num{0.006}) \\
+pbac &  & \num{0.018}** \\
+&  & (\num{0.005}) \\
+Num.Obs. & \num{136111} & \num{136107} \\
+R2 & \num{0.446} & \num{0.446} \\
+R2 Adj. & \num{0.445} & \num{0.445} \\
+AIC & \num{1113849.0} & \num{1113780.8} \\
+BIC & \num{1114919.6} & \num{1114871.0} \\
+Log.Lik. & \num{-556815.524} & \num{-556779.421} \\
+RMSE & \num{14.47} & \num{14.47} \\
+Std.Errors & HC3 & HC3 \\
+\bottomrule
+\end{talltblr}
+\end{table}

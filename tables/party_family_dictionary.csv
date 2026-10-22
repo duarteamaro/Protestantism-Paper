@@ -1,0 +1,466 @@
+election,year,republic,file,family,label,natl_vote_share_pct,cp_bloc,cp_bloc_weight,group
+1848,1848,Second,cage_piketty/leg1848comm.csv,DEMSOC,Democrates-socialistes (Montagne),26.27,G,0.7,Socialist left
+1848,1848,Second,cage_piketty/leg1848comm.csv,REPMOD,Republicains moderes,23.69,C,1,Centre republican
+1848,1848,Second,cage_piketty/leg1848comm.csv,DIV,Divers,7.06,C,1,Other/Divers
+1848,1848,Second,cage_piketty/leg1848comm.csv,CONS,Conservateurs,42.97,D,0.7,Anti-republican right
+1849,1849,Second,cage_piketty/leg1849_csv/leg1849comm.csv,DEMSOC,Democrates-socialistes (Montagne),34.9,G,0.7,Socialist left
+1849,1849,Second,cage_piketty/leg1849_csv/leg1849comm.csv,REPCONS,Republicains conservateurs,13.07,C,1,Centre republican
+1849,1849,Second,cage_piketty/leg1849_csv/leg1849comm.csv,DIV,Divers,5.02,C,1,Other/Divers
+1849,1849,Second,cage_piketty/leg1849_csv/leg1849comm.csv,CONS,Conservateurs,47.01,D,0.7,Anti-republican right
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,RAD,Radicaux,18.08,G,1,Republican/Radical left
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,REP,Republicains,26.48,CG,0.7,Centre republican
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,REPCONS,Republicains conservateurs,7.81,C,1,Centre republican
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,CONST,Constitutionnels,7.33,C,1,Centre republican
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,DIV,Divers,0.65,G,0.2,Other/Divers
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,CENT,Centre,1.54,C,1,Centre republican
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,CED,Centre droit,0.09,C,1,Centre republican
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,BON,Bonapartistes,15.96,CD,1,Anti-republican right
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,MON,Monarchistes/Orleanistes,15.75,D,1,Anti-republican right
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,LEG,Legitimistes,5.83,D,1,Anti-republican right
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,CONS,Conservateurs,0.36,D,1,Anti-republican right
+1876,1876,Third,cage_piketty/leg1876_csv/leg1876comm.csv,CLE,Clericaux,0.11,D,1,Anti-republican right
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,SOCOUV,Socialistes ouvriers,7.44,G,1,Socialist left
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,RAD,Radicaux,3,G,1,Republican/Radical left
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,UR,Union republicaine (gambettistes),21.37,CG,1,Republican/Radical left
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,DVG,Divers gauche,17.97,C,0.7,Centre republican
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,REP,Republicains,20.02,C,1,Centre republican
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,DIV,Divers,2.71,CG,0.2,Other/Divers
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,CENT,Centre,2.82,CD,1,Centre republican
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,BON,Bonapartistes,10.6,CD,1,Anti-republican right
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,MON,Monarchistes/Orleanistes,4.69,D,1,Anti-republican right
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,LEG,Legitimistes,6.53,D,1,Anti-republican right
+1881,1881,Third,cage_piketty/leg1881_csv/leg1881comm.csv,REAC,Reactionnaires,2.85,D,1,Anti-republican right
+1885,1885,Third,cage_piketty/leg1885comm.csv,SOC,Socialistes,1.09,G,1,Socialist left
+1885,1885,Third,cage_piketty/leg1885comm.csv,RAD,Radicaux,13.13,G,1,Republican/Radical left
+1885,1885,Third,cage_piketty/leg1885comm.csv,RADREP,Radicaux-republicains,0.63,CG,1,Republican/Radical left
+1885,1885,Third,cage_piketty/leg1885comm.csv,REP,Republicains,12.67,C,0.7,Centre republican
+1885,1885,Third,cage_piketty/leg1885comm.csv,OPP,Opportunistes,24.38,C,0.7,Centre republican
+1885,1885,Third,cage_piketty/leg1885comm.csv,REPIND,Republicains independants,2.92,C,1,Republican right
+1885,1885,Third,cage_piketty/leg1885comm.csv,DIV,Divers,0.67,CD,0.2,Other/Divers
+1885,1885,Third,cage_piketty/leg1885comm.csv,BON,Bonapartistes,5.98,CD,1,Anti-republican right
+1885,1885,Third,cage_piketty/leg1885comm.csv,MON,Monarchistes/Orleanistes,7.65,CD,1,Anti-republican right
+1885,1885,Third,cage_piketty/leg1885comm.csv,CONS,Conservateurs,30.88,D,1,Anti-republican right
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,SOC,Socialistes,1.58,G,1,Socialist left
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,RADSOC,Radicaux-socialistes,0.84,G,1,Republican/Radical left
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,RAD,Radicaux,13.98,G,1,Republican/Radical left
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,RADDIV,Radicaux divers,0.83,CG,1,Republican/Radical left
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,REP,Republicains,22.03,C,0.7,Centre republican
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,OPP,Opportunistes,11.9,C,0.7,Centre republican
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,REPDIV,Republicains divers,2.12,C,1,Centre republican
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,DIV,Divers,0.38,G,0.2,Other/Divers
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,LIB,Liberaux,0.31,CD,1,Republican right
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,REVIS,Revisionnistes,2.2,CD,1,Anti-republican right
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,BOUL,Boulangistes,8.14,CD,1,Anti-republican right
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,BON,Bonapartistes,4.62,CD,1,Anti-republican right
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,MON,Monarchistes/Orleanistes,7.86,D,1,Anti-republican right
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,CONS,Conservateurs,0.48,D,1,Anti-republican right
+1889,1889,Third,cage_piketty/leg1889_csv/leg1889comm.csv,REAC,Reactionnaires,22.73,D,1,Anti-republican right
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,SOCREV,Socialistes revolutionnaires,2.19,G,1,Socialist left
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,SOC,Socialistes,4.84,G,1,Socialist left
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,RADSOC,Radicaux-socialistes,3.43,G,1,Republican/Radical left
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,RAD,Radicaux,14.04,CG,1,Republican/Radical left
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,RADDIV,Radicaux divers,0.31,CG,1,Republican/Radical left
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,REP,Republicains,45.89,C,0.7,Centre republican
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,REPDIV,Republicains divers,0.45,C,1,Centre republican
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,DIV,Divers,1.83,CD,0.2,Other/Divers
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,REPLIB,Republicains liberaux,2.21,CD,1,Republican right
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,RALLIE,Rallies (catholiques rallies),7.4,CD,1,Republican right
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,REVIS,Revisionnistes,1.12,CD,1,Anti-republican right
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,BOUL,Boulangistes,1.17,CD,1,Anti-republican right
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,BON,Bonapartistes,0.22,CD,1,Anti-republican right
+1893,1893,Third,cage_piketty/leg1893_csv/leg1893comm.csv,REAC,Reactionnaires,14.9,D,1,Anti-republican right
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,SOCREV,Socialistes revolutionnaires,2.47,G,1,Socialist left
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,SOC,Socialistes,9.2,G,1,Socialist left
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,RADSOC,Radicaux-socialistes,9.56,G,1,Republican/Radical left
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,RAD,Radicaux,20.55,CG,1,Republican/Radical left
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,REP,Republicains,7.12,C,1,Centre republican
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,OPP,Opportunistes,29,C,1,Centre republican
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,REPDIV,Republicains divers,5.25,CD,1,Centre republican
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,DIV,Divers,0.26,CD,0.2,Other/Divers
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,REPLIB,Republicains liberaux,0.68,CD,1,Republican right
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,RALLIE,Rallies (catholiques rallies),4.2,CD,1,Republican right
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,REVIS,Revisionnistes,0.81,CD,1,Anti-republican right
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,BON,Bonapartistes,0.75,CD,1,Anti-republican right
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,CONS,Conservateurs,2.13,D,1,Anti-republican right
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,MON,Monarchistes/Orleanistes,7.8,D,1,Anti-republican right
+1898,1898,Third,cage_piketty/leg1898_csv/leg1898comm.csv,ANT,Nationalistes antisemites,0.21,D,1,Anti-republican right
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,SOCGUES,Socialistes guesdistes,2.57,G,1,Socialist left
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,SOC,Socialistes,7.16,G,1,Socialist left
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,RADSOC,Radicaux-socialistes,9.99,CG,1,Republican/Radical left
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,RAD,Radicaux,16.32,CG,1,Republican/Radical left
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,RADDIS,Radicaux dissidents,0.58,CG,1,Republican/Radical left
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,REP,Republicains,23.08,C,1,Centre republican
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,DIV,Divers,0.95,G,0.2,Other/Divers
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,REPMIN,Republicains ministeriels,6.43,C,1,Centre republican
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,REPDIV,Republicains divers,1.29,C,1,Centre republican
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,REPLIB,Republicains liberaux,4.11,CD,1,Republican right
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,RALLIE,Rallies (catholiques rallies),2.53,CD,1,Republican right
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,NATI,Nationalistes,13.32,D,1,Anti-republican right
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,REAC,Reactionnaires,11.35,D,1,Anti-republican right
+1902,1902,Third,cage_piketty/leg1902_csv/leg1902comm.csv,PLEBI,Plebiscitaires (bonapartistes),0.33,D,1,Anti-republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,SOCUNI,Socialistes unifies (SFIO),8.27,G,1,Socialist left
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,SOC,Socialistes,3.94,G,1,Socialist left
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,RADSOC,Radicaux-socialistes,13.73,CG,1,Republican/Radical left
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,RAD,Radicaux,18.1,CG,1,Republican/Radical left
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,REP,Republicains,13.1,C,1,Centre republican
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,DIV,Divers,1.72,CG,0.2,Other/Divers
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,REPPROG,Republicains progressistes,9.43,CD,1,Republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,REPLIB,Republicains liberaux,1.95,CD,1,Republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,PROG,Progressistes,3.03,CD,1,Republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,LIB,Liberaux,10.89,CD,1,Republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,NATI,Nationalistes,5.52,D,1,Anti-republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,REAC,Reactionnaires,1.04,D,1,Anti-republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,PLEBI,Plebiscitaires (bonapartistes),1.53,D,1,Anti-republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,CONS,Conservateurs,4.39,D,1,Anti-republican right
+1906,1906,Third,cage_piketty/leg1906_csv/leg1906comm.csv,MON,Monarchistes/Orleanistes,3.36,D,1,Anti-republican right
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,SFIO,SFIO (socialistes),13.23,G,1,Socialist left
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,SOCIND,Socialistes independants,4.08,G,1,Socialist left
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,RADSOC,Radicaux-socialistes,17,CG,1,Republican/Radical left
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,RADIND,Radicaux independants,11.49,CG,1,Republican/Radical left
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,RADDIV,Radicaux divers,3.3,C,1,Republican/Radical left
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,DIV,Divers,0.93,D,0.2,Other/Divers
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,RADARD,Radicaux (Alliance dem.),6.56,C,1,Republican/Radical left
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,PROG,Progressistes,1.16,C,1,Republican right
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,ARD,Alliance republicaine democratique,9.61,CD,1,Republican right
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,FRARD,Federation rep. / Alliance dem.,1.13,CD,1,Republican right
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,FR,Federation republicaine,8.78,CD,1,Republican right
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,FRLIB,Federation rep. / liberaux,2.91,D,1,Republican right
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,LIB,Liberaux,12.9,D,1,Republican right
+1910,1910,Third,cage_piketty/leg1910_csv/leg1910comm.csv,CONS,Conservateurs,6.9,D,1,Anti-republican right
+1914,1914,Third,cage_piketty/leg1914_csv/leg1914comm.csv,SFIO,SFIO (socialistes),16.7,G,1,Socialist left
+1914,1914,Third,cage_piketty/leg1914_csv/leg1914comm.csv,REPSOC,Republicains-socialistes,4.21,CG,1,Republican/Radical left
+1914,1914,Third,cage_piketty/leg1914_csv/leg1914comm.csv,RADSOC,Radicaux-socialistes,25.21,CG,1,Republican/Radical left
+1914,1914,Third,cage_piketty/leg1914_csv/leg1914comm.csv,DIV,Divers,4.07,D,0.2,Other/Divers
+1914,1914,Third,cage_piketty/leg1914_csv/leg1914comm.csv,RADIND,Radicaux independants,10.51,C,1,Republican/Radical left
+1914,1914,Third,cage_piketty/leg1914_csv/leg1914comm.csv,ADPRD,Alliance dem. / Parti rep. dem.,16.79,CD,1,Republican right
+1914,1914,Third,cage_piketty/leg1914_csv/leg1914comm.csv,FRPR,Federation rep. / progressistes,9.49,D,1,Republican right
+1914,1914,Third,cage_piketty/leg1914_csv/leg1914comm.csv,ALP,Action liberale populaire (catholiques),13.03,D,1,Republican right
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,COM,Communistes,0.93,G,1,Communist/Extreme left
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,SFIO,SFIO (socialistes),21.37,G,1,Socialist left
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,REPSOC,Republicains-socialistes,3.54,CG,1,Republican/Radical left
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,PRRS,Parti radical et radical-socialiste,11.18,CG,1,Republican/Radical left
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,DIV,Divers,3.91,G,0.2,Other/Divers
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,RADIND,Radicaux independants,1.65,C,1,Republican/Radical left
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,ARD,Alliance republicaine democratique,12.26,CD,1,Republican right
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,FRURD,Federation republicaine / Union republicaine democratique,13.14,CD,1,Republican right
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,UNR,Union nat. republicaine (Bloc national),14.07,D,1,Republican right
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,ERD,Entente republicaine democratique,10.67,D,1,Republican right
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,BN,Bloc national,6.95,D,1,Republican right
+1919,1919,Third,cage_piketty/leg1919_csv/leg1919comm.csv,AF,Action francaise,0.33,D,1,Anti-republican right
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,BOP,Bloc ouvrier et paysan (communistes),10.21,G,1,Communist/Extreme left
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,SFIO,SFIO (socialistes),28.47,CG,1,Socialist left
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,DVG,Divers gauche,0.38,CG,1,Socialist left
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,REPSOC,Republicains-socialistes,1.91,CG,1,Republican/Radical left
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,RADSOC,Radicaux-socialistes,9.69,C,1,Republican/Radical left
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,REPRAD,Republicains radicaux,1.44,C,1,Republican/Radical left
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,DIV,Divers,1.29,G,0.2,Other/Divers
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,RG,Rassemblement des gauches,13.14,CD,1,Centre republican
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,URERD,Union/Entente rep. democratique,30.95,D,1,Republican right
+1924,1924,Third,cage_piketty/leg1924_csv/leg1924comm.csv,CONSAF,Conservateurs / Action francaise,2.52,D,1,Anti-republican right
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,PCF,Parti communiste francais,11.34,G,1,Communist/Extreme left
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,SFIO,SFIO (socialistes),17.82,CG,1,Socialist left
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,DVG,Divers gauche,0.21,CG,1,Socialist left
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,REPSOC,Republicains-socialistes,5.14,CG,1,Republican/Radical left
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,RADSOC,Radicaux-socialistes,22.47,C,1,Republican/Radical left
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,DIV,Divers,2.65,D,0.2,Other/Divers
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,ADRG,Alliance dem. / Radicaux de gauche,16.78,CD,1,Republican right
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,ADIND,Alliance dem. independants,0.42,CD,1,Republican right
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,FRURD,Federation republicaine / Union republicaine democratique,21.26,D,1,Republican right
+1928,1928,Third,cage_piketty/leg1928_csv/leg1928comm.csv,DVD,Divers droite,1.91,D,1,Republican right
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,PCF,Parti communiste francais,8.59,G,1,Communist/Extreme left
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,SFIO,SFIO (socialistes),20.62,CG,1,Socialist left
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,DVG,Divers gauche,0.73,CG,1,Socialist left
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,REPSOC,Republicains-socialistes,4.79,CG,1,Republican/Radical left
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,RADSOC,Radicaux-socialistes,19.35,C,1,Republican/Radical left
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,DIV,Divers,0.3,CD,0.2,Other/Divers
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,ADRG,Alliance dem. / Radicaux de gauche,14.8,CD,1,Republican right
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,ADIND,Alliance dem. independants,14.85,CD,1,Republican right
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,ADPDP,Alliance dem. / Parti dem. populaire,3.32,D,1,Republican right
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,FRURD,Federation republicaine / Union republicaine democratique,11.29,D,1,Republican right
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,AGR,Agrariens,0.61,D,1,Republican right
+1932,1932,Third,cage_piketty/leg1932_csv/leg1932comm.csv,DVD,Divers droite,0.74,D,1,Republican right
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,PCF,Parti communiste francais,15.25,G,1,Communist/Extreme left
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,SFIO,SFIO (socialistes),19.99,CG,1,Socialist left
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,DVG,Divers gauche,0.85,CG,1,Socialist left
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,USR,Union socialiste republicaine,6.86,CG,1,Republican/Radical left
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,RADSOC,Radicaux-socialistes,14.58,C,1,Republican/Radical left
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,DIV,Divers,1.69,G,0.2,Other/Divers
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,AD,Alliance democratique,23.66,CD,1,Republican right
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,FRURD,Federation republicaine / Union republicaine democratique,12.92,D,1,Republican right
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,AGR,Agrariens,1.05,D,1,Republican right
+1936,1936,Third,cage_piketty/leg1936_csv/leg1936comm.csv,DVD,Divers droite,3.15,D,1,Republican right
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,AUG,Autres gauche,0.06,G,1,Communist/Extreme left
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,PCF,Parti communiste francais,26.11,G,1,Communist/Extreme left
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,PCFSFIO,Listes communes PCF-SFIO,0.11,CG,0.5,Communist/Extreme left
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,SFIO,SFIO (socialistes),20.29,CG,1,Socialist left
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,DVG,Divers gauche,4.04,CG,1,Socialist left
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,RADSOC,Radicaux-socialistes,6.43,C,1,Republican/Radical left
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,DIV,Divers,1.58,G,0.2,Other/Divers
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,UDSR,Union democratique et socialiste de la Resistance,2.13,C,1,Centre republican
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,RG,Rassemblement des gauches,0.44,C,1,Centre republican
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,REP,Republicains,1.08,C,1,Centre republican
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,MRP,MRP (democrates-chretiens),23.85,CD,1,Centre republican
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,ADPAYS,Parti agraire et paysan,4.54,D,1,Republican right
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,URDDVD,Union rep. dem. / divers droite,3.9,D,1,Republican right
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,PRL,Parti republicain de la liberte,2.13,D,1,Republican right
+1945,1945,Fourth,cage_piketty/leg1945_csv/leg1945comm.csv,DVD,Divers droite,3.33,D,1,Republican right
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,PCF,Parti communiste francais,26.05,G,1,Communist/Extreme left
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,SFIO,SFIO (socialistes),21.13,CG,1,Socialist left
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,DVG,Divers gauche,0.26,CG,1,Socialist left
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,RADSOC,Radicaux-socialistes,1.7,C,1,Republican/Radical left
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,DIV,Divers,0.04,G,0.2,Other/Divers
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,UDSR,Union democratique et socialiste de la Resistance,0.51,C,1,Centre republican
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,RGR,Rassemblement des gauches republicaines,8,C,1,Centre republican
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,MRP,MRP (democrates-chretiens),28.2,CD,1,Centre republican
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,GAUL,Gaullistes (RPF),0.44,D,1,Other/Divers
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,INDPAYS,Independants et paysans,2.18,D,1,Republican right
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,PRL,Parti republicain de la liberte,7.94,D,1,Republican right
+1946J,1946,Fourth,cage_piketty/leg1946Juin_csv/leg1946comm.csv,DVD,Divers droite,3.55,D,1,Republican right
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,PCI,Parti communiste internationaliste,0.29,G,1,Communist/Extreme left
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,PCF,Parti communiste francais,28.34,G,1,Communist/Extreme left
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,SFIO,SFIO (socialistes),17.96,CG,1,Socialist left
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,RADSOC,Radicaux-socialistes,0.63,C,1,Republican/Radical left
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,RGR,Rassemblement des gauches republicaines,8.97,C,1,Centre republican
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,DIV,Divers,1.14,G,0.2,Other/Divers
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,MRP,MRP (democrates-chretiens),26.32,CD,1,Centre republican
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,GAULG,Gaullistes de gauche,0.93,CD,1,Republican right
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,GAUL,Gaullistes (RPF),4.39,D,1,Other/Divers
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,INDPAYS,Independants et paysans,2.71,D,1,Republican right
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,PRL,Parti republicain de la liberte,3.73,D,1,Republican right
+1946N,1946,Fourth,cage_piketty/leg1946Nov_csv/leg1947comm.csv,DVD,Divers droite,4.6,D,1,Republican right
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,PCF,Parti communiste francais,25.88,G,1,Communist/Extreme left
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,SFIO,SFIO (socialistes),13.96,CG,1,Socialist left
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,DVG,Divers gauche,0.6,CG,1,Socialist left
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,RADSOC,Radicaux-socialistes,2.55,C,1,Republican/Radical left
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,UDSR,Union democratique et socialiste de la Resistance,0.27,C,1,Centre republican
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,RGR,Rassemblement des gauches republicaines,4.36,C,1,Centre republican
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,DIV,Divers,1.22,CD,0.2,Other/Divers
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,MRP,MRP (democrates-chretiens),13.05,CD,1,Centre republican
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,RGRIF,RGR / independants,4.27,CD,1,Centre republican
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,UIPRN,"Independants, paysans et rep. nationaux",7.68,CD,1,Republican right
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,REP,Republicains,2.88,D,1,Centre republican
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,RPF,Rassemblement du peuple francais (gaullistes),21.8,D,1,Republican right
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,DVD,Divers droite,0.9,D,1,Republican right
+1951,1951,Fourth,cage_piketty/leg1951_csv/leg1951comm.csv,UNIR,Union des nat. indep. et rep. (gaullistes diss.),0.58,D,1,Republican right
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,PCF,Parti communiste francais,25.37,G,1,Communist/Extreme left
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,SFIO,SFIO (socialistes),15.39,CG,1,Socialist left
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,DVG,Divers gauche,0.52,CG,1,Socialist left
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,RADSOC,Radicaux-socialistes,9.62,C,1,Republican/Radical left
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,FRREP,Front republicain,0.93,C,1,Centre republican
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,UDSR,Union democratique et socialiste de la Resistance,0.47,C,1,Centre republican
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,RGR,Rassemblement des gauches republicaines,1.16,C,1,Centre republican
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,DIV,Divers,2.89,CD,0.2,Other/Divers
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,MRP,MRP (democrates-chretiens),10.49,CD,1,Centre republican
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,CNI,Centre national des independants,14.21,CD,1,Republican right
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,RFGAUL,Republicains sociaux (gaullistes),4.99,D,1,Republican right
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,DVD,Divers droite,2.44,D,1,Republican right
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,UFFUDCA,Union et fraternite francaise (poujadistes),11.43,D,1,Anti-republican right
+1956,1956,Fourth,cage_piketty/leg1956_csv/leg1956comm.csv,AUD,Autres / divers,0.09,D,1,Other/Divers
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,PCF,Parti communiste francais,18.86,G,1,Communist/Extreme left
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,SFIO,SFIO (socialistes),15.6,CG,1,Socialist left
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,RADSOC,Radicaux-socialistes,5.64,CG,1,Republican/Radical left
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,UFDRAD,Union des forces dem. / radicaux,1.17,C,1,Centre republican
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,DIV,Divers,0.57,CD,0.2,Other/Divers
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,RADCENT,Radicaux (centre),3.42,C,1,Centre republican
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,UDSRMIN,UDSR (minorite),0.42,C,1,Other/Divers
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,CRR,Centre republicain,2.03,CD,1,Centre republican
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,MRP,MRP (democrates-chretiens),11.15,CD,1,Centre republican
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,CNI,Centre national des independants,14.11,CD,1,Republican right
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,MOD,Moderes,5.82,CD,1,Centre republican
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,DIVGAUL,Divers gaullistes,0.68,D,1,Republican right
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,UNR,Union nat. republicaine (Bloc national),17.94,D,1,Republican right
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,POUJ,Poujadistes (UDCA),1.48,D,1,Anti-republican right
+1958,1958,Fifth,cage_piketty/leg1958comm.csv,AUD,Autres / divers,1.1,D,1,Other/Divers
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,PCF,Parti communiste francais,21.85,G,1,Communist/Extreme left
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,AUG,Autres gauche,0.72,G,1,Communist/Extreme left
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,PSU,Parti socialiste unifie,1.66,CG,1,Socialist left
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,SFIO,SFIO (socialistes),12.62,CG,1,Socialist left
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,RADSOC,Radicaux-socialistes,3.63,CG,1,Republican/Radical left
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,RADCENT,Radicaux (centre),0.58,C,1,Centre republican
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,MRP,MRP (democrates-chretiens),12.59,CD,1,Centre republican
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,CNI,Centre national des independants,9.2,CD,1,Republican right
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,INDV,Independants divers (droite),4.3,D,1,Republican right
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,UNRUDT,UNR-UDT (gaullistes),31.91,D,1,Republican right
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,POUJ,Poujadistes (UDCA),0.33,D,1,Anti-republican right
+1962,1962,Fifth,cage_piketty/leg1962comm.csv,AUD,Autres / divers,0.6,D,1,Other/Divers
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,PCF,Parti communiste francais,22.44,G,1,Communist/Extreme left
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,AUG,Autres gauche,0.02,G,1,Communist/Extreme left
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,PSU,Parti socialiste unifie,2.35,CG,1,Socialist left
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,FGDS,Federation de la gauche dem. et socialiste,19.66,CG,1,Socialist left
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,REG,Regionalistes / autonomistes,0.05,CD,0.2,Other/Divers
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,DIV,Divers,1.84,D,0.2,Other/Divers
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,RADDROIT,Radicaux de droite,0.11,C,1,Centre republican
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,CDEM,Centre democrate,13.9,CD,1,Centre republican
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,REPIND,Republicains independants,3.49,CD,1,Republican right
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,MOD,Moderes,0.24,CD,1,Centre republican
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,DIVGAUL,Divers gaullistes,0.63,D,1,Republican right
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,RALLIE,Rallies (catholiques rallies),0.13,D,1,Republican right
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,UD5UNR,Union dem. pour la Ve Rep. (gaullistes),34.52,D,1,Republican right
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,AUD,Autres / divers,0.31,D,1,Other/Divers
+1967,1967,Fifth,cage_piketty/leg1967comm.csv,AUDAR,Autres droite / audience,0.3,D,1,Other/Divers
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,PCF,Parti communiste francais,20.04,G,1,Communist/Extreme left
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,AUG,Autres gauche,0.07,G,1,Communist/Extreme left
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,PSU,Parti socialiste unifie,3.97,CG,1,Socialist left
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,FGDS,Federation de la gauche dem. et socialiste,16.5,CG,1,Socialist left
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,RADSOC,Radicaux-socialistes,0.36,CG,1,Republican/Radical left
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,REG,Regionalistes / autonomistes,0.03,D,0.2,Other/Divers
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,TED,Divers (TED),0.35,C,1,Other/Divers
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,MR,Mouvement reformateur,0.16,C,1,Centre republican
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,RADDROIT,Radicaux de droite,0.24,C,1,Centre republican
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,CPDM,Centre Progres et Democratie moderne,10.48,CD,1,Centre republican
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,REPIND,Republicains independants,8.49,CD,1,Republican right
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,MOD,Moderes,1.17,CD,1,Centre republican
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,DIVGAUL,Divers gaullistes,0.76,D,1,Republican right
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,UDR,Union des democrates pour la Republique (gaullistes),37.29,D,1,Republican right
+1968,1968,Fifth,cage_piketty/leg1968comm.csv,AUDAR,Autres droite / audience,0.09,D,1,Other/Divers
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,PCF,Parti communiste francais,21.37,G,1,Communist/Extreme left
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,LO,Lutte ouvriere (extreme gauche),0.82,G,1,Communist/Extreme left
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,LCR,Ligue communiste revolutionnaire (extr. gauche),0.38,G,1,Communist/Extreme left
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,PSU,Parti socialiste unifie,1.97,CG,1,Socialist left
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,PS,Parti socialiste,19.13,CG,1,Socialist left
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,MRG,Mouvement des radicaux de gauche,1.67,CG,1,Republican/Radical left
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,DVG,Divers gauche,0.39,CG,1,Socialist left
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,RAD,Radicaux,4.07,C,1,Republican/Radical left
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,MR,Mouvement reformateur,9.22,CD,1,Centre republican
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,RIURP,Rep. independants / URP,7.22,CD,1,Republican right
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,CDPURP,Centre dem. et progres / URP,3.86,CD,1,Centre republican
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,UDRURP,UDR / Union des rep. de progres (gaullistes),25.84,D,1,Republican right
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,DVD,Divers droite,3.43,D,1,Republican right
+1973,1973,Fifth,cage_piketty/leg1973comm.csv,AUD,Autres / divers,0.62,D,1,Other/Divers
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,AUG,Autres gauche,3.24,G,1,Communist/Extreme left
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,PCF,Parti communiste francais,20.54,G,1,Communist/Extreme left
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,PS,Parti socialiste,25,CG,1,Socialist left
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,DVG,Divers gauche,0.71,CG,1,Socialist left
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,ECO,Ecologistes,2.53,CD,0.2,Green/ecologist
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,UDF,Union pour la democratie francaise,20.85,CD,1,Republican right
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,RPR,Rassemblement pour la Republique (gaullistes),22.56,D,1,Republican right
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,DVD,Divers droite,3.81,D,1,Republican right
+1978,1978,Fifth,cage_piketty/leg1978comm.csv,AUD,Autres / divers,0.76,D,1,Other/Divers
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,AUG,Autres gauche,0.68,G,1,Communist/Extreme left
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,PCF,Parti communiste francais,16.09,G,1,Communist/Extreme left
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,PS,Parti socialiste,38.56,CG,1,Socialist left
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,DVG,Divers gauche,0.42,CG,1,Socialist left
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,ECO,Ecologistes,1.09,G,0.2,Green/ecologist
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,DIV,Divers,0.02,G,0.2,Other/Divers
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,UDF,Union pour la democratie francaise,18.56,CD,1,Republican right
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,RPR,Rassemblement pour la Republique (gaullistes),20.41,D,1,Republican right
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,DVD,Divers droite,3.8,D,1,Republican right
+1981,1981,Fifth,cage_piketty/leg1981comm.csv,AUD,Autres / divers,0.37,D,1,Other/Divers
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,AUG,Autres gauche,1.54,G,1,Communist/Extreme left
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,PCF,Parti communiste francais,9.71,G,1,Communist/Extreme left
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,PSRDG,PS / Radicaux de gauche,32.8,CG,1,Socialist left
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,ECO,Ecologistes,1.31,G,0.2,Green/ecologist
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,UDF,Union pour la democratie francaise,8.73,CD,1,Republican right
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,RPR,Rassemblement pour la Republique (gaullistes),11.21,CD,1,Republican right
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,UDFRPR,Listes communes UDF-RPR,20.49,CD,1,Republican right
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,DVD,Divers droite,4.18,CD,1,Republican right
+1986,1986,Fifth,cage_piketty/leg1986comm.csv,FN,Front national,10.03,D,1,Anti-republican right
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,AUG,Autres gauche,0.29,G,1,Communist/Extreme left
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,PCF,Parti communiste francais,11.13,G,1,Communist/Extreme left
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,PS,Parti socialiste,35.17,CG,1,Socialist left
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,RDG,Radicaux de gauche,1.04,CG,1,Republican/Radical left
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,MAJ,Majorite presidentielle (droite),1.62,CG,1,Republican right
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,ECO,Ecologistes,0.17,CG,1,Green/ecologist
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,DIV,Divers,0.09,CG,0.2,Other/Divers
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,UDF,Union pour la democratie francaise,19.01,CD,1,Republican right
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,RPR,Rassemblement pour la Republique (gaullistes),19.27,CD,1,Republican right
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,DVD,Divers droite,2.28,CD,1,Republican right
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,FN,Front national,9.8,D,1,Anti-republican right
+1988,1988,Fifth,cage_piketty/leg1988comm.csv,AUD,Autres / divers,0.13,D,1,Other/Divers
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,AUG,Autres gauche,1.76,G,1,Communist/Extreme left
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,PCF,Parti communiste francais,9.1,G,1,Communist/Extreme left
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,PS,Parti socialiste,17.63,CG,1,Socialist left
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,RDG,Radicaux de gauche,0.93,CG,1,Republican/Radical left
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,MAJ,Majorite presidentielle (droite),1.5,CG,1,Republican right
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,VEC,Les Verts (ecologistes),4.14,CG,1,Green/ecologist
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,GEC,Generation ecologie,3.77,CG,1,Green/ecologist
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,REG,Regionalistes / autonomistes,0.27,G,0.2,Other/Divers
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,DIV,Divers,3.78,CD,0.2,Other/Divers
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,UDF,Union pour la democratie francaise,18.83,CD,1,Republican right
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,RPR,Rassemblement pour la Republique (gaullistes),20.84,CD,1,Republican right
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,DVD,Divers droite,4.41,CD,1,Republican right
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,FN,Front national,12.74,D,1,Anti-republican right
+1993,1993,Fifth,cage_piketty/leg1993comm.csv,AUD,Autres / divers,0.29,D,1,Other/Divers
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,AUG,Autres gauche,2.6,G,1,Communist/Extreme left
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,PCF,Parti communiste francais,9.78,G,1,Communist/Extreme left
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,PS,Parti socialiste,23.82,CG,1,Socialist left
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,RDG,Radicaux de gauche,1.46,CG,1,Republican/Radical left
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,DVG,Divers gauche,2.57,CG,1,Socialist left
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,ECO,Ecologistes,7.01,CG,1,Green/ecologist
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,DIV,Divers,1.26,C,0.2,Other/Divers
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,UDF,Union pour la democratie francaise,14.26,CD,1,Republican right
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,RPR,Rassemblement pour la Republique (gaullistes),15.7,CD,1,Republican right
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,DVD,Divers droite,6.33,CD,1,Republican right
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,FN,Front national,15.12,D,1,Anti-republican right
+1997,1997,Fifth,cage_piketty/leg1997comm.csv,AUD,Autres / divers,0.11,D,1,Other/Divers
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,LO,Lutte ouvriere (extreme gauche),1.17,G,1,Communist/Extreme left
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,LCR,Ligue communiste revolutionnaire (extr. gauche),1.28,G,1,Communist/Extreme left
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,PCF,Parti communiste francais,5.06,G,1,Communist/Extreme left
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,PS,Parti socialiste,23.99,CG,1,Socialist left
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,PRGDVG,PRG / divers gauche,2.6,CG,1,Republican/Radical left
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,VEC,Les Verts (ecologistes),4.73,CG,1,Green/ecologist
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,PREP,Pole republicain (souverainistes),1.22,CG,1,Other/Divers
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,ECO,Ecologistes,1.19,CG,1,Green/ecologist
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,DIV,Divers,1.07,C,0.2,Other/Divers
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,CPNT,"Chasse, Peche, Nature, Traditions",1.61,CG,0.2,Other/Divers
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,UDF,Union pour la democratie francaise,4.81,CD,1,Republican right
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,UMP,Union pour un mouvement populaire,33.35,CD,1,Republican right
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,DVD,Divers droite,5.34,CD,1,Republican right
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,FN,Front national,11.28,D,1,Anti-republican right
+2002,2002,Fifth,cage_piketty/leg2002comm.csv,MNRAUD,Mouvement national republicain (extr. droite),1.31,D,1,Anti-republican right
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,AUG,Autres gauche,3.47,G,1,Communist/Extreme left
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,PCF,Parti communiste francais,4.35,G,1,Communist/Extreme left
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,PS,Parti socialiste,25,CG,1,Socialist left
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,RDG,Radicaux de gauche,1.37,CG,1,Republican/Radical left
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,DVG,Divers gauche,1.41,CG,1,Socialist left
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,VEC,Les Verts (ecologistes),3.41,CG,1,Green/ecologist
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,ECO,Ecologistes,0.81,CG,1,Green/ecologist
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,DIV,Divers,1.12,CD,0.2,Other/Divers
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,CPNT,"Chasse, Peche, Nature, Traditions",0.8,CD,0.2,Other/Divers
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,UDFD,UDF / divers droite,7.89,C,1,Republican right
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,UMP,Union pour un mouvement populaire,42.27,CD,1,Republican right
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,DVD,Divers droite,2.14,CD,1,Republican right
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,MPF,Mouvement pour la France (souverainistes),1.21,D,1,Republican right
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,FN,Front national,4.36,D,1,Anti-republican right
+2007,2007,Fifth,cage_piketty/leg2007comm.csv,AUD,Autres / divers,0.4,D,1,Other/Divers
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,AUG,Autres gauche,0.99,G,1,Communist/Extreme left
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,FG,Front de gauche (PCF-Melenchon),7.13,G,1,Communist/Extreme left
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,PS,Parti socialiste,29.56,CG,1,Socialist left
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,RDG,Radicaux de gauche,1.71,CG,1,Republican/Radical left
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,DVG,Divers gauche,2.79,CG,1,Socialist left
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,EELV,Europe Ecologie Les Verts,5.72,CG,1,Green/ecologist
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,ECO,Ecologistes,0.98,CG,1,Green/ecologist
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,DIV,Divers,0.75,G,0.2,Other/Divers
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,CENALLI,Centre / Alliance centriste,2.32,C,1,Centre republican
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,PRV,Parti radical valoisien,1.21,C,1,Republican right
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,NCE,Nouveau Centre,2.15,C,1,Centre republican
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,UMP,Union pour un mouvement populaire,27.59,CD,1,Republican right
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,DVD,Divers droite,3.1,CD,1,Republican right
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,FN,Front national,13.79,D,1,Anti-republican right
+2012,2012,Fifth,cage_piketty/leg2012comm.csv,AUD,Autres / divers,0.19,D,1,Other/Divers
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,AUG,Autres gauche,0.77,G,1,Communist/Extreme left
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,PCF,Parti communiste francais,2.77,G,1,Communist/Extreme left
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,LFI,La France insoumise,11.3,G,1,Communist/Extreme left
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,PS,Parti socialiste,7.5,CG,1,Socialist left
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,RDGDVG,Radicaux de gauche / divers gauche,1.58,CG,1,Republican/Radical left
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,EELV,Europe Ecologie Les Verts,4.48,CG,1,Green/ecologist
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,DIV,Divers,2.83,CG,0.2,Other/Divers
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,LREM,La Republique en marche,28.85,C,1,Centre republican
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,MDM,Mouvement democrate (MoDem),4.05,C,1,Centre republican
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,UDI,Union des democrates et independants,2.91,CD,1,Centre republican
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,LR,Les Republicains,15.9,CD,1,Republican right
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,DVD,Divers droite,2.34,CD,1,Republican right
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,DLF,Debout la France (souverainistes),1.2,D,1,Anti-republican right
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,FN,Front national,13.23,D,1,Anti-republican right
+2017,2017,Fifth,cage_piketty/leg2017comm.csv,AUD,Autres / divers,0.3,D,1,Other/Divers
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,AUG,Autres gauche,1.15,G,1,Communist/Extreme left
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,NUP,NUPES (union de la gauche),26.78,G,1,Socialist left
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,DVG,Divers gauche,3.03,CG,1,Socialist left
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,ECO,Ecologistes,2.68,CG,1,Green/ecologist
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,REG,Regionalistes / autonomistes,1.66,CD,0.2,Other/Divers
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,ENS,"Ensemble (majorite presidentielle, macronistes)",26.13,C,1,Centre republican
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,UDI,Union des democrates et independants,1.8,C,1,Centre republican
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,LR,Les Republicains,10.54,CD,1,Republican right
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,DVD,Divers droite,3.18,CD,1,Republican right
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,REC,Reconquete (extr. droite),4.39,D,1,Anti-republican right
+2022,2022,Fifth,cage_piketty/leg2022comm.csv,RN,Rassemblement national,18.66,D,1,Anti-republican right

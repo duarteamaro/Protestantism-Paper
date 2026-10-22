@@ -1,0 +1,22 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.positai
+.DS_Store
+.claude/
+
+# data, kept locally
+/*.csv
+/*.xlsx
+/*.rds
+/*.zip
+limites-des-dioceses-de-france-apres-1317.*
+cage_piketty/
+albertus_gay/
+gay/
+commune-frmetdrom/
+
+# scraped church directory, contains names, phones and e-mails of pastors
+scraped-churches/*.csv
+scraped-churches/*.json
