@@ -18,13 +18,17 @@ to sit in the project folder locally:
   directly in `cage_piketty/`, and `leg1849_csv/leg1849comm.csv`,
   `leg1876_csv/` ... `leg1956_csv/`, `leg1946Juin_csv/leg1946comm.csv`,
   `leg1946Nov_csv/leg1947comm.csv` as subfolders (exact paths in
-  `build-party-dictionary.R`)
+  `build-party-dictionary.R`). Also `cspcommunes.csv` (occupations) and the
+  referendums `ref1793_csv/ref1793comm.csv`, `ref1795_csv/`, `ref1946_csv/`,
+  `ref1992_csv/`, `ref2005_csv/`, and the presidential elections
+  `pres1848_csv/pres1848comm.csv`, `pres1965_csv/` ... `pres2022_csv/`
 - `scraped-churches/churches_fpf_insee.csv` for `church-proximity.R`: not in the
   repository because it contains contact details of pastors. Rebuild it with
   `scrape_fpf_churches.py` and `add_insee_codes.py` or ask Luis for the file.
 
 R packages: tidyverse, readxl, estimatr, broom, modelsummary, mgcv, Matrix,
-dbscan.
+dbscan, sf, terra, and hegdata (not on CRAN:
+`remotes::install_github("carl-mc/hegdata")`).
 
 ## Contemporary analysis (1993-2022)
 
@@ -36,11 +40,23 @@ mediation, sensitivity, weighting, RDD.
 Run in this order:
 
 1. `build-protestant-data.R` -> `clean_protestant_1839.csv`
-2. `build-party-dictionary.R` -> `tables/party_family_dictionary.csv`
-3. `build-historic-panel.R` -> `historic_panel.rds`
-4. analysis scripts (all source `historic-setup.R`):
+2. `build-party-dictionary.R` -> `tables/party_family_dictionary.csv`,
+   `tables/presidential_candidates.csv`
+3. `build-language-1886.R` -> `language_1886.csv` (French speakers 1886)
+4. `build-historic-panel.R` -> `historic_panel.rds`, `historic_families.rds`,
+   `referendum_panel.rds`, `presidential_panel.rds`, `presidential_votes.rds`
+5. analysis scripts (all source `historic-setup.R`):
    - `historic-party-groups.R`: coefficient per election for our eight party
      groups (`figures/coef_per_year_party_groups_std.png`)
+   - `historic-party-families.R`: the same for every Cage-Piketty party family,
+     one figure per Republic
+   - `historic-cleavages.R`: the Protestant share next to proxies of the other
+     cleavages (state-church, centre-periphery, class, urban-rural, education)
+     in explaining the left vote; Shapley decomposition of the explained variance
+   - `historic-referendums.R`: the five referendums published by Cage-Piketty
+   - `historic-presidential.R`: every presidential election (1848, 1965-2022),
+     candidate by candidate, and the "Republic at stake" comparison of the
+     decisive rounds
    - `historic-elections-modeling.R`: right bloc and anti-republican right,
      tables per Republic and year-by-year figures
    - `historic-cp-blocs.R`: the five Cage-Piketty blocs as benchmark

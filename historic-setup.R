@@ -28,9 +28,9 @@ group_vars <- c(
 ## one regression per election: dep FE, historical controls and log population
 ## in the election year, HC1 SEs. The standardized coefficient (SD of the
 ## outcome per SD of the Protestant share) uses the SDs of the estimation sample.
-by_election <- function(outcome) {
+by_election <- function(outcome, data = panel) {
   rhs <- c("share_protestant", "dep", hist_controls, "log_pop")
-  panel |>
+  data |>
     drop_na(all_of(c(outcome, rhs))) |>
     filter(n() >= 500, sd(.data[[outcome]]) > 0, .by = election) |>
     nest(.by = c(election, year, republic)) |>

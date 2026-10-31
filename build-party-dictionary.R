@@ -170,10 +170,10 @@ group_exceptions <- tribble(
 
 ## voixXXX are the family votes and add up to exprimes. In list elections the
 ## files also carry voixtotXXX (summed over all candidates of a list), which
-## are left out.
+## are left out, as are the second-round votes of presidential elections.
 read_families <- function(file) {
   read_csv(file, show_col_types = FALSE, guess_max = 1e5) |>
-    dplyr::select(exprimes, starts_with("voix"), -starts_with("voixtot"),
+    dplyr::select(exprimes, starts_with("voix"), -starts_with("voixtot"), -starts_with("voixT2"),
                   voteG, voteCG, voteC, voteCD, voteD) |>
     mutate(across(everything(), \(x) replace_na(as.numeric(x), 0))) |>
     filter(exprimes > 0)
@@ -214,3 +214,18 @@ dict <- elections |>
                 natl_vote_share_pct, cp_bloc, cp_bloc_weight, group)
 
 write_csv(dict, "tables/party_family_dictionary.csv")
+
+
+# presidential elections ----------------------------------------------------------
+
+## first-round candidates with their national share and Cage-Piketty bloc
+presidentials <- tibble(year = c(1848, 1965, 1969, 1974, 1981, 1988, 1995, 2002, 2007,
+                                 2012, 2017, 2022)) |>
+  mutate(republic = if_else(year == 1848, "Second", "Fifth"),
+         file = paste0("cage_piketty/pres", year, "_csv/pres", year, "comm.csv"))
+
+presidentials |>
+  mutate(candidates = map(file, family_table)) |>
+  unnest(candidates) |>
+  rename(candidate = family) |>
+  write_csv("tables/presidential_candidates.csv")
